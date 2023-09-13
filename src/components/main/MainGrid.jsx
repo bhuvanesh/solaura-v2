@@ -20,7 +20,7 @@ const getEstActData = async () => {
 const MainGrid = async () => {
   const cardData = await getCardData();
   const estActMonthData = await getEstActData();
-  console.log(cardData, estActMonthData);
+//   console.log(cardData, estActMonthData);
   let currYear = new Date().getFullYear();
   return (
     <div className="w-full">
