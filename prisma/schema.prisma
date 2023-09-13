@@ -110,6 +110,7 @@ model table {
   Estimated_used Int?
   Issued         Int?
   Sold           String?   @db.VarChar(50)
+  Registered     String?   @default("YES") @db.VarChar(25)
 
   @@index([Month])
 }

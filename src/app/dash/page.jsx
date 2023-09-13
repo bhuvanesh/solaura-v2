@@ -1,8 +1,14 @@
+import MainGrid from '@/components/main/MainGrid'
+import Sidebar from '@/components/sidebar/Sidebar'
 import React from 'react'
 
 const page = () => {
   return (
-    <div className='bg-secondary'>page</div>
+    <div className = 'w-full' >
+        
+        <MainGrid/>
+    </div>
+
   )
 }
 
