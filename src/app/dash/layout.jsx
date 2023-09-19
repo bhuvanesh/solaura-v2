@@ -6,7 +6,7 @@ import React from 'react'
 const layout = ({children}) => {
   return (
     <div className="flex space-x-2">
-           <Sidebar/>
+           <Sidebar className=""/>
             {children}
         </div>
   )

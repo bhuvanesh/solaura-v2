@@ -1,7 +1,19 @@
 import React from "react";
 import InfoCard from "./cards/InfoCard";
-import { ChartBarSquareIcon } from "@heroicons/react/24/outline";
+import { ChartBarSquareIcon, LightBulbIcon, CircleStackIcon, WrenchScrewdriverIcon } from "@heroicons/react/24/outline";
 import EstAct from "./charts/EstAct";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import InfoCard2 from "./cards/InfoCard2";
+import SellerList from "./rankCards/SellerList";
+import EstUse from "./charts/EstUse";
+import BuyerList from "./rankCards/BuyerList";
 
 const getCardData = async () => {
   const res = await fetch("http:localhost:3000/api/data/cards", {
@@ -17,33 +29,53 @@ const getEstActData = async () => {
   return res.json();
 };
 
+const getEstUseData = async () => {
+    const res = await fetch("http:localhost:3000/api/data/usage");
+  
+    return res.json();
+  };
+
 const MainGrid = async () => {
   const cardData = await getCardData();
   const estActMonthData = await getEstActData();
-//   console.log(cardData, estActMonthData);
+  const estUseMonthData = await getEstUseData()
+  console.log(estUseMonthData)
+  //   console.log(cardData, estActMonthData);
   let currYear = new Date().getFullYear();
   return (
     <div className="w-full">
       <div className="grid grid-cols-3 gap-2 gap-y-3 mx-1 mt-2">
-        <InfoCard
+        <InfoCard2
           titleText={"Registered Devices " + "(" + currYear + ")"}
           bodyText={"Estimated: " + cardData.registered}
-          Icon={ChartBarSquareIcon}
+          Icon={LightBulbIcon}
           balance={"Actual: " + cardData.actual + " kWh"}
         />
-        <InfoCard
+        <InfoCard2
           titleText={"Pending Devices "}
           bodyText={"Estimated: " + cardData.pending}
-          Icon={ChartBarSquareIcon}
+          Icon={WrenchScrewdriverIcon}
         />
-        <InfoCard
-          titleText={"Pipline Devices"}
+        <InfoCard2
+          titleText={"Pipeline Devices"}
           bodyText={"Estimated: " + cardData.pipeline}
-          Icon={ChartBarSquareIcon}
+          Icon={CircleStackIcon}
         />
-        <div className="col-span-2 h-[500px] pt-2 mt-2">
+           <Card className="col-span-2 h-auto">
+          <CardHeader className="text-center">Estimate vs Usage</CardHeader>
+          <EstUse className='h-full' data={estUseMonthData.monthData} />
+        </Card>
+        <Card className="">
+            <BuyerList/>
+        </Card>
+        <Card className="col-span-2">
+          <CardHeader className="text-center">Estimate vs Actual</CardHeader>
           <EstAct className="h-full" data={estActMonthData.monthData} />
-        </div>
+        </Card>
+        <Card className="">
+            <SellerList/>
+        </Card>
+     
       </div>
     </div>
   );
