@@ -9,7 +9,7 @@ export async function GET() {
   const [reg, pen, pip, act] = await prisma.$transaction([
     prisma.table.aggregate({
       _sum: {
-        Estimated: true,
+        Estimated: true,     
       },
       where: {
         Registered: {
