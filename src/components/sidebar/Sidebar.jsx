@@ -9,7 +9,9 @@ const Sidebar = () => {
     <div className='flex flex-col items-start'>
         <ListItem text={'Dashboard Home'} navLink={'/dash'} Icon={PresentationChartBarIcon}/>
         <ListItem text={'Allocate'} navLink={'/dash/allocate'} Icon={SparklesIcon}/>
-        <ListItem text={'Upload Data'} navLink={'/dash/upload'} Icon={ArrowUpTrayIcon}/>        
+        <ListItem text={'Upload Data'} navLink={'/dash/upload'} Icon={ArrowUpTrayIcon}/>
+        <ListItem text={'Transactions'} navLink={'/dash/txn'} Icon={SparklesIcon}/>
+        <ListItem text={'Summary'} navLink={'/dash/sum'} Icon={SparklesIcon}/>        
     </div>
 </div>
   )

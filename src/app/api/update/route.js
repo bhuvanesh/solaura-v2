@@ -6,6 +6,7 @@ export async function POST(request) {
 
   try {
     const connection = await getPSConnection();
+    await connection.beginTransaction(); // Start the transaction
 
     // Loop through the selectedMonths object and update the database
     for (const deviceId in selectedMonths) {
@@ -33,12 +34,15 @@ export async function POST(request) {
       }
     }
 
+    await connection.commit(); // Commit the transaction
+
     return new Response(JSON.stringify({ success: true, message: 'Database updated successfully' }), {
       headers: { 'content-type': 'application/json' },
       status: 200
     });
   } catch (error) {
     console.error("Error:", error);
+    await connection.rollback(); // Rollback the transaction in case of error
     return new Response(JSON.stringify({ message: 'Error updating the database' }), {
       headers: { 'content-type': 'application/json' },
       status: 500

@@ -6,10 +6,11 @@ export async function POST(request) {
   console.log('POST message body2:', organisation);
   console.log('POST message body3:', uniqueId);
 
-  
-
   try {
     const connection = await getPSConnection();
+
+    // Start a transaction
+    await connection.beginTransaction();
 
     // Loop through the selectedMonths object and update the database
     for (const deviceId in selectedMonths) {
@@ -26,12 +27,31 @@ export async function POST(request) {
         organisation = VALUES(organisation),
         ${month} = VALUES(${month});
       `, [uniqueId, deviceId, organisation, value]);
+
+        // Update the Status column to 'succeeded'
+        await connection.query(`
+        UPDATE buyers
+        SET Status = 'succeeded'
+        WHERE \`Transaction ID\` = ? AND \`Device ID\` = ? AND organisation = ?;
+        `, [uniqueId, deviceId, organisation]);
       }
     }
+
+    // Commit the transaction
+    await connection.commit();
 
     return new Response(JSON.stringify({ success: true, message: 'Buyer Database updated successfully!' }), { status: 200, headers: { 'Content-Type': 'application/json' }});
   } catch (error) {
     console.error("Error:", error);
+
+    // Rollback the transaction and set the Status column to 'failed'
+    await connection.rollback();
+    await connection.query(`
+    UPDATE buyers
+    SET Status = 'failed'
+    WHERE \`Transaction ID\` = ?;
+    `, [uniqueId]);
+
     return new Response(JSON.stringify({ message: 'Error updating the buyer database' }), { status: 500, headers: { 'Content-Type': 'application/json' }});
   }
 }
