@@ -1,4 +1,5 @@
 const mysql = require('mysql2/promise');
+const fs = require('fs')
 
 async function getPSConnection() {
   const url = new URL(process.env.DATABASE_URL);
@@ -11,7 +12,16 @@ async function getPSConnection() {
   const database = url.pathname.replace(/^\//, ''); // Remove the leading slash
 
   // Get the certificate from the environment variable
-  const certificate = process.env.PLANETSCALE_CA_CERT;
+  // const certificate = process.env.PLANETSCALE_CA_CERT;
+  let certificate =''
+  if(process.env.NODE_ENV == 'production'){
+    certificate='/etc/pki/tls/certs/ca-bundle.crt'
+  }
+  else{
+    certificate ='/etc/ssl/cert.pem'
+  }
+
+
 
   // Create a new MySQL connection with SSL
   const connection = await mysql.createConnection({
@@ -21,7 +31,8 @@ async function getPSConnection() {
     database,
     ssl: {
       // Convert the certificate string to a Buffer
-      ca: Buffer.from(certificate, 'utf-8'),
+      // ca: Buffer.from(certificate, 'utf-8'),
+      ca: fs.readFileSync(certificate)
     },
   });
   
