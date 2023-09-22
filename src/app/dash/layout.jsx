@@ -3,7 +3,7 @@ import ResultsContext from '../SearchContext/store'
 import Sidebar from '@/components/sidebar/Sidebar'
 import React, { useState } from "react";
 
-const layout = ({children}) => {
+const Layout = ({children}) => {
   const [results, setResults] = useState([]);
   const [requirement, setRequirement] = useState(0);
   const [groupName, setGroupName] = React.useState('');
@@ -25,4 +25,4 @@ const layout = ({children}) => {
   )
 }
 
-export default layout
+export default Layout
