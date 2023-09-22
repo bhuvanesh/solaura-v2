@@ -65,7 +65,7 @@ const Results = () => {
   const [originalResults, setOriginalResults] = React.useState(null);
 useEffect(() => {
   setOriginalResults(JSON.parse(JSON.stringify(results)));
-}, []);
+}, [originalResults]);
 const handleTotalProductionClick = (resultIndex) => {
   const key = `${resultIndex}-Total_Production`;
   const currentValue = selectedTotalProduction.get(key);
