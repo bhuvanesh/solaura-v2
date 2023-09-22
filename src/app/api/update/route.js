@@ -23,14 +23,12 @@ export async function POST(request) {
 
         // Update the database based on the retrieved values
         await connection.query(`
-          UPDATE \`table\`
-          SET
-            \`Actual\` = GREATEST(\`Actual\` - ?, 0),
-            \`Actual_used\` = \`Actual_used\` + (CASE WHEN ? > 0 THEN ? ELSE 0 END),
-            \`Estimated\` = GREATEST(\`Estimated\` - (CASE WHEN ? = 0 THEN ? ELSE 0 END), 0),
-            \`Estimated_used\` = \`Estimated_used\` + (CASE WHEN ? = 0 THEN ? ELSE 0 END)
-          WHERE \`Device ID\` = ? AND \`Month\` = ?
-        `, [value, currentValues.Actual, value, currentValues.Actual, value, currentValues.Actual, value, deviceId, month]);
+        UPDATE \`table\`
+        SET
+          \`Actual_used\` = \`Actual_used\` + (CASE WHEN \`Actual\` > 0 AND ? > 0 THEN ? ELSE 0 END),
+          \`Estimated_used\` = \`Estimated_used\` + (CASE WHEN \`Actual\` = 0 THEN ? ELSE 0 END)
+        WHERE \`Device ID\` = ? AND \`Month\` = ?
+      `, [value, value, value, deviceId, month]);
       }
     }
 
