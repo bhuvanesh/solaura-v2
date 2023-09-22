@@ -16,7 +16,7 @@ import EstUse from "./charts/EstUse";
 import BuyerList from "./rankCards/BuyerList";
 
 const getCardData = async () => {
-  const res = await fetch("http:localhost:3000/api/data/cards", {
+  const res = await fetch(process.env.NEXT_PUBLIC_URL+"/api/data/cards", {
     // next: { revalidate: 5 },
   });
   // console.log(await res.json())
@@ -24,13 +24,13 @@ const getCardData = async () => {
 };
 
 const getEstActData = async () => {
-  const res = await fetch("http:localhost:3000/api/data/months");
+  const res = await fetch(process.env.NEXT_PUBLIC_URL+"/api/data/months");
 
   return res.json();
 };
 
 const getEstUseData = async () => {
-    const res = await fetch("http:localhost:3000/api/data/usage");
+    const res = await fetch(process.env.NEXT_PUBLIC_URL+"/api/data/usage");
   
     return res.json();
   };
