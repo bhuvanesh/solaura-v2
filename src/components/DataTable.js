@@ -4,7 +4,7 @@ const DataTable = ({ data }) => {
     }
 
     return (
-    <div style={{ overflowX: 'auto', height: '100vh' }}>
+    <div style={{ overflowX: 'auto', height: '100vh' ,width:'200vh'}}>
       <table className="min-w-full divide-y divide-gray-200">
         <thead className="bg-gray-50">
           <tr>
