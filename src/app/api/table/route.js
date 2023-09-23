@@ -2,7 +2,6 @@ import getPSConnection from '@/lib/planetscaledb';
 
 export async function POST(request) {
   const { requirement, CoDYear, productionPeriodFrom, productionPeriodTo, type } = await request.json();
-
   const monthColumns = [
     'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December',
@@ -18,14 +17,16 @@ export async function POST(request) {
 
   try {
     const connection = await getPSConnection();
+    const CoDYearCondition = CoDYear === 0 ? 'YEAR(CoD) < YEAR(CURDATE()) - 10' : `YEAR(CoD) >= ${CoDYear}`;
+
     const [rows] = await connection.query(`
       SELECT \`Device ID\`, \`Year\`, \`Type\`, \`CoD\`, ${monthSums}, SUM(CASE WHEN \`Actual\` = 0 THEN \`Estimated\` - \`Estimated_used\` ELSE \`Actual\` - \`Actual_used\` END) as Total_Production
       FROM \`table\`
-      WHERE \`Year\` >= ? AND \`Type\` = ? AND \`CoD\` >= ? AND \`Month\` IN (?)
+      WHERE ${CoDYearCondition} AND \`Type\` = ? AND \`Month\` IN (?)
       GROUP BY \`Device ID\`, \`Year\`, \`Type\`, \`CoD\`
       HAVING Total_Production >= 0
       ORDER BY Total_Production DESC
-    `, [CoDYear, type, `${CoDYear}-12-31`, selectedMonths]);
+    `, [type, selectedMonths]);
 
     return new Response(JSON.stringify(rows), {
       headers: { 'content-type': 'application/json' },

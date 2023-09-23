@@ -17,13 +17,21 @@ const FormComponent = () => {
   
 
   const handleSearch = async () => {
-    // Perform search functionality here
+    const currentYear = new Date().getFullYear();
+    let actualCoDYear;
+    if (CoDYear === 'within5') {
+      actualCoDYear = currentYear - 5;
+    } else if (CoDYear === 'within10') {
+      actualCoDYear = currentYear - 10;
+    } else if (CoDYear === 'morethan10') {
+      actualCoDYear = 0;
+    }
     const response = await fetch('/api/table', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         requirement,
-        CoDYear,
+        CoDYear: actualCoDYear,
         productionPeriodFrom,
         productionPeriodTo,
         type,
@@ -48,8 +56,7 @@ const FormComponent = () => {
 
 
 
-  const currentYear = new Date().getFullYear();
-  const years = Array.from({ length: currentYear - 2013 }, (_, i) => currentYear - i);
+
   const months = [
     "January",
     "February",
@@ -101,11 +108,9 @@ const FormComponent = () => {
           className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
         >
           <option value="">Select year</option>
-          {years.map((year) => (
-            <option key={year} value={year}>
-              {year}
-            </option>
-          ))}
+          <option value="within5">Within 5 years</option>
+          <option value="within10">Within 10 years</option>
+          <option value="morethan10">More than 10 years</option>
         </select>
       </div>
       <div className="grid grid-cols-2 gap-4">

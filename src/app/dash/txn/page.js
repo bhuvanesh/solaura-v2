@@ -128,11 +128,11 @@ export default function Table() {
   console.log(filteredData);
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100 px-4 sm:px-6 lg:px-8 py-6">
-      <div className="w-full max-w-md">
-        <div className="bg-white shadow-md rounded-lg px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+    <div className="flex items-center justify-center min-h-screen w-full px-4 sm:px-6 lg:px-8 py-6">
+      <div className="max-w-screen-xl mx-auto">
+        <div className="bg-white shadow-md rounded-lg p-6">
           <div className="sm:flex sm:items-start">
-            <div className="w-full mt-3 text-center sm:mt-0 sm:text-left">
+            <div className="w-full text-center sm:mt-0 sm:text-left">
               <h3 className="text-lg leading-6 font-medium text-gray-900">Transaction Data</h3>
               <button
                 onClick={downloadAsPDF}
@@ -142,13 +142,13 @@ export default function Table() {
               </button>
               <div className="mt-2">
                 <input
-         type="text"
-         placeholder="Search organisation"
-         value={searchQuery}
-         onChange={(e) => setSearchQuery(e.target.value)}
-       />
+                  type="text"
+                  placeholder="Search organisation"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
                 <div className="grid grid-cols-1 gap-2">
-                <table className="table-auto w-full divide-y divide-gray-200">
+                  <table className="table-auto w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
                         <th className="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider">Transaction ID</th>
@@ -157,35 +157,35 @@ export default function Table() {
                         <th className="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider">Requirement</th>
                       </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                    {(searchQuery.length > 0 ? filteredData : data).map((row, i) => (
+                    <tbody className="bg-white divide-y divide-gray-200 text-left">
+                      {(searchQuery.length > 0 ? filteredData : data).map((row, i) => (
                         <React.Fragment key={i}>
-                            <tr onClick={() => activeRow === i ? setActiveRow(null) : setActiveRow(i)} className="hover:bg-gray-100 cursor-pointer">
-                                <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">{row['Transaction ID']}</td>
-                                <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">{row['Organisation']}</td>
-                                <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">{row['Status']}</td>
-                                <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">{row['total']}</td>
+                          <tr onClick={() => activeRow === i ? setActiveRow(null) : setActiveRow(i)} className="hover:bg-gray-100 cursor-pointer">
+                            <td className="px-4 py-2 whitespace-normal text-sm text-gray-500">{row['Transaction ID']}</td>
+                            <td className="px-4 py-2 whitespace-normal text-sm text-gray-500">{row['Organisation']}</td>
+                            <td className="px-4 py-2 whitespace-normal text-sm text-gray-500">{row['Status']}</td>
+                            <td className="px-4 py-2 whitespace-normal text-sm text-gray-500">{row['total']}</td>
+                          </tr>
+                          {activeRow === i &&
+                            <tr>
+                              <td colSpan="5" className="px-4 py-4">
+                                {row.details.map((detail, i) => (
+                                  <div key={i}>
+                                    <p className="font-semibold text-sm">Device ID: {detail['Device ID']}</p>
+                                    {months.map(
+                                      (month, j) =>
+                                        detail[month] &&
+                                        <p key={j} className="text-sm px-4">
+                                          {`${month}: ${detail[month]}`}
+                                        </p>
+                                    )}
+                                  </div>
+                                ))}
+                              </td>
                             </tr>
-                            {activeRow === i &&
-                                <tr>
-                                    <td colSpan="5" className="px-4 py-4">
-                                        {row.details.map((detail, i) => (
-                                        <div key={i}>
-                                            <p className="font-semibold text-sm">Device ID: {detail['Device ID']}</p>
-                                            {months.map(
-                                                (month, j) =>
-                                                detail[month] &&
-                                                <p key={j} className="text-sm px-4">
-                                                    {`${month}: ${detail[month]}`}
-                                                </p>
-                                            )}
-                                        </div>
-                                        ))}
-                                    </td>
-                                </tr>
-                            }
+                          }
                         </React.Fragment>
-                    ))}
+                      ))}
                     </tbody>
                   </table>
                 </div>
@@ -195,5 +195,5 @@ export default function Table() {
         </div>
       </div>
     </div>
- );
+  );
 }
