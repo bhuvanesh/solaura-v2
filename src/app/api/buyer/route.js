@@ -1,10 +1,12 @@
 import getPSConnection from '@/lib/planetscaledb';
 
 export async function POST(request) {
-  const {selectedMonths, organisation, uniqueId} = await request.json();
+  const {selectedMonths, organisation, uniqueId,year} = await request.json();
   console.log('POST message body1:', selectedMonths);
   console.log('POST message body2:', organisation);
   console.log('POST message body3:', uniqueId);
+  console.log('POST message body4:', year);
+
 
   try {
     const connection = await getPSConnection();
@@ -19,23 +21,24 @@ export async function POST(request) {
       for (const month in deviceMonths) {
         const value = deviceMonths[month];
 
-        // Update the database
-        await connection.query(`
-        INSERT INTO buyers (\`Transaction ID\`, \`Device ID\`, organisation, ${month})
-        VALUES(?, ?, ?, ?)
-        ON DUPLICATE KEY UPDATE
-        organisation = VALUES(organisation),
-        ${month} = VALUES(${month});
-      `, [uniqueId, deviceId, organisation, value]);
+       // Update the database
+       await connection.query(`
+       INSERT INTO buyers (\`Transaction ID\`, \`Device ID\`, organisation, year, ${month})
+       VALUES(?, ?, ?, ?, ?)
+       ON DUPLICATE KEY UPDATE
+       organisation = VALUES(organisation),
+       year = VALUES(year),
+       ${month} = VALUES(${month});
+     `, [uniqueId, deviceId, organisation, year, value]);
 
-        // Update the Status column to 'succeeded'
-        await connection.query(`
-        UPDATE buyers
-        SET Status = 'succeeded'
-        WHERE \`Transaction ID\` = ? AND \`Device ID\` = ? AND organisation = ?;
-        `, [uniqueId, deviceId, organisation]);
-      }
-    }
+       // Update the Status column to 'succeeded'
+       await connection.query(`
+       UPDATE buyers
+       SET Status = 'succeeded'
+       WHERE \`Transaction ID\` = ? AND \`Device ID\` = ? AND organisation = ?;
+       `, [uniqueId, deviceId, organisation]);
+     }
+   }
 
     // Commit the transaction
     await connection.commit();

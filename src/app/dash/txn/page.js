@@ -86,6 +86,7 @@ export default function Table() {
   
               const deviceColumns = [
                   { header: 'Device ID', dataKey: 'Device ID' },
+                  { header: 'Year', dataKey: 'Year' },   
                   ...months.map(month => (
                       detail[month]
                           ? { header: month, dataKey: month }
@@ -101,7 +102,8 @@ export default function Table() {
                           }
                           return acc;
                       },
-                  {'Device ID': detail['Device ID']}
+                  {'Device ID': detail['Device ID'],
+                  'Year': detail['Year']}
                   )
               ]
   
@@ -172,6 +174,7 @@ export default function Table() {
                                 {row.details.map((detail, i) => (
                                   <div key={i}>
                                     <p className="font-semibold text-sm">Device ID: {detail['Device ID']}</p>
+                                    <p className="font-semibold text-sm">year: {detail['year']}</p>
                                     {months.map(
                                       (month, j) =>
                                         detail[month] &&

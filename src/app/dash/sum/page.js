@@ -30,7 +30,7 @@ const DownloadPage = () => {
   };
 
   const filteredData = data.filter((item) =>
-    item['Company Name'].toLowerCase().includes(searchTerm.toLowerCase())
+    item['Group'].toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -42,7 +42,7 @@ const DownloadPage = () => {
         <h1>Summary</h1>
         <input
           type="text"
-          placeholder="Search by Company Name"
+          placeholder="Search by Group"
           value={searchTerm}
           onChange={handleSearchChange}
           className="border px-4 py-2 rounded"

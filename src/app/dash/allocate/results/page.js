@@ -63,9 +63,9 @@ const Results = () => {
   
 
   const [originalResults, setOriginalResults] = React.useState(null);
-useEffect(() => {
-  setOriginalResults(JSON.parse(JSON.stringify(results)));
-}, [originalResults]);
+  useEffect(() => {
+    setOriginalResults(JSON.parse(JSON.stringify(results)));
+  }, [results]);
 const handleTotalProductionClick = (resultIndex) => {
   const key = `${resultIndex}-Total_Production`;
   const currentValue = selectedTotalProduction.get(key);
@@ -144,6 +144,8 @@ const handleMonthClick = (resultIndex, month, adjustedMonthValue) => {
   const handleSubmit = async () => {
     let remainingRequirement = parseInt(requirement);
     const selectedMonthsObject = {};
+    let year = null;
+
   
     selectedMonths.forEach((value, key) => {
       if (value && remainingRequirement > 0) {
@@ -151,6 +153,9 @@ const handleMonthClick = (resultIndex, month, adjustedMonthValue) => {
         const deviceId = results[parseInt(resultIndex)]['Device ID'];
         if (!selectedMonthsObject[deviceId]) {
           selectedMonthsObject[deviceId] = {};
+        }
+        if (!year) {
+          year = results[parseInt(resultIndex)]['Year'];
         }
   
         const monthValue = results[parseInt(resultIndex)][month];
@@ -176,9 +181,10 @@ const handleMonthClick = (resultIndex, month, adjustedMonthValue) => {
       const response = await fetch('/api/buyer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ organisation, selectedMonths: selectedMonthsObject, uniqueId }),
+        body: JSON.stringify({ organisation, selectedMonths: selectedMonthsObject, uniqueId, year }),
       });
-      router.back();
+      router.push(`/dash/allocate/results/payment?uniqueId=${uniqueId}`);
+
     }
   };
   

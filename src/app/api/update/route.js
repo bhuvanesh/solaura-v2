@@ -17,13 +17,13 @@ export async function POST(request) {
         // Get the current Actual and Estimated values
         const [[currentValues]] = await connection.query(`
           SELECT \`Actual\`, \`Estimated\`
-          FROM \`table\`
+          FROM \`inventory\`
           WHERE \`Device ID\` = ? AND \`Month\` = ?
         `, [deviceId, month]);
 
         // Update the database based on the retrieved values
         await connection.query(`
-        UPDATE \`table\`
+        UPDATE \`inventory\`
         SET
           \`Actual_used\` = \`Actual_used\` + (CASE WHEN \`Actual\` > 0 AND ? > 0 THEN ? ELSE 0 END),
           \`Estimated_used\` = \`Estimated_used\` + (CASE WHEN \`Actual\` = 0 THEN ? ELSE 0 END)

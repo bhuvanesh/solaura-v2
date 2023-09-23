@@ -4,7 +4,7 @@ export async function GET(request) {
   const connection = await getPSConnection();
   const query = `
 SELECT
-\`Device ID\`, \`Company Name\`, \`Group Name\`, Type, CoD, Year,
+\`Device ID\`, \`company\`, \`Group\`, Type, CoD, Year,\`project\`,
 MAX(CASE WHEN Month = 'January' THEN Sold ELSE NULL END) AS January,
 MAX(CASE WHEN Month = 'February' THEN Sold ELSE NULL END) AS February,
 MAX(CASE WHEN Month = 'March' THEN Sold ELSE NULL END) AS March,
@@ -19,7 +19,7 @@ MAX(CASE WHEN Month = 'November' THEN Sold ELSE NULL END) AS November,
 MAX(CASE WHEN Month = 'December' THEN Sold ELSE NULL END) AS December
 FROM (
   SELECT
-    \`Device ID\`, \`Company Name\`, \`Group Name\`, Type, CoD, Year, Month,
+    \`Device ID\`, \`company\`, \`Group\`, Type, CoD, Year, Month,\`project\`,
     CASE
       WHEN Actual = Sold AND Actual != 0 THEN 'Sold'
       WHEN Actual != 0 AND Actual = Actual_used THEN 'Reserved'
@@ -28,9 +28,9 @@ FROM (
       ELSE Estimated - Estimated_used
     END AS Sold
   FROM
-    \`table\`
+    \`inventory\`
 ) AS subquery
-GROUP BY \`Device ID\`, \`Company Name\`, \`Group Name\`, Type, CoD, Year;
+GROUP BY \`Device ID\`, \`company\`, \`Group\`, Type, CoD, Year,\`project\`;
 `;
 
   const [rows] = await connection.query(query);
