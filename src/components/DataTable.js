@@ -1,10 +1,10 @@
-// components/DataTable.js
 const DataTable = ({ data }) => {
     if (!data || data.length === 0) {
       return <p>Loading...</p>;
     }
-  
+
     return (
+    <div style={{ overflowX: 'auto', height: '100vh' }}>
       <table className="min-w-full divide-y divide-gray-200">
         <thead className="bg-gray-50">
           <tr>
@@ -33,7 +33,8 @@ const DataTable = ({ data }) => {
           ))}
         </tbody>
       </table>
+    </div>
     );
   };
-  
+
   export default DataTable;
