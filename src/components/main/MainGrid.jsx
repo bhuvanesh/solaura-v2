@@ -26,7 +26,7 @@ const getCardData = async () => {
   // });
 
   const [reg, pen, pip, act] = await prisma.$transaction([
-    prisma.table.aggregate({
+    prisma.inventory.aggregate({
       _sum: {
         Estimated: true,     
       },
@@ -36,7 +36,7 @@ const getCardData = async () => {
         },
       },
     }),
-    prisma.table.aggregate({
+    prisma.inventory.aggregate({
       _sum: {
         Estimated: true,
       },
@@ -46,7 +46,7 @@ const getCardData = async () => {
         },
       },
     }),
-    prisma.table.aggregate({
+    prisma.inventory.aggregate({
       _sum: {
         Estimated: true,
       },
@@ -56,7 +56,7 @@ const getCardData = async () => {
         },
       },
     }),
-    prisma.table.aggregate({
+    prisma.inventory.aggregate({
       _sum: {
         Actual: true,
       },
@@ -78,7 +78,7 @@ const getEstActData = async () => {
   const [data] = await prisma.$transaction([
     //what is required? Monthwise Actuals
 
-    prisma.table.groupBy({
+    prisma.inventory.groupBy({
       by: ["Month", "Year"],
       _sum: {
         Actual: true,
@@ -114,7 +114,7 @@ const getEstUseData = async () => {
     const [data] = await prisma.$transaction([
       //what is required? Monthwise Actuals
   
-      prisma.table.groupBy({
+      prisma.inventory.groupBy({
         by: ["Month", "Year"],
         _sum: {
           Estimated: true,

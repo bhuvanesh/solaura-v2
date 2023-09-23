@@ -9,11 +9,11 @@ datasource db {
 }
 
 model buyers {
-  id             Int     @id @default(autoincrement())
-  Device_ID      String? @map("Device ID") @db.VarChar(100)
-  Organisation   String? @db.VarChar(100)
+  id             Int       @id @default(autoincrement())
+  Device_ID      String?   @map("Device ID") @db.VarChar(100)
+  Organisation   String?   @db.VarChar(100)
   year           Int?
-  Transaction_ID String? @map("Transaction ID") @db.VarChar(100)
+  Transaction_ID String?   @map("Transaction ID") @db.VarChar(100)
   January        Int?
   February       Int?
   March          Int?
@@ -26,91 +26,32 @@ model buyers {
   October        Int?
   November       Int?
   December       Int?
+  createdAt      DateTime? @default(now()) @db.Timestamp(0)
+  updatedAt      DateTime? @default(now()) @db.Timestamp(0)
+  Status         String?   @db.VarChar(100)
 }
 
-model inv {
-  id            Int       @id @default(autoincrement())
-  Group_Name    String?   @map("Group Name") @db.VarChar(50)
-  Company_Name  String?   @map("Company Name") @db.VarChar(50)
-  Project_Name  String?   @map("Project Name") @db.VarChar(50)
-  Capacity__MW_ Int?      @map("Capacity (MW)")
-  Device_ID     String?   @map("Device ID") @db.VarChar(50)
-  Device_Type   String?   @map("Device Type") @db.VarChar(50)
-  Registered    String?   @db.VarChar(50)
-  CoD           DateTime? @db.Date
-}
-
-model tab {
-  id                 Int       @id @default(autoincrement())
-  Device_ID          String?   @map("Device ID") @db.VarChar(50)
-  Year               Int?
-  Type               String?   @db.VarChar(50)
-  CoD                DateTime? @db.Date
-  Committed          Int?
-  January            Int?
-  January_Actual     Int?
-  January_Issued     Int?
-  February           Int?
-  February_Actual    Int?
-  February_Issued    Int?
-  March              Int?
-  March_Actual       Int?
-  March_Issued       Int?
-  April              Int?
-  April_Actual       Int?
-  April_Issued       Int?
-  May                Int?
-  May_Actual         Int?
-  May_Issued         Int?
-  June               Int?
-  June_Actual        Int?
-  June_Issued        Int?
-  July               Int?
-  July_Actual        Int?
-  July_Issued        Int?
-  August             Int?
-  August_Actual      Int?
-  August_Issued      Int?
-  September          Int?
-  September_Actual   Int?
-  September_Issued   Int?
-  October            Int?
-  October_Actual     Int?
-  October_Issued     Int?
-  November           Int?
-  November_Actual    Int?
-  November_Issued    Int?
-  December           Int?
-  December_Actual    Int?
-  December_Issued    Int?
-  January_Commited   Int?
-  February_Commited  Int?
-  March_Commited     Int?
-  April_Commited     Int?
-  May_Commited       Int?
-  June_Commited      Int?
-  July_Commited      Int?
-  August_Commited    Int?
-  September_Commited Int?
-  October_Commited   Int?
-  November_Commited  Int?
-  December_Commited  Int?
-}
-
-model table {
-  id             Int       @id @default(autoincrement())
-  Device_ID      String?   @map("Device ID") @db.VarChar(50)
-  Type           String?   @db.VarChar(50)
-  CoD            DateTime? @db.Date
-  Year           Int?
-  Month          String?   @db.VarChar(50)
-  Actual         Int?
-  Actual_used    Int?
-  Estimated      Int?
-  Estimated_used Int?
-  Issued         Int?
-  Sold           String?   @db.VarChar(50)
-  Registered     String?   @default("YES") @db.VarChar(25)
-
-  @@index([Month])
+model inventory {
+  id               Int       @id @default(autoincrement())
+  Device_ID        String?   @map("Device ID") @db.VarChar(50)
+  Group            String?   @db.VarChar(50)
+  company          String?   @db.VarChar(50)
+  project          String?   @db.VarChar(100)
+  Type             String?   @db.VarChar(50)
+  CoD              DateTime? @db.Date
+  Commission_start DateTime? @db.Date
+  Commission_end   DateTime? @db.Date
+  Year             Int?
+  Capacity__MW_    Decimal?  @map("Capacity (MW)") @db.Decimal(10, 0)
+  Month            String?   @db.VarChar(50)
+  Actual           Int?
+  Actual_used      Int?
+  Estimated        Int?
+  Estimated_used   Int?
+  Issued           Int?
+  Sold             Int?
+  Registered       String?   @db.VarChar(50)
+  createdAt        DateTime? @default(now()) @db.Timestamp(0)
+  updatedAt        DateTime? @default(now()) @db.Timestamp(0)
+  Project_ID       String?   @map("Project ID") @db.VarChar(255)
 }
