@@ -1,7 +1,7 @@
 import getPSConnection from '@/lib/planetscaledb';
 
 export async function POST(request) {
-  const { requirement, CoDYear, productionPeriodFrom, productionPeriodTo, type } = await request.json();
+  const { requirement, CoDYear, productionPeriodFrom, productionPeriodTo, type,year } = await request.json();
   const monthColumns = [
     'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December',
@@ -20,13 +20,14 @@ export async function POST(request) {
     const CoDYearCondition = CoDYear === 0 ? 'YEAR(CoD) < YEAR(CURDATE()) - 10' : `YEAR(CoD) >= ${CoDYear}`;
 
     const [rows] = await connection.query(`
-      SELECT \`Device ID\`, \`Year\`, \`Type\`, \`CoD\`, ${monthSums}, SUM(CASE WHEN \`Actual\` = 0 THEN \`Estimated\` - \`Estimated_used\` ELSE \`Actual\` - \`Actual_used\` END) as Total_Production
-      FROM \`table\`
-      WHERE ${CoDYearCondition} AND \`Type\` = ? AND \`Month\` IN (?)
-      GROUP BY \`Device ID\`, \`Year\`, \`Type\`, \`CoD\`
-      HAVING Total_Production >= 0
-      ORDER BY Total_Production DESC
-    `, [type, selectedMonths]);
+    SELECT \`Device ID\`, \`Year\`, \`Type\`, \`CoD\`, ${monthSums}, SUM(CASE WHEN \`Actual\` = 0 THEN \`Estimated\` - \`Estimated_used\` ELSE \`Actual\` - \`Actual_used\` END) as Total_Production
+    FROM \`table\`
+    WHERE ${CoDYearCondition} AND \`Type\` = ? AND \`Month\` IN (?) AND \`Year\` = ?
+    GROUP BY \`Device ID\`, \`Year\`, \`Type\`, \`CoD\`
+    HAVING Total_Production >= 0
+    ORDER BY Total_Production DESC
+  `, [type, selectedMonths, year]);
+  
 
     return new Response(JSON.stringify(rows), {
       headers: { 'content-type': 'application/json' },

@@ -12,6 +12,7 @@ const FormComponent = () => {
   const [productionPeriodTo, setProductionPeriodTo] = useState("");
   const [type, setType] = useState("");
   const [organisation, _setOrganisation] = useState("");
+  const [year, setYear] = useState("");
   const router = useRouter();
   
   
@@ -35,6 +36,7 @@ const FormComponent = () => {
         productionPeriodFrom,
         productionPeriodTo,
         type,
+        year,
       }),
     });
 
@@ -97,6 +99,20 @@ const FormComponent = () => {
           className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
         />
       </div>
+      <div>
+  <label htmlFor="year" className="block text-sm font-medium">Year</label>
+  <select
+    id="year"
+    value={year}
+    onChange={(e) => setYear(e.target.value)}
+    className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+  >
+    <option value="">Select year</option>
+    <option value="2022">2022</option>
+    <option value="2023">2023</option>
+  </select>
+</div>
+
       <div>
         <label htmlFor="CoDYear" className="block text-sm font-medium">
           CoD Year
