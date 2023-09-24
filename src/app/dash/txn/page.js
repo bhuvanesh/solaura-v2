@@ -170,7 +170,7 @@ export default function Table() {
         <div className="bg-white shadow-md rounded-lg p-6 border-2">
           <div className="sm:flex sm:items-start">
             <div className="w-full text-center sm:mt-0 sm:text-left">
-              <h3 className="text-lg leading-6 font-medium text-sky-700 text-center">Transaction List</h3>
+              <h3 className="text-lg leading-6 font-medium text-white text-center bg-sky-800">Transaction List</h3>
               <button
                 onClick={downloadAsPDF}
                 className="bg-sky-700 hover:bg-sky-900 text-white font-bold py-2 px-4 rounded mt-4"
@@ -178,21 +178,23 @@ export default function Table() {
                 Download as PDF
               </button>
               <div className="mt-2">
+                <div className='py-2'>
                 <input
                   type="text"
                   placeholder="Search organisation"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                />
+                  className='border rounded-md p-2 border-sky-800'
+                /></div>
                 <div className="grid grid-cols-1 gap-2">
-                  <table className="table-auto w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+                  <table className="table-auto w-full divide-y divide-gray-200 border-1">
+                    <thead className="bg-sky-800 text-white rounded-md">
                       <tr>
-                        <th className="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider">Transaction ID</th>
-                        <th className="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider">Organisation</th>
-                        <th className="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        <th className="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider">Requirement</th>
-                        <th className="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider">revoke order</th>
+                        <th className="px-4 py-2 text-xs font-medium  uppercase tracking-wider">Transaction ID</th>
+                        <th className="px-4 py-2 text-xs font-medium  uppercase tracking-wider">Organisation</th>
+                        <th className="px-4 py-2 text-xs font-medium  uppercase tracking-wider">Status</th>
+                        <th className="px-4 py-2 text-xs font-medium  uppercase tracking-wider">Requirement</th>
+                        <th className="px-4 py-2 text-xs font-medium  uppercase tracking-wider">revoke order</th>
 
                       </tr>
                     </thead>
