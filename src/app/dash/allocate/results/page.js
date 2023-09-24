@@ -12,6 +12,7 @@ const Results = () => {
   const router = useRouter();
   const [remainingRequirement, setRemainingRequirement] = useState(parseInt(requirement));
   const [selectedTotalProduction, setSelectedTotalProduction] = useState(new Map());
+  const [isLoading, setIsLoading] = useState(false);
   
   const suggestMonths = () => {
     console.log("Starting Suggestion");
@@ -142,6 +143,7 @@ const handleMonthClick = (resultIndex, month, adjustedMonthValue) => {
 
 
   const handleSubmit = async () => {
+    setIsLoading(true);
     let remainingRequirement = parseInt(requirement);
     const selectedMonthsObject = {};
     let year = null;
@@ -175,17 +177,26 @@ const handleMonthClick = (resultIndex, month, adjustedMonthValue) => {
   
     if (updatedResults.message === 'Database updated successfully') {
       alert('Your order placed');
-
       const uniqueId = uuidv4();
-
       const response = await fetch('/api/buyer', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({ organisation, selectedMonths: selectedMonthsObject, uniqueId, year }),
       });
-      router.push(`/dash/allocate/results/payment?uniqueId=${uniqueId}`);
-
+  
+      const buyerResponse = await response.json();
+      if (buyerResponse.message === 'Buyer Database updated successfully!') {
+        router.push(`/dash/allocate/results/payment?uniqueId=${uniqueId}`);
+      } else {
+        alert('Error updating Buyer Database');
+      }
+    } else {
+      alert('Error updating Database');
     }
+    setIsLoading(false);
+
   };
   
 
@@ -267,6 +278,14 @@ return (
         ))}
       </tbody>
     </table>
+    {isLoading && (
+  <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-gray-900 bg-opacity-50">
+    <svg className="animate-spin h-10 w-10 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+    </svg>
+  </div>
+)}
   </div>
 );
 };
