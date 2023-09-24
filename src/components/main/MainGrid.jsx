@@ -17,6 +17,7 @@ import EstUse from "./charts/EstUse";
 import BuyerList from "./rankCards/BuyerList";
 
 import { prisma } from "@/lib/prisma";
+import FooterCard from "./cards/footerCard";
 
 
 
@@ -28,7 +29,8 @@ const getCardData = async (currYear) => {
   const [reg, pen, pip, act] = await prisma.$transaction([
     prisma.inventory.aggregate({
       _sum: {
-        Estimated: true,     
+        Estimated: true,
+        Estimated_used: true     
       },
       where: {
         Registered: {
@@ -70,11 +72,22 @@ const getCardData = async (currYear) => {
         Year: currYear
       },
     }),
+    // prisma.inventory.aggregate({
+    //   _sum: {
+    //     Estimated_used: true,
+    //   },
+    //   where: {
+    //     Registered: {
+    //       equals: "YES",
+    //     },
+    //     Year: currYear
+    //   },
+    // }),
   ]);
 
 
   // console.log(await res.json())
-  return { registered: reg._sum.Estimated, pending: pen._sum.Estimated, pipeline: pip._sum.Estimated, actual: act._sum.Actual };
+  return { registered: reg._sum.Estimated, pending: pen._sum.Estimated, pipeline: pip._sum.Estimated, actual: act._sum.Actual, usage: reg._sum.Estimated_used };
 };
 
 const getEstActData = async (currYear) => {
@@ -157,7 +170,7 @@ const MainGrid = async () => {
   let currYear = new Date().getFullYear();
 
   const cardData = await getCardData(currYear);
-  // console.log(cardData)
+  console.log(cardData)
   const estActMonthData = await getEstActData(currYear);
   const estUseMonthData = await getEstUseData(currYear)
   console.log(estUseMonthData)
@@ -172,13 +185,15 @@ const MainGrid = async () => {
           balance={"Actual: " + cardData.actual + " kWh"}
         />
         <InfoCard2
-          titleText={"Pending Devices "}
-          bodyText={"Estimated: " + cardData.pending}
+          titleText={"Usage Stats"}
+          bodyText={"Committed: " + cardData.usage}
+          bodyText2={"Balance: " + Math.floor(((cardData.registered - cardData.usage)/cardData.registered)*100) + " %"}
           Icon={WrenchScrewdriverIcon}
         />
         <InfoCard2
-          titleText={"Pipeline Devices"}
-          bodyText={"Estimated: " + cardData.pipeline}
+          titleText={"Under Registration"}
+          bodyText={"Pending: " + cardData.pending}
+          bodyText2={"Pipeline: " + cardData.pipeline + " Kwh"}
           Icon={CircleStackIcon}
         />
            <Card className="col-span-2 h-auto">
@@ -195,6 +210,10 @@ const MainGrid = async () => {
         <Card className="">
             <SellerList/>
         </Card>
+        <div className="col-span-3 mb-3">
+        <FooterCard/>
+        </div>
+        
      
       </div>
     </div>
