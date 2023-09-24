@@ -17,7 +17,7 @@ import EstUse from "./charts/EstUse";
 import BuyerList from "./rankCards/BuyerList";
 
 import { prisma } from "@/lib/prisma";
-import FooterCard from "./cards/footerCard";
+import FooterCard from "./cards/FooterCard";
 
 
 
