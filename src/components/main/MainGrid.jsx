@@ -20,7 +20,7 @@ import { prisma } from "@/lib/prisma";
 
 
 
-const getCardData = async () => {
+const getCardData = async (currYear) => {
   // const res = await fetch("/api/data/cards", {
   //   // next: { revalidate: 5 },
   // });
@@ -34,6 +34,7 @@ const getCardData = async () => {
         Registered: {
           equals: "YES",
         },
+        Year: currYear
       },
     }),
     prisma.inventory.aggregate({
@@ -44,6 +45,7 @@ const getCardData = async () => {
         Registered: {
           equals: "PENDING",
         },
+        Year: currYear
       },
     }),
     prisma.inventory.aggregate({
@@ -54,6 +56,7 @@ const getCardData = async () => {
         Registered: {
           equals: "PIPELINE",
         },
+        Year: currYear
       },
     }),
     prisma.inventory.aggregate({
@@ -64,6 +67,7 @@ const getCardData = async () => {
         Registered: {
           equals: "YES",
         },
+        Year: currYear
       },
     }),
   ]);
@@ -73,7 +77,7 @@ const getCardData = async () => {
   return { registered: reg._sum.Estimated, pending: pen._sum.Estimated, pipeline: pip._sum.Estimated, actual: act._sum.Actual };
 };
 
-const getEstActData = async () => {
+const getEstActData = async (currYear) => {
   // const res = await fetch("/api/data/months")
   const [data] = await prisma.$transaction([
     //what is required? Monthwise Actuals
@@ -88,6 +92,7 @@ const getEstActData = async () => {
         Registered: {
           equals: "YES",
         },
+        Year: currYear
       },
     }),
 
@@ -109,7 +114,7 @@ const getEstActData = async () => {
   // return res.json();
 };
 
-const getEstUseData = async () => {
+const getEstUseData = async (currYear) => {
     // const res = await fetch("/api/data/usage");
     const [data] = await prisma.$transaction([
       //what is required? Monthwise Actuals
@@ -125,6 +130,7 @@ const getEstUseData = async () => {
           Registered: {
             equals: "YES",
           },
+          Year: currYear
         },
       }),
   
@@ -148,14 +154,14 @@ const getEstUseData = async () => {
 
 const MainGrid = async () => {
 
+  let currYear = new Date().getFullYear();
 
-  const cardData = await getCardData();
+  const cardData = await getCardData(currYear);
   // console.log(cardData)
-  const estActMonthData = await getEstActData();
-  const estUseMonthData = await getEstUseData()
+  const estActMonthData = await getEstActData(currYear);
+  const estUseMonthData = await getEstUseData(currYear)
   console.log(estUseMonthData)
   //   console.log(cardData, estActMonthData);
-  let currYear = new Date().getFullYear();
   return (
     <div className="w-full">
       <div className="grid grid-cols-3 gap-2 gap-y-3 mx-1 mt-2">
