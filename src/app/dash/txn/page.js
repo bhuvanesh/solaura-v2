@@ -16,8 +16,43 @@ export default function Table() {
     const [data, setData] = useState([]);
     const [activeRow, setActiveRow] = useState(null);
     const [searchQuery, setSearchQuery] = useState(''); // State storing the current search term
-
-
+    const confirmDelete = (row) => {
+      if (window.confirm('Do you really want to delete this?')) {
+        handleDelete(row).then(() => {
+          window.location.reload(); // Refresh the page after deletion
+        });
+      }
+    };
+    const handleDelete = async (row) => {
+      const transactionId = row['Transaction ID'];
+    
+      for (const detail of row.details) {
+        const deviceId = detail['Device ID'];
+        const monthData = months.reduce((acc, m) => {
+          if (detail[m]) {
+            acc[m] = detail[m];
+          }
+          return acc;
+        }, {});
+    
+        const response = await fetch('/api/cancel', {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ transactionId, deviceId, monthData }),
+        });
+    
+        if (response.ok) {
+          // Remove the row from the data state
+          setData((prevData) =>
+            prevData.filter((item) => item['Transaction ID'] !== transactionId)
+          );
+        } else {
+          console.error('Failed to delete the row');
+        }
+      }
+    };
 
     useEffect(() => {
         fetchData().then(data => {
@@ -157,6 +192,8 @@ export default function Table() {
                         <th className="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider">Organisation</th>
                         <th className="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                         <th className="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider">Requirement</th>
+                        <th className="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider">revoke order</th>
+
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200 text-left">
@@ -167,6 +204,13 @@ export default function Table() {
                             <td className="px-4 py-2 whitespace-normal text-sm text-gray-500">{row['Organisation']}</td>
                             <td className="px-4 py-2 whitespace-normal text-sm text-gray-500">{row['Status']}</td>
                             <td className="px-4 py-2 whitespace-normal text-sm text-gray-500">{row['total']}</td>
+                            <td className="px-4 py-2 whitespace-normal text-sm text-gray-500">
+                            <td className="px-4 py-2 whitespace-normal text-sm text-gray-500">
+    {row['Status'] !== 'Revoked' && (
+      <button onClick={() => confirmDelete(row)}>click here to revoke order</button>
+    )}
+  </td>
+</td>
                           </tr>
                           {activeRow === i &&
                             <tr>
