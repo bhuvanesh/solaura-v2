@@ -4,7 +4,7 @@ const DataTable = ({ data }) => {
     }
 
     return (
-    <div style={{ overflowX: 'auto', height: '100vh' ,width:'200vh'}}>
+    <div style={{ overflowX: 'auto', height: '100vh' ,width:'95vw'}}>
       <table className="min-w-full divide-y divide-gray-200">
         <thead className="bg-gray-50">
           <tr>
@@ -20,7 +20,7 @@ const DataTable = ({ data }) => {
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
           {data.map((row, rowIndex) => (
-            <tr key={rowIndex}>
+            <tr key={rowIndex} className="hover:bg-slate-100 focus:bg-slate-200" tabIndex={rowIndex}>
               {Object.values(row).map((value, valueIndex) => (
                 <td
                   key={valueIndex}

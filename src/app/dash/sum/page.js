@@ -38,15 +38,16 @@ const DownloadPage = () => {
       <button onClick={downloadAsExcel} className="bg-blue-500 text-white px-4 py-2 rounded">
         Download as Excel
       </button>
-      <div className="mt-8">
+      <div className="mt-8 pb-4">
         <h1>Summary</h1>
         <input
           type="text"
           placeholder="Search by Group"
           value={searchTerm}
           onChange={handleSearchChange}
-          className="border px-4 py-2 rounded"
+          className="border px-4 py-2 rounded-md"
         />
+        {/* <span className='h-4'></span> */}
         <DataTable data={filteredData} />
       </div>
     </div>
