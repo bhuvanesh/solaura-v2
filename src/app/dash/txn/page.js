@@ -16,8 +16,43 @@ export default function Table() {
     const [data, setData] = useState([]);
     const [activeRow, setActiveRow] = useState(null);
     const [searchQuery, setSearchQuery] = useState(''); // State storing the current search term
-
-
+    const confirmDelete = (row) => {
+      if (window.confirm('Do you really want to delete this?')) {
+        handleDelete(row).then(() => {
+          window.location.reload(); // Refresh the page after deletion
+        });
+      }
+    };
+    const handleDelete = async (row) => {
+      const transactionId = row['Transaction ID'];
+    
+      for (const detail of row.details) {
+        const deviceId = detail['Device ID'];
+        const monthData = months.reduce((acc, m) => {
+          if (detail[m]) {
+            acc[m] = detail[m];
+          }
+          return acc;
+        }, {});
+    
+        const response = await fetch('/api/cancel', {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ transactionId, deviceId, monthData }),
+        });
+    
+        if (response.ok) {
+          // Remove the row from the data state
+          setData((prevData) =>
+            prevData.filter((item) => item['Transaction ID'] !== transactionId)
+          );
+        } else {
+          console.error('Failed to delete the row');
+        }
+      }
+    };
 
     useEffect(() => {
         fetchData().then(data => {
@@ -86,6 +121,7 @@ export default function Table() {
   
               const deviceColumns = [
                   { header: 'Device ID', dataKey: 'Device ID' },
+                  { header: 'Year', dataKey: 'Year' },   
                   ...months.map(month => (
                       detail[month]
                           ? { header: month, dataKey: month }
@@ -101,7 +137,8 @@ export default function Table() {
                           }
                           return acc;
                       },
-                  {'Device ID': detail['Device ID']}
+                  {'Device ID': detail['Device ID'],
+                  'Year': detail['Year']}
                   )
               ]
   
@@ -128,64 +165,76 @@ export default function Table() {
   console.log(filteredData);
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100 px-4 sm:px-6 lg:px-8 py-6">
-      <div className="w-full max-w-md">
-        <div className="bg-white shadow-md rounded-lg px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+    <div className="flex items-center justify-center min-h-screen w-full px-4 sm:px-6 lg:px-8 py-6">
+      <div className="max-w-screen-xl mx-auto">
+        <div className="bg-white shadow-md rounded-lg p-6 border-2">
           <div className="sm:flex sm:items-start">
-            <div className="w-full mt-3 text-center sm:mt-0 sm:text-left">
-              <h3 className="text-lg leading-6 font-medium text-gray-900">Transaction Data</h3>
+            <div className="w-full text-center sm:mt-0 sm:text-left">
+              <h3 className="text-lg leading-6 font-medium text-white text-center bg-sky-800">Transaction List</h3>
               <button
                 onClick={downloadAsPDF}
-                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4"
+                className="bg-sky-700 hover:bg-sky-900 text-white font-bold py-2 px-4 rounded mt-4"
               >
                 Download as PDF
               </button>
               <div className="mt-2">
+                <div className='py-2'>
                 <input
-         type="text"
-         placeholder="Search organisation"
-         value={searchQuery}
-         onChange={(e) => setSearchQuery(e.target.value)}
-       />
+                  type="text"
+                  placeholder="Search organisation"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className='border rounded-md p-2 border-sky-800'
+                /></div>
                 <div className="grid grid-cols-1 gap-2">
-                <table className="table-auto w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+                  <table className="table-auto w-full divide-y divide-gray-200 border-1">
+                    <thead className="bg-sky-800 text-white rounded-md">
                       <tr>
-                        <th className="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider">Transaction ID</th>
-                        <th className="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider">Organisation</th>
-                        <th className="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        <th className="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider">Requirement</th>
+                        <th className="px-4 py-2 text-xs font-medium  uppercase tracking-wider">Transaction ID</th>
+                        <th className="px-4 py-2 text-xs font-medium  uppercase tracking-wider">Organisation</th>
+                        <th className="px-4 py-2 text-xs font-medium  uppercase tracking-wider">Status</th>
+                        <th className="px-4 py-2 text-xs font-medium  uppercase tracking-wider">Requirement</th>
+                        <th className="px-4 py-2 text-xs font-medium  uppercase tracking-wider">revoke order</th>
+
                       </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                    {(searchQuery.length > 0 ? filteredData : data).map((row, i) => (
+                    <tbody className="bg-white divide-y divide-gray-200 text-left">
+                      {(searchQuery.length > 0 ? filteredData : data).map((row, i) => (
                         <React.Fragment key={i}>
-                            <tr onClick={() => activeRow === i ? setActiveRow(null) : setActiveRow(i)} className="hover:bg-gray-100 cursor-pointer">
-                                <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">{row['Transaction ID']}</td>
-                                <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">{row['Organisation']}</td>
-                                <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">{row['Status']}</td>
-                                <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">{row['total']}</td>
+                          <tr onClick={() => activeRow === i ? setActiveRow(null) : setActiveRow(i)} className="hover:bg-gray-100 cursor-pointer">
+                            <td className="px-4 py-2 whitespace-normal text-sm text-gray-500">{row['Transaction ID']}</td>
+                            <td className="px-4 py-2 whitespace-normal text-sm text-gray-500">{row['Organisation']}</td>
+                            <td className="px-4 py-2 whitespace-normal text-sm text-gray-500">{row['Status']}</td>
+                            <td className="px-4 py-2 whitespace-normal text-sm text-gray-500">{row['total']}</td>
+                            <td className="px-4 py-2 whitespace-normal text-sm text-gray-500">
+                            <td className="px-4 py-2 whitespace-normal text-sm text-gray-500">
+    {row['Status'] !== 'Revoked' && (
+      <button onClick={() => confirmDelete(row)} className='bg-red-200 rounded-md text-black p-1 hover:bg-red-300'>Revoke Txn</button>
+    )}
+  </td>
+</td>
+                          </tr>
+                          {activeRow === i &&
+                            <tr>
+                              <td colSpan="5" className="px-4 py-4">
+                                {row.details.map((detail, i) => (
+                                  <div key={i}>
+                                    <p className="font-semibold text-sm">Device ID: {detail['Device ID']}</p>
+                                    <p className="font-semibold text-sm">year: {detail['year']}</p>
+                                    {months.map(
+                                      (month, j) =>
+                                        detail[month] &&
+                                        <p key={j} className="text-sm px-4">
+                                          {`${month}: ${detail[month]}`}
+                                        </p>
+                                    )}
+                                  </div>
+                                ))}
+                              </td>
                             </tr>
-                            {activeRow === i &&
-                                <tr>
-                                    <td colSpan="5" className="px-4 py-4">
-                                        {row.details.map((detail, i) => (
-                                        <div key={i}>
-                                            <p className="font-semibold text-sm">Device ID: {detail['Device ID']}</p>
-                                            {months.map(
-                                                (month, j) =>
-                                                detail[month] &&
-                                                <p key={j} className="text-sm px-4">
-                                                    {`${month}: ${detail[month]}`}
-                                                </p>
-                                            )}
-                                        </div>
-                                        ))}
-                                    </td>
-                                </tr>
-                            }
+                          }
                         </React.Fragment>
-                    ))}
+                      ))}
                     </tbody>
                   </table>
                 </div>
@@ -195,5 +244,5 @@ export default function Table() {
         </div>
       </div>
     </div>
- );
+  );
 }

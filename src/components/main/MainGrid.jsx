@@ -17,26 +17,29 @@ import EstUse from "./charts/EstUse";
 import BuyerList from "./rankCards/BuyerList";
 
 import { prisma } from "@/lib/prisma";
+import FooterCard from "./cards/FooterCard";
 
 
 
-const getCardData = async () => {
+const getCardData = async (currYear) => {
   // const res = await fetch("/api/data/cards", {
   //   // next: { revalidate: 5 },
   // });
 
   const [reg, pen, pip, act] = await prisma.$transaction([
-    prisma.table.aggregate({
+    prisma.inventory.aggregate({
       _sum: {
-        Estimated: true,     
+        Estimated: true,
+        Estimated_used: true     
       },
       where: {
         Registered: {
           equals: "YES",
         },
+        Year: currYear
       },
     }),
-    prisma.table.aggregate({
+    prisma.inventory.aggregate({
       _sum: {
         Estimated: true,
       },
@@ -44,9 +47,10 @@ const getCardData = async () => {
         Registered: {
           equals: "PENDING",
         },
+        Year: currYear
       },
     }),
-    prisma.table.aggregate({
+    prisma.inventory.aggregate({
       _sum: {
         Estimated: true,
       },
@@ -54,9 +58,10 @@ const getCardData = async () => {
         Registered: {
           equals: "PIPELINE",
         },
+        Year: currYear
       },
     }),
-    prisma.table.aggregate({
+    prisma.inventory.aggregate({
       _sum: {
         Actual: true,
       },
@@ -64,21 +69,33 @@ const getCardData = async () => {
         Registered: {
           equals: "YES",
         },
+        Year: currYear
       },
     }),
+    // prisma.inventory.aggregate({
+    //   _sum: {
+    //     Estimated_used: true,
+    //   },
+    //   where: {
+    //     Registered: {
+    //       equals: "YES",
+    //     },
+    //     Year: currYear
+    //   },
+    // }),
   ]);
 
 
   // console.log(await res.json())
-  return { registered: reg._sum.Estimated, pending: pen._sum.Estimated, pipeline: pip._sum.Estimated, actual: act._sum.Actual };
+  return { registered: reg._sum.Estimated, pending: pen._sum.Estimated, pipeline: pip._sum.Estimated, actual: act._sum.Actual, usage: reg._sum.Estimated_used };
 };
 
-const getEstActData = async () => {
+const getEstActData = async (currYear) => {
   // const res = await fetch("/api/data/months")
   const [data] = await prisma.$transaction([
     //what is required? Monthwise Actuals
 
-    prisma.table.groupBy({
+    prisma.inventory.groupBy({
       by: ["Month", "Year"],
       _sum: {
         Actual: true,
@@ -88,6 +105,7 @@ const getEstActData = async () => {
         Registered: {
           equals: "YES",
         },
+        Year: currYear
       },
     }),
 
@@ -109,12 +127,12 @@ const getEstActData = async () => {
   // return res.json();
 };
 
-const getEstUseData = async () => {
+const getEstUseData = async (currYear) => {
     // const res = await fetch("/api/data/usage");
     const [data] = await prisma.$transaction([
       //what is required? Monthwise Actuals
   
-      prisma.table.groupBy({
+      prisma.inventory.groupBy({
         by: ["Month", "Year"],
         _sum: {
           Estimated: true,
@@ -125,6 +143,7 @@ const getEstUseData = async () => {
           Registered: {
             equals: "YES",
           },
+          Year: currYear
         },
       }),
   
@@ -148,14 +167,14 @@ const getEstUseData = async () => {
 
 const MainGrid = async () => {
 
+  let currYear = new Date().getFullYear();
 
-  const cardData = await getCardData();
-  // console.log(cardData)
-  const estActMonthData = await getEstActData();
-  const estUseMonthData = await getEstUseData()
+  const cardData = await getCardData(currYear);
+  console.log(cardData)
+  const estActMonthData = await getEstActData(currYear);
+  const estUseMonthData = await getEstUseData(currYear)
   console.log(estUseMonthData)
   //   console.log(cardData, estActMonthData);
-  let currYear = new Date().getFullYear();
   return (
     <div className="w-full">
       <div className="grid grid-cols-3 gap-2 gap-y-3 mx-1 mt-2">
@@ -166,13 +185,15 @@ const MainGrid = async () => {
           balance={"Actual: " + cardData.actual + " kWh"}
         />
         <InfoCard2
-          titleText={"Pending Devices "}
-          bodyText={"Estimated: " + cardData.pending}
+          titleText={"Usage Stats"}
+          bodyText={"Committed: " + cardData.usage}
+          bodyText2={"Balance: " + Math.floor(((cardData.registered - cardData.usage)/cardData.registered)*100) + " %"}
           Icon={WrenchScrewdriverIcon}
         />
         <InfoCard2
-          titleText={"Pipeline Devices"}
-          bodyText={"Estimated: " + cardData.pipeline}
+          titleText={"Under Registration"}
+          bodyText={"Pending: " + cardData.pending}
+          bodyText2={"Pipeline: " + cardData.pipeline + " Kwh"}
           Icon={CircleStackIcon}
         />
            <Card className="col-span-2 h-auto">
@@ -189,6 +210,10 @@ const MainGrid = async () => {
         <Card className="">
             <SellerList/>
         </Card>
+        <div className="col-span-3 mb-3">
+        <FooterCard/>
+        </div>
+        
      
       </div>
     </div>

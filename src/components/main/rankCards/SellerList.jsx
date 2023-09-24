@@ -5,7 +5,7 @@ import {ShoppingBagIcon} from '@heroicons/react/24/outline'
 const SellerList = () => {
   return (
     <div className='w-full md:col-span-2 relative m-auto p-4 border rounded-lg bg-white overflow-scroll'>
-        <h1>Top Energy Sellers</h1>
+        <h1>Top Energy Generators</h1>
         <ul>
             {sellers.map((item, id)=>{
                 return(

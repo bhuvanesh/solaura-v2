@@ -12,6 +12,7 @@ const Results = () => {
   const router = useRouter();
   const [remainingRequirement, setRemainingRequirement] = useState(parseInt(requirement));
   const [selectedTotalProduction, setSelectedTotalProduction] = useState(new Map());
+  const [isLoading, setIsLoading] = useState(false);
   
   const suggestMonths = () => {
     console.log("Starting Suggestion");
@@ -63,9 +64,9 @@ const Results = () => {
   
 
   const [originalResults, setOriginalResults] = React.useState(null);
-useEffect(() => {
-  setOriginalResults(JSON.parse(JSON.stringify(results)));
-}, [originalResults]);
+  useEffect(() => {
+    setOriginalResults(JSON.parse(JSON.stringify(results)));
+  }, [results]);
 const handleTotalProductionClick = (resultIndex) => {
   const key = `${resultIndex}-Total_Production`;
   const currentValue = selectedTotalProduction.get(key);
@@ -142,8 +143,11 @@ const handleMonthClick = (resultIndex, month, adjustedMonthValue) => {
 
 
   const handleSubmit = async () => {
+    setIsLoading(true);
     let remainingRequirement = parseInt(requirement);
     const selectedMonthsObject = {};
+    let year = null;
+
   
     selectedMonths.forEach((value, key) => {
       if (value && remainingRequirement > 0) {
@@ -151,6 +155,9 @@ const handleMonthClick = (resultIndex, month, adjustedMonthValue) => {
         const deviceId = results[parseInt(resultIndex)]['Device ID'];
         if (!selectedMonthsObject[deviceId]) {
           selectedMonthsObject[deviceId] = {};
+        }
+        if (!year) {
+          year = results[parseInt(resultIndex)]['Year'];
         }
   
         const monthValue = results[parseInt(resultIndex)][month];
@@ -170,16 +177,26 @@ const handleMonthClick = (resultIndex, month, adjustedMonthValue) => {
   
     if (updatedResults.message === 'Database updated successfully') {
       alert('Your order placed');
-
       const uniqueId = uuidv4();
-
       const response = await fetch('/api/buyer', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ organisation, selectedMonths: selectedMonthsObject, uniqueId }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ organisation, selectedMonths: selectedMonthsObject, uniqueId, year }),
       });
-      router.back();
+  
+      const buyerResponse = await response.json();
+      if (buyerResponse.message === 'Buyer Database updated successfully!') {
+        router.push(`/dash/allocate/results/payment?uniqueId=${uniqueId}`);
+      } else {
+        alert('Error updating Buyer Database');
+      }
+    } else {
+      alert('Error updating Database');
     }
+    setIsLoading(false);
+
   };
   
 
@@ -202,30 +219,30 @@ return (
       <button
         type="button"
         onClick={suggestMonths}
-        className="inline-flex items-center px-4 py-2 mr-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+        className="inline-flex items-center px-4 py-2 mr-2 text-sm font-medium text-white bg-teal-400 border border-transparent rounded-md shadow-sm hover:bg-teal-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
       >
         Apply Suggestions
       </button>
       <button
         type="button"
         onClick={removeSuggestion}
-        className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+        className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-red-500 border border-transparent rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
       >
         Remove Suggestions
       </button>
     </div>
-    <div className="flex justify-end">
+    <div className="flex justify-end pb-2">
       <button
         type="button"
         onClick={handleSubmit}
-        className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+        className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-sky-800 border border-transparent rounded-md shadow-sm hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
       >
         Submit
       </button>
     </div>
     <table className="w-full table-auto border-collapse">
-      <thead>
-        <tr className="bg-gray-200 text-gray-700">
+      <thead className=''>
+        <tr className="bg-sky-800 text-white">
           <th className="px-4 py-2">Device ID</th>
           <th className="px-4 py-2">Year</th>
           <th className="px-4 py-2">Type</th>
@@ -241,7 +258,7 @@ return (
             <td className="border px-4 py-2">{result.Type}</td>
             <td className="border px-4 py-2">{result.CoD}</td>
             <td
-              className={`border px-4 py-2 cursor-pointer ${
+              className={`border px-4 py-2 cursor-pointer hover:bg-indigo-100 ${
                 selectedTotalProduction.get(`${index}-Total_Production`)
                   ? "bg-indigo-200"
                   : ""
@@ -261,6 +278,14 @@ return (
         ))}
       </tbody>
     </table>
+    {isLoading && (
+  <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-gray-900 bg-opacity-50">
+    <svg className="animate-spin h-10 w-10 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+    </svg>
+  </div>
+)}
   </div>
 );
 };
