@@ -219,30 +219,30 @@ return (
       <button
         type="button"
         onClick={suggestMonths}
-        className="inline-flex items-center px-4 py-2 mr-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+        className="inline-flex items-center px-4 py-2 mr-2 text-sm font-medium text-white bg-teal-400 border border-transparent rounded-md shadow-sm hover:bg-teal-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
       >
         Apply Suggestions
       </button>
       <button
         type="button"
         onClick={removeSuggestion}
-        className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+        className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-red-500 border border-transparent rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
       >
         Remove Suggestions
       </button>
     </div>
-    <div className="flex justify-end">
+    <div className="flex justify-end pb-2">
       <button
         type="button"
         onClick={handleSubmit}
-        className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+        className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-sky-800 border border-transparent rounded-md shadow-sm hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
       >
         Submit
       </button>
     </div>
     <table className="w-full table-auto border-collapse">
-      <thead>
-        <tr className="bg-gray-200 text-gray-700">
+      <thead className=''>
+        <tr className="bg-sky-800 text-white">
           <th className="px-4 py-2">Device ID</th>
           <th className="px-4 py-2">Year</th>
           <th className="px-4 py-2">Type</th>
@@ -258,7 +258,7 @@ return (
             <td className="border px-4 py-2">{result.Type}</td>
             <td className="border px-4 py-2">{result.CoD}</td>
             <td
-              className={`border px-4 py-2 cursor-pointer ${
+              className={`border px-4 py-2 cursor-pointer hover:bg-indigo-100 ${
                 selectedTotalProduction.get(`${index}-Total_Production`)
                   ? "bg-indigo-200"
                   : ""

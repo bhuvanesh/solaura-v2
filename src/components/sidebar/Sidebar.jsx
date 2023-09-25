@@ -1,6 +1,6 @@
 import React from 'react'
 import ListItem from './ListItem'
-import {PresentationChartBarIcon, SparklesIcon, ArrowUpTrayIcon} from "@heroicons/react/24/solid"
+import {PresentationChartBarIcon, SparklesIcon, ArrowUpTrayIcon, BanknotesIcon, DocumentMagnifyingGlassIcon} from "@heroicons/react/24/solid"
 import Link from 'next/link'
 
 const Sidebar = () => {
@@ -10,8 +10,8 @@ const Sidebar = () => {
         <ListItem text={'Dashboard Home'} navLink={'/dash'} Icon={PresentationChartBarIcon}/>
         <ListItem text={'Allocate'} navLink={'/dash/allocate'} Icon={SparklesIcon}/>
         <ListItem text={'Upload Data'} navLink={'/dash/upload'} Icon={ArrowUpTrayIcon}/>
-        <ListItem text={'Transactions'} navLink={'/dash/txn'} Icon={SparklesIcon}/>
-        <ListItem text={'Summary'} navLink={'/dash/sum'} Icon={SparklesIcon}/>        
+        <ListItem text={'Transactions'} navLink={'/dash/txn'} Icon={BanknotesIcon}/>
+        <ListItem text={'Summary'} navLink={'/dash/sum'} Icon={DocumentMagnifyingGlassIcon}/>        
     </div>
 </div>
   )

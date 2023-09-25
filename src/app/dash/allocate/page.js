@@ -74,6 +74,8 @@ const FormComponent = () => {
     "December",
   ];
   return (
+  
+    <div className='p-8'>
     <div className="space-y-4">
       <div>
         <label htmlFor="organisation" className="block text-sm font-medium">
@@ -84,7 +86,7 @@ const FormComponent = () => {
           id="organisation"
           value={organisation}
           onChange={(e) => _setOrganisation(e.target.value)}
-          className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          className="p-1 block w-full mt-1 border-sky-800 border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
         />
       </div>
       <div>
@@ -96,7 +98,7 @@ const FormComponent = () => {
           id="requirement"
           value={requirement}
           onChange={(e) => _setRequirement(e.target.value)}
-          className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          className="p-1  border-sky-800 border block w-full mt-1 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
         />
       </div>
       <div>
@@ -105,7 +107,7 @@ const FormComponent = () => {
     id="year"
     value={year}
     onChange={(e) => setYear(e.target.value)}
-    className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+    className="p-2 border-sky-800 border block w-full mt-1 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
   >
     <option value="">Select year</option>
     <option value="2022">2022</option>
@@ -121,7 +123,7 @@ const FormComponent = () => {
           id="CoDYear"
           value={CoDYear}
           onChange={(e) => setCoDYear(e.target.value)}
-          className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          className="p-2 border-sky-800 border block w-full mt-1 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
         >
           <option value="">Select year</option>
           <option value="within5">Within 5 years</option>
@@ -138,7 +140,7 @@ const FormComponent = () => {
             id="productionPeriodFrom"
             value={productionPeriodFrom}
             onChange={(e) => setProductionPeriodFrom(e.target.value)}
-            className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            className=" p-2 border-sky-800 border block w-full mt-1  rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
           >
             <option value="">Select month</option>
             {months.map((month, index) => (
@@ -156,7 +158,7 @@ const FormComponent = () => {
             id="productionPeriodTo"
             value={productionPeriodTo}
             onChange={(e) => setProductionPeriodTo(e.target.value)}
-            className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            className="p-2 border-sky-800 border block w-full mt-1  rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
           >
             <option value="">Select month</option>
             {months.map((month, index) => (
@@ -175,7 +177,7 @@ const FormComponent = () => {
           id="type"
           value={type}
           onChange={(e) => setType(e.target.value)}
-          className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          className="p-2 border-sky-800 border block w-full mt-1  rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
         >
           <option value="">Select type</option>
           <option value="Solar">Solar</option>
@@ -187,12 +189,14 @@ const FormComponent = () => {
         <button
           type="button"
           onClick={handleSearch}
-          className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-sky-800 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
         >
           Search
         </button>
       </div>
     </div>
+    </div>
+    
   );
 };
 
