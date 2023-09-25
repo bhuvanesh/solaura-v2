@@ -180,6 +180,7 @@ const FormComponent = () => {
           <option value="">Select type</option>
           <option value="Solar">Solar</option>
           <option value="Wind">Wind</option>
+          <option value="Both">Both</option>
         </select>
       </div>
       <div className="flex justify-end space-x-4">
