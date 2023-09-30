@@ -30,6 +30,7 @@ export async function POST(request) {
       ORDER BY Total_Production DESC
     `, type === 'Both' ? [selectedMonths, year] : [type, selectedMonths, year]);
   
+   
 
     return new Response(JSON.stringify(rows), {
       headers: { 'content-type': 'application/json' },
