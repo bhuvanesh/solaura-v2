@@ -6,11 +6,17 @@ import DataTable from "@/components/DataTable";
 const DownloadPage = () => {
   const [data, setData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedYear, setSelectedYear] = useState(null);
 
   const fetchData = async () => {
-    const response = await fetch("/api/sum"); // Replace '/api/your-route' with the actual route to your route.js file
+    const response = await fetch("/api/sum");
     const data = await response.json();
     setData(data);
+
+    // Set the selectedYear after fetching the data
+    const uniqueYears = Array.from(new Set(data.map((item) => item["Year"])));
+    const years = uniqueYears.sort((a, b) => b - a);
+    setSelectedYear(years[0]);
   };
 
   useEffect(() => {
@@ -28,14 +34,25 @@ const DownloadPage = () => {
     setSearchTerm(e.target.value);
   };
 
-  const filteredData = data.filter((item) =>
-    item["Group"].toLowerCase().includes(searchTerm.toLowerCase())
+  const handleYearChange = (e) => {
+    setSelectedYear(parseInt(e.target.value));
+  };
+
+  const uniqueYears = Array.from(new Set(data.map((item) => item["Year"])));
+  const years = uniqueYears.sort((a, b) => b - a);
+
+  const filteredData = data.filter(
+    (item) =>
+      item["Group"].toLowerCase().includes(searchTerm.toLowerCase()) &&
+      item["Year"] === selectedYear
   );
 
   return (
     <div>
       <div className="py-2">
-      <h1 className="text-white bg-sky-800 text-center w-full">Device Summary</h1>
+        <h1 className="text-white bg-sky-800 text-center w-full">
+          Device Summary
+        </h1>
       </div>
       <button
         onClick={downloadAsExcel}
@@ -44,19 +61,30 @@ const DownloadPage = () => {
         Download as Excel
       </button>
       <div className="pt-8 pb-4">
-       
         <span className="">
-        <input
-          type="text"
-          placeholder="Search by Group"
-          value={searchTerm}
-          onChange={handleSearchChange}
-          className="border px-4 py-2 rounded-md border-sky-800"
-        />
+          <input
+            type="text"
+            placeholder="Search by Group"
+            value={searchTerm}
+            onChange={handleSearchChange}
+            className="border px-4 py-2 rounded-md border-sky-800"
+          />
         </span>
-        {/* <span className='h-4'></span> */}
+        {selectedYear && (
+          <select
+            value={selectedYear}
+            onChange={handleYearChange}
+            className="border px-4 py-2 rounded-md border-sky-800"
+          >
+            {years.map((year) => (
+              <option key={year} value={year}>
+                {year}
+              </option>
+            ))}
+          </select>
+        )}
         <div className="pt-4">
-        <DataTable data={filteredData} />
+          <DataTable data={filteredData} />
         </div>
       </div>
     </div>
