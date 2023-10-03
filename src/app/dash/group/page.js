@@ -1,9 +1,8 @@
 "use client"
 import { useState, useEffect } from 'react';
+import { Transition } from '@headlessui/react';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
-import { Transition } from '@headlessui/react';
-
 
 
 
@@ -13,25 +12,7 @@ const Groups = () => {
   const [selectedGroup, setSelectedGroup] = useState('');
   const [selectedGroupDetails, setSelectedGroupDetails] = useState(null);
 
-  useEffect(() => {
-    const fetchGroups = async () => {
-      try {
-        const response = await fetch('/api/group'); // Replace '/api/groups' with the path to your API route
-        const data = await response.json();
-        setGroups(data);
 
-        // Set the first group as the selected group
-        if (data.length > 0) {
-          setSelectedGroup(data[0].Group);
-          setSelectedGroupDetails(data[0]);
-        }
-      } catch (error) {
-        console.error('Error fetching groups:', error);
-      }
-    };
-
-    fetchGroups();
-  }, []);
   const handleDownload = () => {
     const doc = new jsPDF();
     const groupName = selectedGroup;
@@ -53,13 +34,52 @@ const Groups = () => {
   
     doc.save(`${groupName}.pdf`);
   };
+
+useEffect(() => {
+  const fetchGroups = async () => {
+    try {
+      const response = await fetch('/api/group', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({}),
+      });
+      const data = await response.json();
+      setGroups(data);
+      if (data.length > 0) {
+        setSelectedGroup(data[0].Group); // Set the selected group to the first group in the list
+        fetchGroupDetails(data[0].Group); // Fetch the details for the selected group
+      }
+    } catch (error) {
+      console.error('Error fetching groups:', error);
+    }
+  };
+  fetchGroups();
+}, []);
+  
+  const fetchGroupDetails = async (groupName) => {
+    try {
+      const response = await fetch('/api/group', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ group: groupName }),
+      });
+      const data = await response.json();
+      setSelectedGroupDetails(data[0]);
+    } catch (error) {
+      console.error('Error fetching group details:', error);
+    }
+  };
+  
   const handleGroupChange = (event) => {
     setSelectedGroup(event.target.value);
-    const groupDetails = groups.find((group) => group.Group === event.target.value);
-    setSelectedGroupDetails(groupDetails);
+    fetchGroupDetails(event.target.value);
   };
 
-return (
+  return (
     <div className="main-content" style={{ marginLeft: '400px', padding: '1rem' }}>
       <div className="min-h-screen bg-gray-100 py-6 flex flex-col justify-center sm:py-12">
         <button onClick={handleDownload} className="mt-4 bg-cyan-400 text-white px-4 py-2 rounded-md">
@@ -106,4 +126,5 @@ return (
     </div>
   );
 };
+
 export default Groups;

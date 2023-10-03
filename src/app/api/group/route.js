@@ -1,8 +1,8 @@
 import getPSConnection from '@/lib/planetscaledb';
 
-// Function to fetch all groups from the database
-async function getAllGroups(connection) {
-  const [rows] = await connection.query(`
+// Function to fetch all groups or a specific group from the database
+async function getAllGroups(connection, groupName) {
+  const sql = `
     SELECT
       \`Group\`,
       COUNT(DISTINCT \`Device ID\`) as no_of_devices,
@@ -12,17 +12,34 @@ async function getAllGroups(connection) {
       SUM(IF(\`Issued\` IS NULL OR \`Issued\` = 0, \`Actual_used\` + \`Estimated_used\`, 0)) as future_commitment
     FROM
       \`inventory2\`
+    ${groupName ? `WHERE \`Group\` = ?` : ''}
     GROUP BY
       \`Group\`;
+  `;
+  const [rows] = await connection.query(sql, groupName ? [groupName] : []);
+  return rows;
+}
+
+// Function to fetch distinct group names from the database
+async function getGroupNames(connection) {
+  const [rows] = await connection.query(`
+    SELECT
+      DISTINCT \`Group\`
+    FROM
+      \`inventory2\`;
   `);
   return rows;
 }
 
-// Route handler
-export async function GET(request) {
+
+export async function POST(request) {
   try {
     const connection = await getPSConnection();
-    const groups = await getAllGroups(connection);
+    const requestBody = await request.json();
+    const groupName = requestBody.group;
+    const groups = groupName
+      ? await getAllGroups(connection, groupName)
+      : await getGroupNames(connection);
 
     // Return response with status 200 and data
     return new Response(JSON.stringify(groups), { status: 200 });
