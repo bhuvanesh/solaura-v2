@@ -81,16 +81,16 @@ useEffect(() => {
 
   return (
     <div className="main-content" style={{ marginLeft: '400px', padding: '1rem' }}>
-      <div className="min-h-screen bg-gray-100 py-6 flex flex-col justify-center sm:py-12">
-        <button onClick={handleDownload} className="mt-4 bg-cyan-400 text-white px-4 py-2 rounded-md">
+      <div className="min-h-screen bg-white py-6 flex flex-col justify-center sm:py-12">
+        {/* <button onClick={handleDownload} className="mt-4 bg-sky-800 text-white px-4 py-2 rounded-md ">
           Download as PDF
-        </button>
+        </button> */}
         <div className="relative py-3 sm:max-w-xl sm:mx-auto">
-          <div className="absolute inset-0 bg-gradient-to-r from-cyan-400 to-light-blue-500 shadow-lg transform -skew-y-6 sm:skew-y-0 sm:-rotate-6 sm:rounded-3xl"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-sky-800 to-light-blue-500 shadow-lg transform -skew-y-6 sm:skew-y-0 sm:-rotate-6 sm:rounded-3xl"></div>
           <div className="relative px-4 py-10 bg-white shadow-lg sm:rounded-3xl sm:p-20">
             <h1 className="text-2xl font-semibold text-center mb-6">Select a Group</h1>
             <div className="w-full">
-              <select value={selectedGroup} onChange={handleGroupChange} className="w-full p-2 mb-6 text-center text-gray-600 text-sm bg-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-400">
+              <select value={selectedGroup} onChange={handleGroupChange} className="w-full p-2 mb-6 text-center text-gray-600 text-sm bg-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-800">
                 {groups.map((group) => (
                   <option key={group.Group} value={group.Group}>
                     {group.Group}
@@ -122,6 +122,9 @@ useEffect(() => {
             )}
           </div>
         </div>
+        <button onClick={handleDownload} className="mt-10 bg-sky-800 text-white px-4 py-2 rounded-md ">
+          Download as PDF
+        </button>
       </div>
     </div>
   );
