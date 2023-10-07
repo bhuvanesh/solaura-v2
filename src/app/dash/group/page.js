@@ -13,25 +13,36 @@ const Groups = () => {
   const [selectedGroupDetails, setSelectedGroupDetails] = useState(null);
 
 
-  const handleDownload = () => {
-    const doc = new jsPDF();
-    const groupName = selectedGroup;
-  const groupDetails = [
-  { key: 'No. of Devices', value: selectedGroupDetails.no_of_devices },
-  { key: 'Estimated Generation', value: `${selectedGroupDetails.estimated_generation} kWh` },
-  { key: 'Actual Generation', value: `${selectedGroupDetails.actual_generation} kWh` },
-  { key: 'Total Issuance', value: `${selectedGroupDetails.total_issuance} kWh` },
-  { key: 'Future Commitment', value: `${selectedGroupDetails.future_commitment} kWh` },
-];
-  
-    doc.setFontSize(18);
-    doc.text(groupName, 10, 10);
-  
-    doc.autoTable({
-      startY: 30,
-      body: groupDetails.map((detail) => [detail.key, detail.value]),
+  const handleDownload = async () => {
+    const logoUrl = 'https://i.imgur.com/1Tl8SjL.jpg';
+    const logoResponse = await fetch(logoUrl);
+    const logoBlob = await logoResponse.blob();
+    const logoBase64 = await new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.readAsDataURL(logoBlob);
     });
   
+    const doc = new jsPDF();
+    const groupName = selectedGroup;
+    const groupDetails = [
+      { key: 'No. of Devices', value: selectedGroupDetails.no_of_devices },
+      { key: 'Estimated Generation', value: `${selectedGroupDetails.estimated_generation} kWh` },
+      { key: 'Actual Generation', value: `${selectedGroupDetails.actual_generation} kWh` },
+      { key: 'Total Issuance', value: `${selectedGroupDetails.total_issuance} kWh` },
+      { key: 'Future Commitment', value: `${selectedGroupDetails.future_commitment} kWh` },
+    ];
+  
+    doc.addImage(logoBase64, 'JPEG', 10, 10, 30, 30); // Add the logo to the PDF
+    doc.setFontSize(18);
+    const groupNameWidth = doc.getTextWidth(groupName);
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const groupNameX = (pageWidth - groupNameWidth) / 2;
+    doc.text(groupName, groupNameX, 40); // Center the groupName text and position it slightly lower than the logo
+    doc.autoTable({
+      startY: 50, // Adjust the starting position of the table
+      body: groupDetails.map((detail) => [detail.key, detail.value]),
+    });
     doc.save(`${groupName}.pdf`);
   };
 
