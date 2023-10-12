@@ -2,6 +2,7 @@
 import React, { useState, useContext } from 'react';
 import { useRouter } from 'next/navigation';
 import ResultsContext from '@/app/SearchContext/store';
+import LoadingButton from '@/components/Loading';
 
 
 const FormComponent = () => {
@@ -14,10 +15,13 @@ const FormComponent = () => {
   const [organisation, _setOrganisation] = useState("");
   const [year, setYear] = useState("");
   const router = useRouter();
+  const [loadingState, setLoadingState] = useState(false);
+
   
   
 
   const handleSearch = async () => {
+    setLoadingState(true);
     const currentYear = new Date().getFullYear();
     let actualCoDYear;
     if (CoDYear === 'within5') {
@@ -52,7 +56,7 @@ const FormComponent = () => {
   setRequirement(requirement);
   setOrganisation(organisation);
   router.push('/dash/allocate/results');
-  
+  setLoadingState(false);
   
 };
 
@@ -186,13 +190,15 @@ const FormComponent = () => {
         </select>
       </div>
       <div className="flex justify-end space-x-4">
-        <button
+      <LoadingButton
           type="button"
           onClick={handleSearch}
           className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-sky-800 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          isLoading={loadingState}
+          loadingLabel="Searching"
         >
           Search
-        </button>
+        </LoadingButton>
       </div>
     </div>
     </div>

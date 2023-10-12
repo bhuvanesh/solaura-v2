@@ -1,7 +1,12 @@
+// Import the getPSConnection function from the PlanetscaleDB library
 import getPSConnection from '@/lib/planetscaledb';
 
+// Define an asynchronous function to handle GET requests
 export async function GET(request) {
+  // Get a connection to the PlanetscaleDB database
   const connection = await getPSConnection();
+
+  // Define the SQL query to fetch and aggregate data from the inventory table
   const query = `
 SELECT
 \`Device ID\`, \`company\`, \`Group\`, Type, CoD, Year,\`project\`,
@@ -33,7 +38,10 @@ FROM (
 GROUP BY \`Device ID\`, \`company\`, \`Group\`, Type, CoD, Year,\`project\`;
 `;
 
+  // Execute the query and fetch the rows
   const [rows] = await connection.query(query);
+
+  // Close the database connection
   connection.end();
 
   // Return the data as a JSON object

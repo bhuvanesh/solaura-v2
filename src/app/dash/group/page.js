@@ -11,6 +11,7 @@ const Groups = () => {
   const [groups, setGroups] = useState([]);
   const [selectedGroup, setSelectedGroup] = useState('');
   const [selectedGroupDetails, setSelectedGroupDetails] = useState(null);
+  const [loading, setLoading] = useState(true);
 
 
   const handleDownload = async () => {
@@ -70,6 +71,8 @@ useEffect(() => {
 }, []);
   
   const fetchGroupDetails = async (groupName) => {
+    setLoading(true);
+
     try {
       const response = await fetch('/api/group', {
         method: 'POST',
@@ -83,6 +86,9 @@ useEffect(() => {
     } catch (error) {
       console.error('Error fetching group details:', error);
     }
+    finally {
+      setLoading(false);
+    }
   };
   
   const handleGroupChange = (event) => {
@@ -93,15 +99,16 @@ useEffect(() => {
   return (
     <div className="main-content" style={{ marginLeft: '400px', padding: '1rem' }}>
       <div className="min-h-screen bg-white py-6 flex flex-col justify-center sm:py-12">
-        {/* <button onClick={handleDownload} className="mt-4 bg-sky-800 text-white px-4 py-2 rounded-md ">
-          Download as PDF
-        </button> */}
         <div className="relative py-3 sm:max-w-xl sm:mx-auto">
           <div className="absolute inset-0 bg-gradient-to-r from-sky-800 to-light-blue-500 shadow-lg transform -skew-y-6 sm:skew-y-0 sm:-rotate-6 sm:rounded-3xl"></div>
           <div className="relative px-4 py-10 bg-white shadow-lg sm:rounded-3xl sm:p-20">
             <h1 className="text-2xl font-semibold text-center mb-6">Select a Group</h1>
             <div className="w-full">
-              <select value={selectedGroup} onChange={handleGroupChange} className="w-full p-2 mb-6 text-center text-gray-600 text-sm bg-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-800">
+              <select
+                value={selectedGroup}
+                onChange={handleGroupChange}
+                className="w-full p-2 mb-6 text-center text-gray-600 text-sm bg-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-800"
+              >
                 {groups.map((group) => (
                   <option key={group.Group} value={group.Group}>
                     {group.Group}
@@ -109,9 +116,10 @@ useEffect(() => {
                 ))}
               </select>
             </div>
-            {selectedGroupDetails && (
+
+            {loading ? (
               <Transition
-                show={selectedGroupDetails !== null}
+                show={loading}
                 enter="transition-opacity duration-300"
                 enterFrom="opacity-0"
                 enterTo="opacity-100"
@@ -119,21 +127,41 @@ useEffect(() => {
                 leaveFrom="opacity-100"
                 leaveTo="opacity-0"
               >
-                <div>
-                  <h2 className="text-xl font-semibold mb-4">Group Details</h2>
-                  <ul className="space-y-2">
-                    <li>No. of Devices: {selectedGroupDetails.no_of_devices}</li>
-                    <li>Estimated Generation: {selectedGroupDetails.estimated_generation}KWh</li>
-                    <li>Actual Generation: {selectedGroupDetails.actual_generation}KWh</li>
-                    <li>Total Issuance: {selectedGroupDetails.total_issuance}KWh</li>
-                    <li>Future Commitment: {selectedGroupDetails.future_commitment}KWh</li>
-                  </ul>
+                <div className="flex justify-center items-center">
+                  <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-sky-800"></div>
+                  <p className="ml-4 text-sky-800 font-semibold">Loading...</p>
                 </div>
               </Transition>
+            ) : (
+              selectedGroupDetails && (
+                <Transition
+                  show={selectedGroupDetails !== null}
+                  enter="transition-opacity duration-300"
+                  enterFrom="opacity-0"
+                  enterTo="opacity-100"
+                  leave="transition-opacity duration-300"
+                  leaveFrom="opacity-100"
+                  leaveTo="opacity-0"
+                >
+                  <div>
+                    <h2 className="text-xl font-semibold mb-4">Group Details</h2>
+                    <ul className="space-y-2">
+                      <li>No. of Devices: {selectedGroupDetails.no_of_devices}</li>
+                      <li>Estimated Generation: {selectedGroupDetails.estimated_generation}KWh</li>
+                      <li>Actual Generation: {selectedGroupDetails.actual_generation}KWh</li>
+                      <li>Total Issuance: {selectedGroupDetails.total_issuance}KWh</li>
+                      <li>Future Commitment: {selectedGroupDetails.future_commitment}KWh</li>
+                    </ul>
+                  </div>
+                </Transition>
+              )
             )}
           </div>
         </div>
-        <button onClick={handleDownload} className="mt-10 bg-sky-800 text-white px-4 py-2 rounded-md ">
+        <button
+          onClick={handleDownload}
+          className="mt-10 bg-sky-800 text-white px-4 py-2 rounded-md "
+        >
           Download as PDF
         </button>
       </div>
