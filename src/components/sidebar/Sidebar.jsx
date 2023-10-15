@@ -13,7 +13,7 @@ const Sidebar = () => {
         <ListItem text={'Allocate'} navLink={'/dash/allocate'} Icon={SparklesIcon}/>
         <ListItem text={'Upload Data'} navLink={'/dash/upload'} Icon={ArrowUpTrayIcon}/>
         <ListItem text={'Transactions'} navLink={'/dash/txn'} Icon={BanknotesIcon}/>
-        <ListItem text={'Summary'} navLink={'/dash/sum'} Icon={DocumentMagnifyingGlassIcon}/>
+        <ListItem text={'Device Summary'} navLink={'/dash/sum'} Icon={DocumentMagnifyingGlassIcon}/>
         <ListItem text={'Group Summary'} navLink={'/dash/group'} Icon={SparklesIcon}/>        
     </div>
     <div className='flex items-center mb-4 mt-4 ml-2'>

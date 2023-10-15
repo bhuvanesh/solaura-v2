@@ -3,18 +3,21 @@ import { useState, useEffect } from 'react';
 import { Transition } from '@headlessui/react';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
-
-
-
+import LoadingButton from '@/components/Loading';
 
 const Groups = () => {
   const [groups, setGroups] = useState([]);
   const [selectedGroup, setSelectedGroup] = useState('');
+  const [selectedType, setSelectedType] = useState('Total');
   const [selectedGroupDetails, setSelectedGroupDetails] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isDownloading, setIsDownloading] = useState(false);
 
-
+  
+  
+  
   const handleDownload = async () => {
+    setIsDownloading(true);
     const logoUrl = 'https://i.imgur.com/1Tl8SjL.jpg';
     const logoResponse = await fetch(logoUrl);
     const logoBlob = await logoResponse.blob();
@@ -24,53 +27,61 @@ const Groups = () => {
       reader.readAsDataURL(logoBlob);
     });
   
-    const doc = new jsPDF();
-    const groupName = selectedGroup;
-    const groupDetails = [
-      { key: 'No. of Devices', value: selectedGroupDetails.no_of_devices },
-      { key: 'Estimated Generation', value: `${selectedGroupDetails.estimated_generation} kWh` },
-      { key: 'Actual Generation', value: `${selectedGroupDetails.actual_generation} kWh` },
-      { key: 'Total Issuance', value: `${selectedGroupDetails.total_issuance} kWh` },
-      { key: 'Future Commitment', value: `${selectedGroupDetails.future_commitment} kWh` },
-    ];
+    const types = ['Total', 'Solar', 'Wind'];
   
+    const doc = new jsPDF();
     doc.addImage(logoBase64, 'JPEG', 10, 10, 30, 30); // Add the logo to the PDF
     doc.setFontSize(18);
-    const groupNameWidth = doc.getTextWidth(groupName);
     const pageWidth = doc.internal.pageSize.getWidth();
-    const groupNameX = (pageWidth - groupNameWidth) / 2;
-    doc.text(groupName, groupNameX, 40); // Center the groupName text and position it slightly lower than the logo
-    doc.autoTable({
-      startY: 50, // Adjust the starting position of the table
-      body: groupDetails.map((detail) => [detail.key, detail.value]),
-    });
-    doc.save(`${groupName}.pdf`);
+    const groupNameX = (pageWidth / 2);
+    doc.text(selectedGroup, groupNameX, 40); // Center the groupName text and position slightly lower than the logo
+  
+    let startY = 50;
+  
+    for (const type of types) {
+      try {
+        const response = await fetch('/api/group', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ group: selectedGroup }),
+        });
+        const data = await response.json();
+        const groupDetails = data.find(g => g.Type === type); // Find the details for the current type
+  
+        const tableData = [
+          { key: 'No. of Devices', value: groupDetails.no_of_devices },
+          { key: 'Estimated Generation', value: `${groupDetails.estimated_generation} kWh` },
+          { key: 'Actual Generation', value: `${groupDetails.actual_generation} kWh` },
+          { key: 'Total Issuance', value: `${groupDetails.total_issuance} kWh` },
+          { key: 'Future Commitment', value: `${groupDetails.future_commitment} kWh` },
+        ];
+  
+        doc.setFontSize(16);
+        doc.text(`${type}`, 10, startY + 10);
+        doc.autoTable({
+          startY: startY + 15,
+          head: [['Measure', 'Value']],
+          body: tableData.map((detail) => [detail.key, detail.value]),
+        });
+  
+        startY = doc.previousAutoTable.finalY + 10;
+      } catch (error) {
+        console.error(`Error fetching group details for the type ${type}:`, error);
+      }
+    }
+  
+    doc.save(`${selectedGroup}.pdf`);
+    setIsDownloading(false);
+
   };
 
-useEffect(() => {
-  const fetchGroups = async () => {
-    try {
-      const response = await fetch('/api/group', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({}),
-      });
-      const data = await response.json();
-      setGroups(data);
-      if (data.length > 0) {
-        setSelectedGroup(data[0].Group); // Set the selected group to the first group in the list
-        fetchGroupDetails(data[0].Group); // Fetch the details for the selected group
-      }
-    } catch (error) {
-      console.error('Error fetching groups:', error);
-    }
+  const handleTypeChange = (event) => {
+    setSelectedType(event.target.value);
   };
-  fetchGroups();
-}, []);
-  
-  const fetchGroupDetails = async (groupName) => {
+
+  const fetchGroupDetails = async (groupName, groupType) => {
     setLoading(true);
 
     try {
@@ -82,19 +93,51 @@ useEffect(() => {
         body: JSON.stringify({ group: groupName }),
       });
       const data = await response.json();
-      setSelectedGroupDetails(data[0]);
+
+      // Look for the user-selected type in the returned data
+      const selectedData = data.find((group) => group.Type === groupType);
+
+      setSelectedGroupDetails(selectedData);
     } catch (error) {
       console.error('Error fetching group details:', error);
     }
     finally {
       setLoading(false);
     }
-  };
-  
+};
+
   const handleGroupChange = (event) => {
     setSelectedGroup(event.target.value);
-    fetchGroupDetails(event.target.value);
+    fetchGroupDetails(event.target.value, selectedType); // Fetch the group details with the selected type too
   };
+
+  useEffect(() => {
+    const fetchGroups = async () => {
+      try {
+        const response = await fetch('/api/group', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({}),
+        });
+        const data = await response.json();
+        setGroups(data);
+        if (data.length > 0) {
+          setSelectedGroup(data[0].Group);
+        }
+      } catch (error) {
+        console.error('Error fetching groups:', error);
+      }
+    };
+    fetchGroups();
+  }, []);
+
+  useEffect(() => {
+    if (selectedGroup) {
+      fetchGroupDetails(selectedGroup, selectedType);
+    }
+  }, [selectedGroup, selectedType]);
 
   return (
     <div className="main-content" style={{ marginLeft: '400px', padding: '1rem' }}>
@@ -103,6 +146,23 @@ useEffect(() => {
           <div className="absolute inset-0 bg-gradient-to-r from-sky-800 to-light-blue-500 shadow-lg transform -skew-y-6 sm:skew-y-0 sm:-rotate-6 sm:rounded-3xl"></div>
           <div className="relative px-4 py-10 bg-white shadow-lg sm:rounded-3xl sm:p-20">
             <h1 className="text-2xl font-semibold text-center mb-6">Select a Group</h1>
+
+            <div className="mb-4">
+  <label>
+    <input type="radio" value="Total" checked={selectedType === 'Total'} onChange={handleTypeChange} />
+    <span className="ml-2">Total</span>
+  </label>
+  <label className="ml-4">
+    <input type="radio" value="Solar" checked={selectedType === 'Solar'} onChange={handleTypeChange} />
+    <span className="ml-2">Solar</span>
+  </label>
+  <label className="ml-4">
+    <input type="radio" value="Wind" checked={selectedType === 'Wind'} onChange={handleTypeChange} />
+    <span className="ml-2">Wind</span>
+  </label>
+</div>
+
+
             <div className="w-full">
               <select
                 value={selectedGroup}
@@ -158,12 +218,14 @@ useEffect(() => {
             )}
           </div>
         </div>
-        <button
-          onClick={handleDownload}
-          className="mt-10 bg-sky-800 text-white px-4 py-2 rounded-md "
-        >
-          Download as PDF
-        </button>
+        <LoadingButton
+      isLoading={isDownloading}
+      onClick={handleDownload}
+      loadingLabel="Downloading..."
+      style={{ marginTop: '25px' }}
+    >
+      Download as PDF
+    </LoadingButton>
       </div>
     </div>
   );
