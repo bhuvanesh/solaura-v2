@@ -28,7 +28,7 @@ async function getGroupsData(connection, groupName) {
           WHEN Actual != 0 THEN Actual - Actual_used
           ELSE Estimated - Estimated_used
         END AS Sold
-      FROM \`inventory\`
+      FROM \`inventory2\`
       WHERE \`Group\` = ?
     ) AS subquery
     GROUP BY \`Device ID\`, \`company\`, \`Group\`, Type, CoD, Year,\`project\`;`
