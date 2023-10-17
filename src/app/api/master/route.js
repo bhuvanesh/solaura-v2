@@ -12,9 +12,9 @@ export async function POST(req) {
 
     // Prepare the query and values for batch insert
     const query = `
-      INSERT INTO inventory2 (
-        \`S.No\`, \`Device ID\`, \`Group\`, company, project, \`Type\`, \`CoD\`, \`Capacity (MW)\`, \`Month\`, Estimated, Registered
-      ) VALUES ? ON DUPLICATE KEY UPDATE
+    INSERT INTO inventory2 (
+      \`S.No\`, \`Device ID\`, \`Group\`, company, project, \`Type\`, \`CoD\`, \`Capacity (MW)\`, \`Month\`, Estimated, Registered, Year
+    ) VALUES ? ON DUPLICATE KEY UPDATE
         \`Group\` = VALUES(\`Group\`),
         company = VALUES(company),
         project = VALUES(project),
@@ -23,6 +23,7 @@ export async function POST(req) {
         \`Capacity (MW)\` = VALUES(\`Capacity (MW)\`),
         \`Month\` = VALUES(\`Month\`),
         Estimated = VALUES(Estimated),
+        Year = VALUES(Year),
         Registered = VALUES(Registered);
     `;
     const values = [];
@@ -42,6 +43,7 @@ export async function POST(req) {
           row['month'],
           row['Estimated'],
           row['Registered'],
+          row['Year'],
         ];
         values.push(rowValues);
       }

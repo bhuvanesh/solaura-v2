@@ -36,18 +36,18 @@ const ExcelUpload = () => {
           ];
         
           const monthValues = [
-            item['Jan-23 (kWh)'],
-            item['Feb -23 (kWh)'],
-            item['Mar-23 (kWh)'],
-            item['Apr-23(kWh)'],
-            item['May-23(kWh)'],
-            item['June-23(kWh)'],
-            item['July-22 (kWh)'],
-            item['Aug -22 (kWh)'],
-            item['Sep-22 (kWh)'],
-            item['Oct-22 (kWh)'],
-            item['Nov-22 (kWh)'],
-            item['Dec -22 (kWh)'],
+            item['January'],
+            item['February'],
+            item['March'],
+            item['April'],
+            item['May'],
+            item['June'],
+            item['July'],
+            item['August'],
+            item['September'],
+            item['October'],
+            item['November'],
+            item['December'],
           ];
           const convertSerialDate = (serial) => {
             if (isNaN(serial) || serial === null || serial === undefined) {
@@ -73,6 +73,7 @@ const ExcelUpload = () => {
             Type: item['Device Type (Wind/Solar)'],
             Company: item['Company Name'],
             Group: item['Group Name'],
+            Year: item['Year'],
             project: item['Project Name'],
             'Capacity (MW)': item['Capacity (MW)'],
             CoD: convertSerialDate(item['CoD']), 
