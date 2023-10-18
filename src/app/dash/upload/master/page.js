@@ -20,66 +20,57 @@ const ExcelUpload = () => {
         const rawData = XLSX.utils.sheet_to_json(ws);
   
         const renamedData = rawData.flatMap((item) => {
+          const lowerCaseItem = Object.keys(item).reduce((acc, key) => {
+              acc[key.toLowerCase()] = item[key];
+              return acc;
+          }, {});
+  
           const months = [
-            'January',
-            'February',
-            'March',
-            'April',
-            'May',
-            'June',
-            'July',
-            'August',
-            'September',
-            'October',
-            'November',
-            'December',
+              'january',
+              'february',
+              'march',
+              'april',
+              'may',
+              'june',
+              'july',
+              'august',
+              'september',
+              'october',
+              'november',
+              'december',
           ];
-        
-          const monthValues = [
-            item['January'],
-            item['February'],
-            item['March'],
-            item['April'],
-            item['May'],
-            item['June'],
-            item['July'],
-            item['August'],
-            item['September'],
-            item['October'],
-            item['November'],
-            item['December'],
-          ];
+  
+          const monthValues = months.map(month => lowerCaseItem[month]);
+  
           const convertSerialDate = (serial) => {
-            if (isNaN(serial) || serial === null || serial === undefined) {
-              return null;
-            }
-          
-            const epoch = new Date(1900, 0, 1);
-            const correctSerial = serial - 2;
-            const millisecondsInDay = 24 * 60 * 60 * 1000;
-          
-            const date = new Date(epoch.getTime() + correctSerial * millisecondsInDay);
-          
-            // Convert the date to 'YYYY-MM-DD HH:mm:ss' format
-            const formattedDate = date.toISOString().slice(0, 19).replace('T', ' ');
-          
-            return formattedDate;
+              if (isNaN(serial) || serial === null || serial === undefined) {
+                  return null;
+              }
+              const epoch = new Date(1900, 0, 1);
+              const correctSerial = serial - 2;
+              const millisecondsInDay = 24 * 60 * 60 * 1000;
+              const date = new Date(epoch.getTime() + correctSerial * millisecondsInDay);
+              const formattedDate = date.toISOString().slice(0, 19).replace('T', ' ');
+              return formattedDate;
           };
+  
           return months.map((month, index) => ({
-            'S.No': item['S.No'],
-            'Device ID': item['DEVICE ID'],
-            month,
-            Estimated: monthValues[index],
-            Type: item['Device Type (Wind/Solar)'],
-            Company: item['Company Name'],
-            Group: item['Group Name'],
-            Year: item['Year'],
-            project: item['Project Name'],
-            'Capacity (MW)': item['Capacity (MW)'],
-            CoD: convertSerialDate(item['CoD']), 
-            Registered: item['Registered'],
+              'S.No': lowerCaseItem['s.no'],
+              'Device ID': lowerCaseItem['device id'],
+              month,
+              Estimated: monthValues[index],
+              Type: lowerCaseItem['device type (wind/solar)'],
+              Company: lowerCaseItem['company name'],
+              Group: lowerCaseItem['group name'],
+              Year: lowerCaseItem['year'],
+              project: lowerCaseItem['project name'],
+              'Capacity (MW)': lowerCaseItem['capacity (mw)'],
+              CoD: convertSerialDate(lowerCaseItem['cod']), 
+              Registered: lowerCaseItem['registered'],
           }));
-        });
+      });
+  
+      setData(renamedData);
         
         setData(renamedData);
       };

@@ -28,11 +28,17 @@ const processExcelData = (data) => {
   ];
 
   return data.flatMap((row) => {
-    const device = row.Device.split('-')[0].trim();
+    // Convert the property names to lowercase
+    const lowerCaseRow = Object.keys(row).reduce((acc, key) => {
+      acc[key.toLowerCase()] = row[key];
+      return acc;
+    }, {});
+
+    const device = lowerCaseRow.device.split('-')[0].trim();
 
     // Convert the numeric date values to proper date objects 
-    const startDate = XLSX.SSF.parse_date_code(row['Start Date']);
-    const endDate = XLSX.SSF.parse_date_code(row['End Date']);
+    const startDate = XLSX.SSF.parse_date_code(lowerCaseRow['start date']);
+    const endDate = XLSX.SSF.parse_date_code(lowerCaseRow['end date']);
 
     const startMonth = startDate.m - 1; // Get the month index
     const endMonth = endDate.m - 1; // Get the month index
@@ -47,8 +53,8 @@ const processExcelData = (data) => {
         records.push({
           device,
           Month: monthNames[month],
-          Year: year, // Add the year to the record
-          status: row.Status,
+          Year: year, 
+          status: lowerCaseRow.status,
         });
       }
     }

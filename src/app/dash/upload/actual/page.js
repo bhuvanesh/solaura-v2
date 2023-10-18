@@ -13,33 +13,41 @@ const Upload = () => {
   const handleUpload = async () => {
     const reader = new FileReader();
     reader.onload = async (e) => {
-      const data = e.target.result;
-      const workbook = XLSX.read(data, { type: 'binary' });
-      const sheetName = workbook.SheetNames[0];
-      const sheet = workbook.Sheets[sheetName];
-      const rows = XLSX.utils.sheet_to_json(sheet);
+        const data = e.target.result;
+        const wb = XLSX.read(data, { type: 'binary' });
+        const wsname = wb.SheetNames[0];
+        const ws = wb.Sheets[wsname];
+        let rawData = XLSX.utils.sheet_to_json(ws);
 
-      // Send the data to the API
-      const response = await fetch('/api/actual', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(rows),
-      });
-      const responseData = await response.json();
-    console.log('Response:', responseData);
-    toast.success('Upload successful!', {
-      autoClose: 2000,
-      onClose: () => {
-        window.location.reload();
-      },
-    });
-     
+        // Convert the property names to lowercase
+        let lowerCaseRawData = rawData.map(item => {
+            return Object.keys(item).reduce((acc, key) => {
+                acc[key.toLowerCase()] = item[key];
+                return acc;
+            }, {});
+        });
+
+        // Send the data to the API
+        const response = await fetch('/api/actual', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(lowerCaseRawData),
+        });
+        const responseData =  await response.json();
+        console.log('Response:', responseData);
+        toast.success('Upload successful!', {
+            autoClose: 2000,
+            onClose: () => {
+                window.location.reload();
+            },
+        });
+
     };
 
     if (file) {
-      reader.readAsBinaryString(file);
+        reader.readAsBinaryString(file);
     }
-  };
+};
 
   return (
     <div className="flex flex-col items-center min-h-screen">
