@@ -30,7 +30,7 @@ const getCardData = async (currYear) => {
   // });
 
   const [reg, pen, pip, act] = await prisma.$transaction([
-    prisma.inventory.aggregate({
+    prisma.inventory2.aggregate({
       _sum: {
         Estimated: true,
         Estimated_used: true,
@@ -42,7 +42,7 @@ const getCardData = async (currYear) => {
         Year: currYear,
       },
     }),
-    prisma.inventory.aggregate({
+    prisma.inventory2.aggregate({
       _sum: {
         Estimated: true,
       },
@@ -53,7 +53,7 @@ const getCardData = async (currYear) => {
         Year: currYear,
       },
     }),
-    prisma.inventory.aggregate({
+    prisma.inventory2.aggregate({
       _sum: {
         Estimated: true,
       },
@@ -64,7 +64,7 @@ const getCardData = async (currYear) => {
         Year: currYear,
       },
     }),
-    prisma.inventory.aggregate({
+    prisma.inventory2.aggregate({
       _sum: {
         Actual: true,
       },
@@ -75,7 +75,7 @@ const getCardData = async (currYear) => {
         Year: currYear,
       },
     }),
-    // prisma.inventory.aggregate({
+    // prisma.inventory2.aggregate({
     //   _sum: {
     //     Estimated_used: true,
     //   },
@@ -103,7 +103,7 @@ const getEstActData = async (currYear) => {
   const [data] = await prisma.$transaction([
     //what is required? Monthwise Actuals
 
-    prisma.inventory.groupBy({
+    prisma.inventory2.groupBy({
       by: ["Month", "Year"],
       _sum: {
         Actual: true,
@@ -139,7 +139,7 @@ const getEstUseData = async (currYear) => {
   const [data] = await prisma.$transaction([
     //what is required? Monthwise Actuals
 
-    prisma.inventory.groupBy({
+    prisma.inventory2.groupBy({
       by: ["Month", "Year"],
       _sum: {
         Estimated: true,
@@ -219,20 +219,20 @@ const MainGrid = async () => {
           />
         </div>
 
-        <Card className="col-span-3 lg:col-span-2 h-auto">
+        <Card className="col-span-3 lg:col-span-3 h-auto">
           <CardHeader className="text-center">Estimate vs Usage</CardHeader>
           <EstUse className="h-full" data={estUseMonthData.monthData} />
         </Card>
-        <Card className="col-span-3 lg:col-span-1">
+        {/* <Card className="col-span-3 lg:col-span-1">
           <BuyerList />
-        </Card>
-        <Card className="col-span-3 lg:col-span-2">
+        </Card> */}
+        <Card className="col-span-3 lg:col-span-3">
           <CardHeader className="text-center">Estimate vs Actual</CardHeader>
           <EstAct className="h-full" data={estActMonthData.monthData} />
         </Card>
-        <Card className="col-span-3 lg:col-span-1">
+        {/* <Card className="col-span-3 lg:col-span-1">
           <SellerList />
-        </Card>
+        </Card> */}
         <div className="col-span-3 mb-3">
           <FooterCard />
         </div>
