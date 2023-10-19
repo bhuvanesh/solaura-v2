@@ -124,7 +124,7 @@ export default function Table() {
         row.details.forEach((detail) => {
           const deviceColumns = [
             { header: 'Device ID', dataKey: 'Device ID' },
-            { header: 'Year', dataKey: 'Year' },
+            { header: 'year', dataKey: 'year' },
             ...months.map(month => (
               detail[month] ? { header: month, dataKey: month } : null
             )).filter(Boolean)
@@ -136,7 +136,7 @@ export default function Table() {
                 acc[month] = detail[month];
               }
               return acc;
-            }, {'Device ID': detail['Device ID'], 'Year': detail['Year']})
+            }, {'Device ID': detail['Device ID'], 'year': detail['year']})
           ]
     
           pdf.autoTable(deviceColumns, deviceData, {
