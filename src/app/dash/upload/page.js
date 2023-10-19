@@ -1,8 +1,22 @@
+'use client'
 import Link from 'next/link';
 
 const UploadButtons = () => {
+  const handleMasterReset = async () => {
+    try {
+      const response = await fetch('/api/truncate', { method: 'DELETE' });
+      if (!response.ok) {
+        throw new Error('Failed to reset data');
+      }
+      window.alert('Data reset successfully');
+    } catch (error) {
+      window.alert('Error: ' + error);
+    }
+  };
+
+
   return (
-    <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 space-x-4">
+    <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 space-x-2">
       <Link href="/dash/upload/master">
         <button className="cursor-pointer transform transition duration-500 ease-in-out bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded hover:scale-105 active:scale-95">
           Master Upload
@@ -23,8 +37,14 @@ const UploadButtons = () => {
           Issued Upload
         </button>
       </Link>
+      <button
+        className="cursor-pointer transform transition duration-500 ease-in-out bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded hover:scale-105 active:scale-95"
+        onClick={handleMasterReset}
+      > Master Reset
+      </button>
     </div>
   );
 };
+
 
 export default UploadButtons;
