@@ -30,7 +30,7 @@ const getCardData = async (currYear) => {
   // });
 
   const [reg, pen, pip, act] = await prisma.$transaction([
-    prisma.inventory.aggregate({
+    prisma.inventory2.aggregate({
       _sum: {
         Estimated: true,
         Estimated_used: true,
@@ -42,7 +42,7 @@ const getCardData = async (currYear) => {
         Year: currYear,
       },
     }),
-    prisma.inventory.aggregate({
+    prisma.inventory2.aggregate({
       _sum: {
         Estimated: true,
       },
@@ -53,7 +53,7 @@ const getCardData = async (currYear) => {
         Year: currYear,
       },
     }),
-    prisma.inventory.aggregate({
+    prisma.inventory2.aggregate({
       _sum: {
         Estimated: true,
       },
@@ -64,7 +64,7 @@ const getCardData = async (currYear) => {
         Year: currYear,
       },
     }),
-    prisma.inventory.aggregate({
+    prisma.inventory2.aggregate({
       _sum: {
         Actual: true,
       },
@@ -75,7 +75,7 @@ const getCardData = async (currYear) => {
         Year: currYear,
       },
     }),
-    // prisma.inventory.aggregate({
+    // prisma.inventory2.aggregate({
     //   _sum: {
     //     Estimated_used: true,
     //   },
@@ -103,7 +103,7 @@ const getEstActData = async (currYear) => {
   const [data] = await prisma.$transaction([
     //what is required? Monthwise Actuals
 
-    prisma.inventory.groupBy({
+    prisma.inventory2.groupBy({
       by: ["Month", "Year"],
       _sum: {
         Actual: true,
@@ -139,7 +139,7 @@ const getEstUseData = async (currYear) => {
   const [data] = await prisma.$transaction([
     //what is required? Monthwise Actuals
 
-    prisma.inventory.groupBy({
+    prisma.inventory2.groupBy({
       by: ["Month", "Year"],
       _sum: {
         Estimated: true,
@@ -171,7 +171,61 @@ const getEstUseData = async (currYear) => {
   // return res.json();
 };
 
+const getWinSolData = async (currYear) => {
+  // const res = await fetch("/api/data/usage");
+  const data = await prisma.$transaction([
+    //what is required? Monthwise Actuals
+
+    prisma.inventory2.groupBy({
+      by: ["Month", "Year"],
+      _sum: {
+        Estimated: true,
+        Actual_used: true,
+        Estimated_used: true,
+      },
+      where: {
+        Registered: {
+          equals: "YES",
+        },
+        Year: currYear,
+        Type: 'Wind'
+      },
+    }),
+    prisma.inventory2.groupBy({
+      by: ["Month", "Year"],
+      _sum: {
+        Estimated: true,
+        Actual_used: true,
+        Estimated_used: true,
+      },
+      where: {
+        Registered: {
+          equals: "YES",
+        },
+        Year: currYear,
+        Type: 'Solar'
+      },
+    }),
+  ]);
+
+  // const monthData = [];
+
+  // for (let item of data) {
+  //   monthData.push({
+  //     month: item.Month,
+  //     Usage: item._sum.Actual_used + item._sum.Estimated_used,
+  //     Estimate: item._sum.Estimated,
+  //   });
+  // }
+  // return { monthData };
+
+  // return res.json();
+  console.log('data: ',data)
+  // console.log('sol data: ',solData)
+};
+
 const MainGrid = async () => {
+  getWinSolData(2023)
   let currYear = new Date().getFullYear();
 
   const cardData = await getCardData(currYear);
@@ -219,20 +273,20 @@ const MainGrid = async () => {
           />
         </div>
 
-        <Card className="col-span-3 lg:col-span-2 h-auto">
+        <Card className="col-span-3 lg:col-span-3 h-auto">
           <CardHeader className="text-center">Estimate vs Usage</CardHeader>
           <EstUse className="h-full" data={estUseMonthData.monthData} />
         </Card>
-        <Card className="col-span-3 lg:col-span-1">
+        {/* <Card className="col-span-3 lg:col-span-1">
           <BuyerList />
-        </Card>
-        <Card className="col-span-3 lg:col-span-2">
+        </Card> */}
+        <Card className="col-span-3 lg:col-span-3">
           <CardHeader className="text-center">Estimate vs Actual</CardHeader>
           <EstAct className="h-full" data={estActMonthData.monthData} />
         </Card>
-        <Card className="col-span-3 lg:col-span-1">
+        {/* <Card className="col-span-3 lg:col-span-1">
           <SellerList />
-        </Card>
+        </Card> */}
         <div className="col-span-3 mb-3">
           <FooterCard />
         </div>

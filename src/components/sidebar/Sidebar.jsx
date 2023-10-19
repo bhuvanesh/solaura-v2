@@ -16,9 +16,9 @@ const Sidebar = () => {
         <ListItem text={'Device Summary'} navLink={'/dash/sum'} Icon={DocumentMagnifyingGlassIcon}/>
         <ListItem text={'Group Summary'} navLink={'/dash/group'} Icon={SparklesIcon}/>        
     </div>
-    <div className='flex items-center mb-4 mt-4 ml-2'>
+    <div className='flex items-center justify-start mb-4 mt-8 ml-2'>
         <UserButton afterSignOutUrl='/' />
-        {user && <span className='ml-2'>{user.username}</span>}
+        {user && <span className='pl-5'>{user.username}</span>}
       </div>
 </div>
 
