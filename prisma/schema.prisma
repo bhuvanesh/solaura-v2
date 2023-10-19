@@ -60,7 +60,7 @@ model inventory {
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model inventory1 {
-  id               Int       @default(0)
+  id               Int       @id @default(autoincrement())
   Device_ID        String?   @map("Device ID") @db.VarChar(50)
   Group            String?   @db.VarChar(50)
   company          String?   @db.VarChar(50)
@@ -110,4 +110,90 @@ model inventory3 {
   createdAt        DateTime? @default(now()) @db.Timestamp(0)
   updatedAt        DateTime? @default(now()) @db.Timestamp(0)
   Project_ID       String?   @map("Project ID") @db.VarChar(255)
+}
+
+model formtest {
+  id               Int       @id @default(autoincrement())
+  Device_ID        String?   @map("Device ID") @db.VarChar(50)
+  Group            String?   @db.VarChar(50)
+  company          String?   @db.VarChar(50)
+  project          String?   @db.VarChar(100)
+  Type             String?   @db.VarChar(50)
+  CoD              DateTime? @db.Date
+  Commission_start DateTime? @db.Date
+  Commission_end   DateTime? @db.Date
+  Year             Int?
+  S_No             Int?      @map("S.No")
+  Capacity__MW_    Decimal?  @map("Capacity (MW)") @db.Decimal(10, 0)
+  Month            String?   @db.VarChar(50)
+  Actual           Int?
+  Actual_used      Int?
+  Estimated        Int?
+  Estimated_used   Int?
+  Issued           Int?
+  Sold             Int?
+  Registered       String?   @db.VarChar(50)
+  createdAt        DateTime? @default(now()) @db.Timestamp(0)
+  updatedAt        DateTime? @default(now()) @db.Timestamp(0)
+  Project_ID       String?   @map("Project ID") @db.VarChar(255)
+
+  @@unique([project, Month, Year], map: "unique_project_month_year")
+}
+
+model inventory2 {
+  id                Int       @id @default(autoincrement())
+  Device_ID         String?   @map("Device ID") @db.VarChar(50)
+  Group             String?   @db.VarChar(50)
+  company           String?   @db.VarChar(50)
+  project           String?   @db.VarChar(100)
+  Type              String?   @db.VarChar(50)
+  CoD               DateTime? @db.Date
+  Commission_start  DateTime? @db.Date
+  Commission_end    DateTime? @db.Date
+  Year              Int?
+  S_No              Int?      @map("S.No")
+  Capacity__MW_     Decimal?  @map("Capacity (MW)") @db.Decimal(10, 0)
+  Month             String?   @db.VarChar(50)
+  Actual            Int?
+  Actual_used       Int?
+  Estimated         Int?
+  Estimated_used    Int?
+  Issued            Int?
+  Sold              Int?
+  Registered        String?   @db.VarChar(50)
+  createdAt         DateTime? @default(now()) @db.Timestamp(0)
+  updatedAt         DateTime? @default(now()) @db.Timestamp(0)
+  Project_ID        String?   @map("Project ID") @db.VarChar(255)
+  Production_Status String?   @map("Production Status") @db.VarChar(100)
+
+  @@unique([project, Month, Year], map: "unique_project_month_year")
+}
+
+model temp {
+  id                Int       @id @default(autoincrement())
+  Device_ID         String?   @map("Device ID") @db.VarChar(50)
+  Group             String?   @db.VarChar(50)
+  company           String?   @db.VarChar(50)
+  project           String?   @db.VarChar(100)
+  Type              String?   @db.VarChar(50)
+  CoD               DateTime? @db.Date
+  Commission_start  DateTime? @db.Date
+  Commission_end    DateTime? @db.Date
+  Year              Int?
+  S_No              Int?      @map("S.No")
+  Capacity__MW_     Decimal?  @map("Capacity (MW)") @db.Decimal(10, 0)
+  Month             String?   @db.VarChar(50)
+  Actual            Int?
+  Actual_used       Int?
+  Estimated         Int?
+  Estimated_used    Int?
+  Issued            Int?
+  Sold              Int?
+  Registered        String?   @db.VarChar(50)
+  createdAt         DateTime? @default(now()) @db.Timestamp(0)
+  updatedAt         DateTime? @default(now()) @db.Timestamp(0)
+  Project_ID        String?   @map("Project ID") @db.VarChar(255)
+  Production_Status String?   @map("Production Status") @db.VarChar(100)
+
+  @@unique([project, Month, Year], map: "unique_project_month_year")
 }

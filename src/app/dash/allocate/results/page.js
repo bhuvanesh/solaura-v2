@@ -1,8 +1,9 @@
 "use client"
 import React, { useState , useEffect , useContext } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import ResultsContext from '@/app/SearchContext/store';
 import { v4 as uuidv4 } from 'uuid';
+import LoadingButton from '@/components/Loading';
 
 
 
@@ -13,6 +14,8 @@ const Results = () => {
   const [remainingRequirement, setRemainingRequirement] = useState(parseInt(requirement));
   const [selectedTotalProduction, setSelectedTotalProduction] = useState(new Map());
   const [isLoading, setIsLoading] = useState(false);
+  const [manipulatedResults, setManipulatedResults] = useState([...results]);
+
   
   const suggestMonths = () => {
     console.log("Starting Suggestion");
@@ -67,41 +70,49 @@ const Results = () => {
   useEffect(() => {
     setOriginalResults(JSON.parse(JSON.stringify(results)));
   }, [results]);
-const handleTotalProductionClick = (resultIndex) => {
-  const key = `${resultIndex}-Total_Production`;
-  const currentValue = selectedTotalProduction.get(key);
-
-  if (currentValue) {
-    setSelectedTotalProduction((prev) => new Map(prev).set(key, false));
-
-    // Unselect the selected months when 'Total Production' is unselected
-    visibleMonths.forEach((month) => {
-      const monthKey = `${resultIndex}-${month}`;
-      if (selectedMonths.get(monthKey)) {
-        handleMonthClick(resultIndex, month);
-      }
-    });
-  } else {
-    if (remainingRequirement === 0) return;
-
-    setSelectedTotalProduction((prev) => new Map(prev).set(key, true));
-    let remaining = remainingRequirement;
-
-    for (const month of visibleMonths) {
-      if (remaining <= 0) break;
-
-      const monthValue = parseInt(results[resultIndex][month]);
-      const adjustedMonthValue = Math.min(monthValue, remaining);
-
-      if (adjustedMonthValue > 0) {
-        handleMonthClick(resultIndex, month, adjustedMonthValue); // Pass the adjustedMonthValue
-        remaining -= adjustedMonthValue;
+  const handleTotalProductionClick = (resultIndex) => {
+    const key = `${resultIndex}-Total_Production`;
+    const currentValue = selectedTotalProduction.get(key);
+  
+    if (currentValue) {
+      setSelectedTotalProduction((prev) => new Map(prev).set(key, false));
+  
+      // Unselect the selected months when 'Total Production' is unselected
+      visibleMonths.forEach((month) => {
+        const monthKey = `${resultIndex}-${month}`;
+        if (selectedMonths.get(monthKey)) {
+          handleMonthClick(resultIndex, month);
+        }
+      });
+    } else {
+      if (remainingRequirement === 0) return;
+  
+      setSelectedTotalProduction((prev) => new Map(prev).set(key, true));
+      let remaining = remainingRequirement;
+  
+      for (const month of visibleMonths) {
+        if (remaining <= 0) break;
+  
+        const monthValue = parseInt(manipulatedResults[resultIndex][month]);
+  
+        // Check and adjust value
+        let adjustedMonthValue = Math.min(monthValue, remaining);
+  
+        if(remaining >= monthValue) {
+          remaining -= monthValue;
+          handleMonthClick(resultIndex, month);
+        } else {
+          const key = `${resultIndex}-${month}`;
+          let originalMonthValue = originalResults[resultIndex][month];
+          results[resultIndex][month] = adjustedMonthValue;
+          remaining -= adjustedMonthValue;
+          setSelectedMonths((prev) => new Map(prev).set(key, !prev.get(key)));
+        }
+        // Ensure the remaining requirement stays at a minimum value of 0
+        setRemainingRequirement(Math.max(0, remaining));
       }
     }
-    // Ensure the remaining requirement stays at a minimum value of 0
-    setRemainingRequirement(Math.max(0, remaining));
-  }
-};
+  };
 
 
 
@@ -125,7 +136,7 @@ const handleMonthClick = (resultIndex, month, adjustedMonthValue) => {
 
     // If the remaining requirement will be exceeded by the selected month
     if (remainingRequirement - originalMonthValue < 0) {
-      results[resultIndex][month] = remainingRequirement;
+      manipulatedResults[resultIndex][month] = remainingRequirement;
       setRemainingRequirement(0);
     } else {
       if (adjustedMonthValue) {
@@ -232,13 +243,15 @@ return (
       </button>
     </div>
     <div className="flex justify-end pb-2">
-      <button
-        type="button"
-        onClick={handleSubmit}
-        className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-sky-800 border border-transparent rounded-md shadow-sm hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-      >
-        Submit
-      </button>
+    <LoadingButton
+  loadingLabel="Submitting"
+  isLoading={isLoading}
+  onClick={handleSubmit}
+  color="primary"
+  variant="contained"
+>
+  Submit
+</LoadingButton>
     </div>
     <table className="w-full table-auto border-collapse">
       <thead className=''>
@@ -247,7 +260,7 @@ return (
           <th className="px-4 py-2">Year</th>
           <th className="px-4 py-2">Type</th>
           <th className="px-4 py-2">CoD</th>
-          <th className="px-4 py-2">Total Production</th>
+                  <th className="px-4 py-2">Total Production</th>
         </tr>
       </thead>
       <tbody>
@@ -258,34 +271,31 @@ return (
             <td className="border px-4 py-2">{result.Type}</td>
             <td className="border px-4 py-2">{result.CoD}</td>
             <td
-              className={`border px-4 py-2 cursor-pointer hover:bg-indigo-100 ${
-                selectedTotalProduction.get(`${index}-Total_Production`)
-                  ? "bg-indigo-200"
-                  : ""
-              }`}
-              onClick={() => handleTotalProductionClick(index)}
-            >
-              {selectedTotalProduction.get(`${index}-Total_Production`)
-                ? Array.from(selectedMonths.keys())
-                    .filter((key) => key.startsWith(index + "-"))
-                    .reduce(
-                      (sum, key) => sum + results[index][key.split("-")[1]],
-                      0
-                    )
-                : result.Total_Production}
-            </td>
+  className={`border px-4 py-2 cursor-pointer hover:bg-indigo-100 ${
+    selectedTotalProduction.get(`${index}-Total_Production`)
+      ? "bg-indigo-200"
+      : ""
+  }`}
+  onClick={() => handleTotalProductionClick(index)}
+>
+  {selectedTotalProduction.get(`${index}-Total_Production`)
+    ? (() => {
+
+        const filteredKeys = Array.from(selectedMonths.keys())
+          .filter((key) => key.startsWith(index + "-"));
+        const result = filteredKeys.reduce(
+          (sum, key) => sum + parseInt(results[index][key.split("-")[1]]),
+          0
+        );
+        return result;
+      })()
+    : result.Total_Production
+  }
+</td>
           </tr>
         ))}
       </tbody>
     </table>
-    {isLoading && (
-  <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-gray-900 bg-opacity-50">
-    <svg className="animate-spin h-10 w-10 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-    </svg>
-  </div>
-)}
   </div>
 );
 };

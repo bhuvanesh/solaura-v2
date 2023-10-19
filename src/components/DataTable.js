@@ -1,7 +1,14 @@
+import ReactLoading from 'react-loading';
+
 const DataTable = ({ data }) => {
-    if (!data || data.length === 0) {
-      return <p>Loading...</p>;
-    }
+  if (!data || data.length === 0) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <ReactLoading type="bars" color="#8000FF" />
+      </div>
+    );
+  }
+
 
     return (
     <div style={{ overflowX: 'auto', height: '80vh' ,width:'83vw'}} className=" border-2 rounded-lg">

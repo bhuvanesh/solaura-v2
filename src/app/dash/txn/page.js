@@ -16,6 +16,7 @@ export default function Table() {
     const [data, setData] = useState([]);
     const [activeRow, setActiveRow] = useState(null);
     const [searchQuery, setSearchQuery] = useState(''); // State storing the current search term
+    const [statusFilter, setStatusFilter] = useState('Active');
     const confirmDelete = (row) => {
       if (window.confirm('Do you really want to delete this?')) {
         handleDelete(row).then(() => {
@@ -75,9 +76,9 @@ export default function Table() {
         });
     }, []);
 
-    const filteredData = data.filter((item) =>
-    item['Organisation'].toLowerCase().includes(searchQuery.toLowerCase())
- );
+    const filteredData = data.filter((item) => {
+      return item['Organisation'].toLowerCase().includes(searchQuery.toLowerCase()) && (statusFilter === 'All' || item['Status'] === 'succeeded');
+    });
 
     const downloadAsPDF = () => {
       const pdf = new jsPDF();
@@ -85,83 +86,79 @@ export default function Table() {
       pdf.text('Transaction Data', 14, 22);
       pdf.setFontSize(11);
       pdf.setTextColor(100);
-  
+    
       let finalY = 0;
-  
-      data.forEach((row) => {
-          const transactionColumns = [
-              { header: 'Transaction ID', dataKey: 'Transaction ID' },
-              { header: 'Organisation', dataKey: 'Organisation' },
-              { header: 'Status', dataKey: 'Status' },
-              { header: 'Total', dataKey: 'total' },
+    
+      // Filter the data based on the statusFilter
+      const dataToDownload = data.filter((item) => statusFilter === 'All' || item['Status'] === 'succeeded');
+    
+      dataToDownload.forEach((row) => {
+        const transactionColumns = [
+          { header: 'Transaction ID', dataKey: 'Transaction ID' },
+          { header: 'Organisation', dataKey: 'Organisation' },
+          { header: 'Status', dataKey: 'Status' },
+          { header: 'Total', dataKey: 'total' },
+        ];
+    
+        const transactionData = [{
+          'Transaction ID': row['Transaction ID'],
+          Organisation: row['Organisation'],
+          Status: row['Status'],
+          total: row['total'],
+        }];
+    
+        pdf.autoTable(transactionColumns, transactionData, {
+          startY: finalY === 0 ? 30 : finalY + 10,
+          margin: { horizontal: 14 },
+          styles: { overflow: 'linebreak', cellWidth: 'wrap' },
+          columnStyles: { text: { cellWidth: 'auto' } },
+          didParseCell: function(cell) {
+            if (cell.row.index === 0) {
+              cell.cell.styles.fontStyle = 'bold';
+            }
+          }
+        });
+    
+        finalY = pdf.autoTable.previous.finalY;
+    
+        row.details.forEach((detail) => {
+          const deviceColumns = [
+            { header: 'Device ID', dataKey: 'Device ID' },
+            { header: 'year', dataKey: 'year' },
+            ...months.map(month => (
+              detail[month] ? { header: month, dataKey: month } : null
+            )).filter(Boolean)
           ];
-  
-          const transactionData = [{
-              'Transaction ID': row['Transaction ID'],
-              Organisation: row['Organisation'],
-              Status: row['Status'],
-              total: row['total'],
-          }];
-  
-          pdf.autoTable(transactionColumns, transactionData, {
-              startY: finalY === 0 ? 30 : finalY + 10,
-              margin: { horizontal: 14 },
-              styles: { overflow: 'linebreak', cellWidth: 'wrap' },
-              columnStyles: { text: { cellWidth: 'auto' } },
-              didParseCell: function(cell) {
-                  if (cell.row.index === 0) {
-                      cell.cell.styles.fontStyle = 'bold';
-                  }
+    
+          const deviceData = [
+            months.reduce((acc, month) => {
+              if(detail[month]) {
+                acc[month] = detail[month];
               }
+              return acc;
+            }, {'Device ID': detail['Device ID'], 'year': detail['year']})
+          ]
+    
+          pdf.autoTable(deviceColumns, deviceData, {
+            startY: finalY + 10,
+            margin: { horizontal: 14 },
+            styles: { overflow: 'linebreak', cellWidth: 'wrap' },
+            columnStyles: { text: { cellWidth: 'auto' } },
+            didParseCell: function(cell) {
+              if (cell.section === 'head') {
+                cell.cell.styles.fillColor = 255; // White color
+                cell.cell.styles.textColor = 0; // Black color
+                cell.cell.styles.fontStyle = 'normal'; // No bold
+              }
+            },
           });
-  
+    
           finalY = pdf.autoTable.previous.finalY;
-  
-          row.details.forEach((detail) => {
-  
-              const deviceColumns = [
-                  { header: 'Device ID', dataKey: 'Device ID' },
-                  { header: 'Year', dataKey: 'Year' },   
-                  ...months.map(month => (
-                      detail[month]
-                          ? { header: month, dataKey: month }
-                          : null
-                  )).filter(Boolean)
-              ];
-  
-              const deviceData = [
-                  months.reduce(
-                      (acc, month) => {
-                          if(detail[month]) {
-                              acc[month] = detail[month];
-                          }
-                          return acc;
-                      },
-                  {'Device ID': detail['Device ID'],
-                  'Year': detail['Year']}
-                  )
-              ]
-  
-              pdf.autoTable(deviceColumns, deviceData, {
-                startY: finalY + 10,
-                margin: { horizontal: 14 },
-                styles: { overflow: 'linebreak', cellWidth: 'wrap' },
-                columnStyles: { text: { cellWidth: 'auto' } },
-                didParseCell: function(cell) {
-                    if (cell.section === 'head') {
-                        cell.cell.styles.fillColor = 255; // White color
-                        cell.cell.styles.textColor = 0; // Black color
-                        cell.cell.styles.fontStyle = 'normal'; // No bold
-                    }
-                },
-            });
-  
-              finalY = pdf.autoTable.previous.finalY;
-          });
+        });
       });
-  
+    
       pdf.save('transaction-data.pdf');
-  };
+    };
   console.log(filteredData);
 
   return (
@@ -177,6 +174,16 @@ export default function Table() {
               >
                 Download as PDF
               </button>
+            <div>
+  <input 
+      type="radio"  id="all" name="status" value="All"  checked={statusFilter === 'All'} 
+      onChange={(e) => setStatusFilter(e.target.value)}  />
+  <label htmlFor="all">All</label>
+<input 
+      type="radio"  id="active"  name="status" value="Active" className="ml-4" checked={statusFilter === 'Active'} 
+      onChange={(e) => setStatusFilter(e.target.value)}  />
+  <label htmlFor="active">Active</label>
+</div>
               <div className="mt-2">
                 <div className='py-2'>
                 <input
@@ -199,8 +206,7 @@ export default function Table() {
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200 text-left">
-                      {(searchQuery.length > 0 ? filteredData : data).map((row, i) => (
-                        <React.Fragment key={i}>
+                    {filteredData.map((row, i) => (                        <React.Fragment key={i}>
                           <tr onClick={() => activeRow === i ? setActiveRow(null) : setActiveRow(i)} className="hover:bg-gray-100 cursor-pointer">
                             <td className="px-4 py-2 whitespace-normal text-sm text-gray-500">{row['Transaction ID']}</td>
                             <td className="px-4 py-2 whitespace-normal text-sm text-gray-500">{row['Organisation']}</td>
