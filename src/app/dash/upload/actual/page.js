@@ -3,14 +3,17 @@ import { useState } from 'react';
 import * as XLSX from 'xlsx';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import LoadingButton from '@/components/Loading';
 const Upload = () => {
   const [file, setFile] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
   };
 
   const handleUpload = async () => {
+    setIsLoading(true);
     const reader = new FileReader();
     reader.onload = async (e) => {
         const data = e.target.result;
@@ -41,7 +44,7 @@ const Upload = () => {
                 window.location.reload();
             },
         });
-
+        setIsLoading(false);
     };
 
     if (file) {
@@ -49,26 +52,29 @@ const Upload = () => {
     }
 };
 
-  return (
-    <div className="flex flex-col items-center min-h-screen">
-      <ToastContainer />
-      <div className="space-y-4">
-        <h1 className="text-2xl font-bold">Upload Actual data File</h1>
+return (
+  <div className="flex flex-col items-center min-h-screen">
+    <ToastContainer />
+    <div className="space-y-4">
+      <h1 className="text-2xl font-bold">Upload Actual data File</h1>
+      <div className="flex items-center space-x-4"> 
         <input
           type="file"
           accept=".xlsx"
           className="bg-white py-2 px-4 rounded"
           onChange={handleFileChange}
         />
-        <button
+        <LoadingButton
           onClick={handleUpload}
-          className="cursor-pointer transform transition duration-500 ease-in-out bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded hover:scale-105 active:scale-95"
+          isLoading={isLoading}
+          loadingLabel="Uploading..."
         >
           Upload
-        </button>
-      </div>
+        </LoadingButton>
+      </div> 
     </div>
-  );
+  </div>
+);
 };
 
 export default Upload;

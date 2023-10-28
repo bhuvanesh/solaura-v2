@@ -3,6 +3,8 @@ import { useState } from 'react';
 import * as XLSX from 'xlsx';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import LoadingButton from '@/components/Loading';
+
 
 const readExcelFile = (file) => {
   return new Promise((resolve, reject) => {
@@ -23,8 +25,8 @@ const readExcelFile = (file) => {
 const processExcelData = (data) => {
   // Add an array of month names
   const monthNames = [
-    'January', 'February', 'March', 'April', 'May', 'June', 'July',
-    'August', 'September', 'October', 'November', 'December'
+    'january', 'february', 'march', 'april', 'may', 'june', 'july',
+    'august', 'september', 'october', 'november', 'december'
   ];
 
   return data.flatMap((row) => {
@@ -76,6 +78,8 @@ const sendDataToApi = async (data) => {
 
 const UploadPage = () => {
   const [excelData, setExcelData] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+
 
   const readExcel = async (file) => {
     try {
@@ -89,38 +93,45 @@ const UploadPage = () => {
 
   const handleUpload = async () => {
     if (excelData) {
+      setIsLoading(true);
       try {
         const processedData = processExcelData(excelData);
         const apiResponse = await sendDataToApi(processedData);
         console.log('API response:', apiResponse);
-        toast.success('Data uploaded successfully');
-      } catch (error) {
+        toast.success('Data uploaded successfully', {
+          onClose: () => window.location.reload()
+        });      } catch (error) {
         toast.error('Error uploading data');
+      } finally {
+        setIsLoading(false);
       }
     } else {
       toast.error('Please select a file first');
     }
   };
-
   return (
     <div className="flex flex-col items-center min-h-screen">
       <ToastContainer />
       <div className="space-y-4">
         <h2 className="text-2xl font-bold">Upload Issued File Here</h2>
-        <input
-          type="file"
-          className="bg-white py-2 px-4 rounded"
-          onChange={(e) => {
-            const file = e.target.files[0];
-            readExcel(file);
-          }}
-        />
-        <button
-          onClick={handleUpload}
-          className="cursor-pointer transform transition duration-500 ease-in-out bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded hover:scale-105 active:scale-95"
-        >
-          Upload
-        </button>
+        <div className="flex items-center space-x-4"> 
+          <input
+            type="file"
+            className="bg-white py-2 px-4 rounded"
+            onChange={(e) => {
+              const file = e.target.files[0];
+              readExcel(file);
+            }}
+          />
+          <LoadingButton
+            onClick={handleUpload}
+            isLoading={isLoading}
+            loadingLabel="Uploading..."
+            className="cursor-pointer transform transition duration-500 ease-in-out bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded hover:scale-105 active:scale-95"
+          >
+            Upload
+          </LoadingButton>
+        </div> 
       </div>
     </div>
   );

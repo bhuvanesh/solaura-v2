@@ -10,8 +10,8 @@ export async function POST(req) {
     // Get a connection to the PlanetscaleDB database
     const conn = await getPSConnection();
 
-    // Prepare the batch insert query by creating an array of values and placeholders
-    const values = rows.flatMap(row => [row.project, row.month, row.year, row.actual]);
+// Prepare the batch insert query by creating an array of values and placeholders
+const values = rows.flatMap(row => [row.project, row.month.toLowerCase().trim(), row.year, row.actual]);
     const placeholders = rows.map(() => '(?, ?, ?, ?)').join(', ');
     
     // Define the SQL query for inserting or updating rows in the inventory2 table
