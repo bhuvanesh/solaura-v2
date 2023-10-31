@@ -3,6 +3,7 @@ import React from 'react'
 import { BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
 
 const EstUse = ({data}) => {
+  const dataMax = 155000000
   return (
 
     <ResponsiveContainer width="100%" height={350}>
@@ -20,6 +21,11 @@ const EstUse = ({data}) => {
           tickLine={false}
           axisLine={false}
           tickFormatter={(value) => `${value} kWh`}
+          type="number" domain={[0, dataMax]}
+          padding={{ top:10 }}
+          width={100}
+          
+          // scale="band"
         />
         {/* <Bar dataKey="total" fill="#adfa1d" radius={[4, 4, 0, 0]} stroke='green' /> */}
         <Bar dataKey="Estimate" fill="#0c4a6e" radius={[4, 4, 0, 0]}  />
