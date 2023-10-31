@@ -34,7 +34,7 @@ export async function POST(request) {
     // Execute the SQL query to fetch the aggregated data for the specified conditions
     const [rows] = await connection.query(`
       SELECT \`Device ID\`, \`Year\`, \`Type\`, \`CoD\`, ${monthSums}, SUM(CASE WHEN \`Actual\` = 0 THEN \`Estimated\` - \`Estimated_used\` ELSE \`Actual\` - \`Actual_used\` END) as Total_Production
-      FROM \`inventory\`
+      FROM \`inventory2\`
       WHERE ${CoDYearCondition} AND ${typeCondition} AND \`Month\` IN (?) AND \`Year\` = ?
       GROUP BY \`Device ID\`, \`Year\`, \`Type\`, \`CoD\`
       HAVING Total_Production >= 0
