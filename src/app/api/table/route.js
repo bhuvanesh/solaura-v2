@@ -8,8 +8,8 @@ export async function POST(request) {
 
   // Define an array of month column names
   const monthColumns = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December',
+    'january', 'february', 'march', 'april', 'may', 'june',
+    'july', 'august', 'september', 'october', 'november', 'december'
   ];
 
   // Select the months within the specified production period
@@ -21,8 +21,7 @@ export async function POST(request) {
   }
 
   // Generate the SQL query string for summing the production values for each selected month
-  const monthSums = selectedMonths.map(month => `SUM(CASE WHEN \`Month\` = '${month}' THEN (CASE WHEN \`Actual\` - \`Actual_used\` = 0 THEN \`Estimated\` - \`Estimated_used\` ELSE \`Actual\` - \`Actual_used\` END) ELSE 0 END) as \`${month}\``).join(', ');
-
+const monthSums = selectedMonths.map(month => `SUM(CASE WHEN \`Month\` = '${month}' THEN (CASE WHEN COALESCE(\`Actual\`, 0) - COALESCE(\`Actual_used\`, 0) = 0 THEN COALESCE(\`Estimated\`, 0) - COALESCE(\`Estimated_used\`, 0) ELSE COALESCE(\`Actual\`, 0) - COALESCE(\`Actual_used\`, 0) END) ELSE 0 END) as \`${month}\``).join(', ');
   try {
     // Get a connection to the PlanetscaleDB database
     const connection = await getPSConnection();
@@ -31,16 +30,15 @@ export async function POST(request) {
     const CoDYearCondition = CoDYear === 0 ? 'YEAR(CoD) < YEAR(CURDATE()) - 10' : `YEAR(CoD) >= ${CoDYear}`;
     const typeCondition = type === 'Both' ? "(`Type` = 'Solar' OR `Type` = 'Wind')" : "`Type` = ?";
 
-    // Execute the SQL query to fetch the aggregated data for the specified conditions
-    const [rows] = await connection.query(`
-      SELECT \`Device ID\`, \`Year\`, \`Type\`, \`CoD\`, ${monthSums}, SUM(CASE WHEN \`Actual\` = 0 THEN \`Estimated\` - \`Estimated_used\` ELSE \`Actual\` - \`Actual_used\` END) as Total_Production
+// Your SQL statement to fetch the aggregated data would change to handle null conditions in Actual_used and Estimated_used
+const [rows] = await connection.query(`
+      SELECT \`Device ID\`, \`Year\`, \`Type\`, \`CoD\`, ${monthSums}, SUM(CASE WHEN COALESCE(\`Actual\`, 0) = 0 THEN COALESCE(\`Estimated\`, 0) - COALESCE(\`Estimated_used\`, 0) ELSE COALESCE(\`Actual\`, 0) - COALESCE(\`Actual_used\`, 0) END) as Total_Production
       FROM \`inventory2\`
       WHERE ${CoDYearCondition} AND ${typeCondition} AND \`Month\` IN (?) AND \`Year\` = ?
       GROUP BY \`Device ID\`, \`Year\`, \`Type\`, \`CoD\`
       HAVING Total_Production >= 0
       ORDER BY Total_Production DESC
-    `, type === 'Both' ? [selectedMonths, year] : [type, selectedMonths, year]);
-
+`, type === 'Both' ? [selectedMonths, year] : [type, selectedMonths, year]);
     // Return the data as a JSON object
     return new Response(JSON.stringify(rows), {
       headers: { 'content-type': 'application/json' },

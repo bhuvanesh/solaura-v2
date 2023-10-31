@@ -212,15 +212,14 @@ const handleMonthClick = (resultIndex, month, adjustedMonthValue) => {
   
 
   const months = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December',
+    'january', 'february', 'march', 'april', 'may', 'june',
+    'july', 'august', 'september', 'october', 'november', 'december'
   ];
   const visibleMonths = months.filter(month => results.some(result => result[month]));
   useEffect(() => {
     suggestMonths();
 }, []);
 
-  // ... other code
 
 return (
   <div className="container mx-auto px-4">

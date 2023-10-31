@@ -2,7 +2,7 @@ import getPSConnection from '@/lib/planetscaledb';
 
 export async function POST(request) {
   const selectedMonths = await request.json();
-  console.log('POST message body:', selectedMonths);
+  console.log('POST message body1:', selectedMonths);
 
   try {
     const connection = await getPSConnection();
@@ -16,19 +16,22 @@ export async function POST(request) {
 
         // Get the current Actual and Estimated values
         const [[currentValues]] = await connection.query(`
-          SELECT \`Actual\`, \`Estimated\`
+          SELECT COALESCE(\`Actual\`, 0) as \`Actual\`, COALESCE(\`Estimated\`, 0) as \`Estimated\`
           FROM \`inventory2\`
           WHERE \`Device ID\` = ? AND \`Month\` = ?
         `, [deviceId, month]);
+        console.log('CurrentValues:', currentValues);
 
         // Update the database based on the retrieved values
-        await connection.query(`
+        const [updateResults] = await connection.query(`
         UPDATE \`inventory2\`
         SET
-          \`Actual_used\` = \`Actual_used\` + (CASE WHEN \`Actual\` > 0 AND ? > 0 THEN ? ELSE 0 END),
-          \`Estimated_used\` = \`Estimated_used\` + (CASE WHEN \`Actual\` = 0 THEN ? ELSE 0 END)
+          \`Actual_used\` = COALESCE(\`Actual_used\`, 0) + (CASE WHEN COALESCE(\`Actual\`, 0) > 0 AND ? > 0 THEN ? ELSE 0 END),
+          \`Estimated_used\` = COALESCE(\`Estimated_used\`, 0) + (CASE WHEN COALESCE(\`Actual\`, 0) = 0 THEN ? ELSE 0 END)
         WHERE \`Device ID\` = ? AND \`Month\` = ?
       `, [value, value, value, deviceId, month]);
+
+        console.log('UpdateResults:', updateResults); 
       }
     }
 

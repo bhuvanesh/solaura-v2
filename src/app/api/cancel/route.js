@@ -17,15 +17,17 @@ export async function DELETE(req) {
 
     // Loop through monthData and update the inventory2 table for each month
     for (const [month, valueToSubtract] of Object.entries(monthData)) {
-      const [inventory2Row] = await conn.query('SELECT * FROM inventory2 WHERE `Device ID` = ? AND `month` = ?', [deviceId, month]);
+      const lowercaseMonth = month.toLowerCase(); // Convert month name to lowercase
+      const [[inventory2Row]] = await conn.query('SELECT `Actual_used`, `Estimated_used`, COALESCE(`Actual_used`, 0) AS `Actual_used`, COALESCE(`Estimated_used`, 0) AS `Estimated_used` FROM inventory2 WHERE `Device ID` = ? AND `month` = ?', [deviceId, lowercaseMonth]);
+
       if (inventory2Row) {
         const actualUsed = inventory2Row['Actual_used'];
         const estimatedUsed = inventory2Row['Estimated_used'];
 
         if (actualUsed > 0) {
-          await conn.query('UPDATE inventory2 SET `Actual_used` = `Actual_used` - ? WHERE `Device ID` = ? AND `month` = ?', [valueToSubtract, deviceId, month]);
+          await conn.query('UPDATE inventory2 SET `Actual_used` = COALESCE(`Actual_used`, 0) - ? WHERE `Device ID` = ? AND `month` = ?', [valueToSubtract, deviceId, lowercaseMonth]);
         } else {
-          await conn.query('UPDATE inventory2 SET `Estimated_used` = `Estimated_used` - ? WHERE `Device ID` = ? AND `month` = ?', [valueToSubtract, deviceId, month]);
+          await conn.query('UPDATE inventory2 SET `Estimated_used` = COALESCE(`Estimated_used`, 0) - ? WHERE `Device ID` = ? AND `month` = ?', [valueToSubtract, deviceId, lowercaseMonth]);
         }
       }
     }
