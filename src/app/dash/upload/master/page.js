@@ -106,14 +106,14 @@ const ExcelUpload = () => {
         <div className="space-y-4">
           <h2 className="text-2xl font-bold">Upload Master File Here</h2>
           <div className="flex items-center space-x-4"> 
-            <input
-              type="file"
-              className="bg-white py-2 px-4 rounded"
-              onChange={(e) => {
-                const file = e.target.files;
-                readExcel(file);
-              }}
-            />
+          <input
+  type="file"
+  className="bg-white py-2 px-4 rounded"
+  onChange={(e) => {
+    const file = e.target.files[0]; 
+    readExcel(file);
+  }}
+/>
             <LoadingButton
               onClick={handleUpload}
               isLoading={isLoading}
