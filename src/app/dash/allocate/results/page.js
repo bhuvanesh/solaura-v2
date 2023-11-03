@@ -4,47 +4,69 @@ import { useRouter } from 'next/navigation';
 import ResultsContext from '@/app/SearchContext/store';
 import { v4 as uuidv4 } from 'uuid';
 import LoadingButton from '@/components/Loading';
+import { Dialog, DialogTitle, DialogContent, TextField, DialogActions, Button } from '@mui/material';
+import { toast,ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 
+
+function calcTotal(obj, monthArray) {
+  return monthArray.reduce((sum, month) => sum + parseInt(obj[month]), 0);
+}
 
 const Results = () => {
   const { results, requirement ,organisation } = useContext(ResultsContext);
   const [selectedMonths, setSelectedMonths] = useState(new Map());
   const router = useRouter();
   const [remainingRequirement, setRemainingRequirement] = useState(parseInt(requirement));
-  const [selectedTotalProduction, setSelectedTotalProduction] = useState(new Map());
   const [isLoading, setIsLoading] = useState(false);
   const [manipulatedResults, setManipulatedResults] = useState([...results]);
+  const [open, setOpen] = useState(false); 
+const [editKey, setEditKey] = useState(''); 
+const [editValue, setEditValue] = useState(0);
+const [oldValue, setOldValue] = useState(0); 
 
-  
+
+const handleClose = () => {
+  setOpen(false);
+};
+
+const handleOpen = (key, value, oldValue) => {
+  setEditKey(key);
+  setEditValue(value);
+  setOldValue(oldValue);
+  setOpen(true);  
+};
+const handleUnselect = () => {
+  const [resultIndex, month] = editKey.split("-");
+  setRemainingRequirement(prev => prev + parseFloat(results[resultIndex][month]));
+  results[resultIndex][month] = originalResults[resultIndex][month];
+  setSelectedMonths(prev => new Map(prev).set(editKey, false));
+  handleClose();
+};
+
+
   const suggestMonths = () => {
     console.log("Starting Suggestion");
-    removeSuggestion(() => {
-      let suggestion = new Map();
-      let remaining = parseInt(requirement);
-      // Now it processes all devices sorted by production
-      let sorted = [...results].sort((a, b) => b.Total_Production - a.Total_Production);
-      outerLoop: for (let i = 0; i < sorted.length && remaining > 0; i++) {
-        const result = sorted[i];
-        const key = `${i}-Total_Production`;
-        setSelectedTotalProduction((prev) => new Map(prev).set(key, true));
-        for (const month of visibleMonths) {
-          if (remaining <= 0) break outerLoop;
-          let monthValue = parseInt(result[month]);
-          let adjustedMonthValue = Math.min(monthValue, remaining);
-          suggestion.set(`${i}-${month}`, true);
-          result[month] = adjustedMonthValue;
-          remaining -= adjustedMonthValue;
-        }
+    let suggestion = new Map();
+    let remaining = parseInt(requirement);
+    let sorted = [...results].sort((a, b) => calcTotal(b, visibleMonths) - calcTotal(a, visibleMonths));
+    outerLoop: for (let i = 0; i < sorted.length && remaining > 0; i++) {
+    const result = sorted[i];
+    for (const month of visibleMonths) {
+      if (remaining <= 0) break outerLoop;
+      let monthValue = parseInt(result[month]);
+      let adjustedMonthValue = Math.min(monthValue, remaining);
+      suggestion.set(`${i}-${month}`, true);
+      result[month] = adjustedMonthValue;
+      remaining -= adjustedMonthValue;
       }
-      setSelectedMonths(suggestion);
-      setRemainingRequirement(remaining);
-      console.log("Finished Suggestion");
-    });
+    }
+    setSelectedMonths(suggestion);
+    setRemainingRequirement(remaining);
+    console.log("Finished Suggestion");
   };
-  
-  
-  
+
   const removeSuggestion = (callback) => {
     setSelectedMonths(prev => {
       const map = new Map();
@@ -61,96 +83,69 @@ const Results = () => {
     });
     setRemainingRequirement(parseInt(requirement));
   
-    // Unselect the selected 'total production'
-    setSelectedTotalProduction(new Map());
+   
   };
-  
-
   const [originalResults, setOriginalResults] = React.useState(null);
   useEffect(() => {
     setOriginalResults(JSON.parse(JSON.stringify(results)));
   }, [results]);
-  const handleTotalProductionClick = (resultIndex) => {
-    const key = `${resultIndex}-Total_Production`;
-    const currentValue = selectedTotalProduction.get(key);
-  
-    if (currentValue) {
-      setSelectedTotalProduction((prev) => new Map(prev).set(key, false));
-  
-      // Unselect the selected months when 'Total Production' is unselected
-      visibleMonths.forEach((month) => {
-        const monthKey = `${resultIndex}-${month}`;
-        if (selectedMonths.get(monthKey)) {
-          handleMonthClick(resultIndex, month);
-        }
-      });
-    } else {
-      if (remainingRequirement === 0) return;
-  
-      setSelectedTotalProduction((prev) => new Map(prev).set(key, true));
-      let remaining = remainingRequirement;
-  
-      for (const month of visibleMonths) {
-        if (remaining <= 0) break;
-  
-        const monthValue = parseInt(manipulatedResults[resultIndex][month]);
-  
-        // Check and adjust value
-        let adjustedMonthValue = Math.min(monthValue, remaining);
-  
-        if(remaining >= monthValue) {
-          remaining -= monthValue;
-          handleMonthClick(resultIndex, month);
+
+  const handleMonthClick = (resultIndex, month, adjustedMonthValue) => {
+    const key = `${resultIndex}-${month}`;
+    const currentValue = selectedMonths.get(key);
+    let monthValue = parseInt(results[resultIndex][month]);
+    let originalMonthValue = originalResults[resultIndex][month];
+    if (!currentValue) {
+        if (remainingRequirement == 0) return;
+        if (remainingRequirement - monthValue < 0) {
+          results[resultIndex][month] = remainingRequirement;
+          setRemainingRequirement(0);
         } else {
-          const key = `${resultIndex}-${month}`;
-          let originalMonthValue = originalResults[resultIndex][month];
-          results[resultIndex][month] = adjustedMonthValue;
-          remaining -= adjustedMonthValue;
-          setSelectedMonths((prev) => new Map(prev).set(key, !prev.get(key)));
+          if (remainingRequirement >= monthValue) {
+            setRemainingRequirement((prev) => prev - monthValue);
+          } else {
+            toast.error("Month value exceeded remaining requirement"); 
+            return;
+          }
         }
-        // Ensure the remaining requirement stays at a minimum value of 0
-        setRemainingRequirement(Math.max(0, remaining));
-      }
+      setSelectedMonths((prev) => new Map(prev).set(key, true));
+    } else {
+      setOpen(true);
+      setOldValue(monthValue);
+      setEditKey(key);
+      setEditValue(results[resultIndex][month].toString());
     }
   };
-
-
-
-
-
-
-const handleMonthClick = (resultIndex, month, adjustedMonthValue) => {
-  const key = `${resultIndex}-${month}`;
-  const currentValue = selectedMonths.get(key);
-  let monthValue = parseInt(results[resultIndex][month]);
-  let originalMonthValue = originalResults[resultIndex][month];
-
-  // If unselecting a month
-  if (currentValue) {
-    setRemainingRequirement((prev) => prev + monthValue);
-    // reset the value to original
-    results[resultIndex][month] = originalMonthValue;
-  } else {
-    // already reached the requirement
-    if (remainingRequirement == 0) return;
-
-    // If the remaining requirement will be exceeded by the selected month
-    if (remainingRequirement - originalMonthValue < 0) {
-      manipulatedResults[resultIndex][month] = remainingRequirement;
-      setRemainingRequirement(0);
-    } else {
-      if (adjustedMonthValue) {
-        // Use the adjustedMonthValue when provided
-        results[resultIndex][month] = adjustedMonthValue;
-        setRemainingRequirement((prev) => prev - adjustedMonthValue);
+  const handleEdit = () => {
+    const [resultIndex, month] = editKey.split("-");
+    const newMonthValue = parseInt(editValue);
+    let currentMonthValue = results[resultIndex][month];
+  
+    if (newMonthValue < 0 || newMonthValue > currentMonthValue){
+      toast.warning("Invalid input. Please input a value between 0 and " + currentMonthValue);
+      return;
+    }
+  
+    const difference = newMonthValue - oldValue;
+  
+    if (difference > 0) {
+      if (difference <= remainingRequirement) {
+          setRemainingRequirement(prev => prev - difference);
       } else {
-        setRemainingRequirement((prev) => prev - monthValue);
+        toast.warning("The value you entered exceeded the remaining requirement.");
+          return;
       }
     }
+  
+    if (difference < 0) {
+      setRemainingRequirement(prev => prev - difference);
+    }
+  
+    results[resultIndex][month] = newMonthValue;  
+  
+    handleClose();
+    setSelectedMonths(prev => new Map(prev).set(editKey, true)); 
   }
-  // Toggle the month selection state
-  setSelectedMonths((prev) => new Map(prev).set(key, !prev.get(key)));
-};
 
 
   const handleSubmit = async () => {
@@ -187,7 +182,7 @@ const handleMonthClick = (resultIndex, month, adjustedMonthValue) => {
     console.log(updatedResults);
   
     if (updatedResults.message === 'Database updated successfully') {
-      alert('Your order placed');
+      toast.success('Your order placed');
       const uniqueId = uuidv4();
       const response = await fetch('/api/buyer', {
         method: 'POST',
@@ -201,10 +196,10 @@ const handleMonthClick = (resultIndex, month, adjustedMonthValue) => {
       if (buyerResponse.message === 'Buyer Database updated successfully!') {
         router.push(`/dash/allocate/results/payment?uniqueId=${uniqueId}`);
       } else {
-        alert('Error updating Buyer Database');
+        toast.error('Error updating Buyer Database');
       }
     } else {
-      alert('Error updating Database');
+      toast.error('Error updating Database');
     }
     setIsLoading(false);
 
@@ -223,80 +218,88 @@ const handleMonthClick = (resultIndex, month, adjustedMonthValue) => {
 
 return (
   <div className="container mx-auto px-4">
-    <h1 className="text-2xl font-bold mb-4">Search Results</h1>
-    <p>Requirement: {remainingRequirement}</p>
-    <div>
-      <button
-        type="button"
-        onClick={suggestMonths}
-        className="inline-flex items-center px-4 py-2 mr-2 text-sm font-medium text-white bg-teal-400 border border-transparent rounded-md shadow-sm hover:bg-teal-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-      >
-        Apply Suggestions
-      </button>
-      <button
-        type="button"
-        onClick={removeSuggestion}
-        className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-red-500 border border-transparent rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-      >
-        Remove Suggestions
-      </button>
-    </div>
-    <div className="flex justify-end pb-2">
-    <LoadingButton
-  loadingLabel="Submitting"
-  isLoading={isLoading}
-  onClick={handleSubmit}
-  color="primary"
-  variant="contained"
->
-  Submit
-</LoadingButton>
-    </div>
-    <table className="w-full table-auto border-collapse">
-      <thead className=''>
-        <tr className="bg-sky-800 text-white">
-          <th className="px-4 py-2">Device ID</th>
-          <th className="px-4 py-2">Year</th>
-          <th className="px-4 py-2">Type</th>
-          <th className="px-4 py-2">CoD</th>
-                  <th className="px-4 py-2">Total Production</th>
-        </tr>
-      </thead>
-      <tbody>
-        {results.map((result, index) => (
-          <tr key={index} className={index % 2 === 0 ? "bg-gray-100" : ""}>
-            <td className="border px-4 py-2">{result["Device ID"]}</td>
-            <td className="border px-4 py-2">{result.Year}</td>
-            <td className="border px-4 py-2">{result.Type}</td>
-            <td className="border px-4 py-2">{result.CoD}</td>
-            <td
-  className={`border px-4 py-2 cursor-pointer hover:bg-indigo-100 ${
-    selectedTotalProduction.get(`${index}-Total_Production`)
-      ? "bg-indigo-200"
-      : ""
-  }`}
-  onClick={() => handleTotalProductionClick(index)}
->
-  {selectedTotalProduction.get(`${index}-Total_Production`)
-    ? (() => {
-
-        const filteredKeys = Array.from(selectedMonths.keys())
-          .filter((key) => key.startsWith(index + "-"));
-        const result = filteredKeys.reduce(
-          (sum, key) => sum + parseInt(results[index][key.split("-")[1]]),
-          0
-        );
-        return result;
-      })()
-    : result.Total_Production
-  }
-</td>
-          </tr>
+    <ToastContainer />
+      <h1 className="text-2xl font-bold mb-4">Search Results</h1>
+      <p>Requirement: {remainingRequirement}</p>
+      <div>
+        <button
+          type="button"
+          onClick={suggestMonths}
+          className="inline-flex items-center px-4 py-2 mr-2 text-sm font-medium text-white bg-teal-400 border border-transparent rounded-md shadow-sm hover:bg-teal-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+        >
+          Apply Suggestions
+        </button>
+        <button
+          type="button"
+          onClick={removeSuggestion}
+          className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-red-500 border border-transparent rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+        >
+          Remove Suggestions
+        </button>
+      </div>
+      <div className="flex justify-end pb-2">
+      <LoadingButton
+    loadingLabel="Submitting"
+    isLoading={isLoading}
+    onClick={handleSubmit}
+    color="primary"
+    variant="contained"
+  >
+    Submit
+  </LoadingButton>
+      </div>
+      <table className="w-full table-auto border-collapse">
+       <thead className=''>
+    <tr className="bg-sky-800 text-white">
+      <th className="px-4 py-2">Device ID</th>
+      <th className="px-4 py-2">Year</th>
+      <th className="px-4 py-2">Type</th>
+      <th className="px-4 py-2">CoD</th>
+      <th className="px-4 py-2">Total Production</th>
+      {visibleMonths.map((month, index) => (
+        <th key={index} className="px-4 py-2">{month.charAt(0).toUpperCase() + month.slice(1)}</th>
+      ))}
+    </tr>
+  </thead>
+  <tbody>
+    {results.map((result, index) => (
+      <tr key={index} className={index % 2 === 0 ? "bg-gray-100" : ""}>
+        <td className="border px-4 py-2">{result["Device ID"]}</td>
+        <td className="border px-4 py-2">{result.Year}</td>
+        <td className="border px-4 py-2">{result.Type}</td>
+        <td className="border px-4 py-2">{result.CoD}</td>
+        <td className="border px-4 py-2">
+          {result.Total_Production}
+        </td>
+        {visibleMonths.map((month, monthIndex) => (
+          <td key={monthIndex} className={`border px-4 py-2 cursor-pointer hover:bg-indigo-100 ${ selectedMonths.get(`${index}-${month}`) ? "bg-indigo-200" : "" }`} onClick={() => handleMonthClick(index, month)} >
+            {result[month]}
+          </td>
         ))}
-      </tbody>
-    </table>
-  </div>
-);
+      </tr>
+    ))}
+  </tbody>
+  </table>
+  <Dialog open={open} onClose={handleClose}>
+      <DialogTitle>Edit your Requirement</DialogTitle>
+      <DialogContent>
+        <TextField
+          autoFocus
+          margin="dense"
+          label="Requirement"
+          type="number"
+          value={editValue}
+          onChange={(e) => setEditValue(e.target.value)}
+          fullWidth
+        />
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={handleClose}>Cancel</Button>
+        <Button color="secondary" onClick={handleUnselect}>Unselect</Button>
+        <Button onClick={handleEdit}>Save</Button>
+      </DialogActions>
+    </Dialog>
+</div>);
 };
 
 export default Results;

@@ -53,8 +53,8 @@ const Groups = () => {
         const tableData = [
           { key: 'No. of Devices', value: groupDetails.no_of_devices },
           { key: 'Estimated Generation', value: `${groupDetails.estimated_generation} kWh` },
-          { key: 'Actual Generation', value: `${groupDetails.actual_generation} kWh` },
-          { key: 'Total Issuance', value: `${groupDetails.total_issuance} kWh` },
+          { key: 'Actual Generation', value: `${groupDetails.actual_generation ? groupDetails.actual_generation : 0} kWh` },
+          { key: 'Total Issuance', value: `${groupDetails.total_issuance ? groupDetails.total_issuance : 0} kWh` },
           { key: 'Future Commitment', value: `${groupDetails.future_commitment} kWh` },
         ];
   
@@ -208,8 +208,8 @@ const Groups = () => {
                     <ul className="space-y-2">
                       <li>No. of Devices: {selectedGroupDetails.no_of_devices}</li>
                       <li>Estimated Generation: {selectedGroupDetails.estimated_generation}KWh</li>
-                      <li>Actual Generation: {selectedGroupDetails.actual_generation}KWh</li>
-                      <li>Total Issuance: {selectedGroupDetails.total_issuance}KWh</li>
+                      <li>Actual Generation: {selectedGroupDetails.actual_generation ? selectedGroupDetails.actual_generation : 0}KWh</li>
+                     <li>Total Issuance: {selectedGroupDetails.total_issuance ? selectedGroupDetails.total_issuance : 0}KWh</li>
                       <li>Future Commitment: {selectedGroupDetails.future_commitment}KWh</li>
                     </ul>
                   </div>

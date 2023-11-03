@@ -10,26 +10,28 @@ const DownloadPage = () => {
   const [selectedGroup, setSelectedGroup] = useState("");
   const [selectedYear, setSelectedYear] = useState(null);
 
-  // Fetch the groups when the component mounts
-  useEffect(() => {
-    const fetchGroups = async () => {
-      const response = await fetch("/api/sum", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({}),
-      });
+// Fetch the groups when the component mounts
+useEffect(() => {
+  const fetchGroups = async () => {
+    const response = await fetch("/api/sum", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({}),
+    });
 
-      const data = await response.json();
-            // Log group names
-            const groupNames = data.map(group => group.Group);
-            console.log(groupNames);
-      setGroups(data);
-      if (data.length > 0) setSelectedGroup(data[0].Group);
-    };
-    fetchGroups();
-  }, []);
+    const data = await response.json();
+    const allGroupsOption = {Group: "All groups"};
+    data.unshift(allGroupsOption); // Add 'All groups' option at the start
+    setGroups(data);
+
+    if (data[1]) {   // data[0] is 'All groups', so data[1] will be the first group
+      setSelectedGroup(data[1].Group);
+    }
+  };
+  fetchGroups();
+}, []);
 
   // Fetch the data when the selected group changes
   useEffect(() => {
@@ -77,11 +79,11 @@ const downloadAsExcel = () => {
   const uniqueYears = Array.from(new Set(data.map((item) => item["Year"])));
   const years = uniqueYears.sort((a, b) => b - a);
 
-  const filteredData = data.filter(
-    (item) =>
-    item["Group"] === selectedGroup &&
-      item["Year"] === selectedYear
-  );
+  const filteredData = selectedGroup === "All groups"
+  ? data
+  : data.filter(
+      (item) => item["Group"] === selectedGroup && item["Year"] === selectedYear
+    );
 
   return (
     <div className="DownloadPage">
@@ -103,8 +105,8 @@ const downloadAsExcel = () => {
   onChange={handleGroupChange}
   className="border px-4 py-2 rounded-md border-sky-800"
 >
-  {groups.map((group) => (
-    <option key={group.Group} value={group.Group}>
+  {groups.map((group, index) => (
+    <option key={index} value={group.Group}>
       {group.Group}
     </option>
   ))}
