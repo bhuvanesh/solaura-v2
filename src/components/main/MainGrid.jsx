@@ -23,15 +23,18 @@ import BuyerList from "./rankCards/BuyerList";
 
 //import { prisma } from "@/lib/prisma";
 import FooterCard from "./cards/FooterCard";
+import Type from "./charts/type";
+export const revalidate=120;
 
 const MainGrid = () => {
   let currYear = new Date().getFullYear();
   const [cardData, setCardData] = useState({});
   const [estActMonthData, setEstActMonthData] = useState({});
   const [estUseMonthData, setEstUseMonthData] = useState({});
+  const [typeData, setTypeData] = useState({});
 
   useEffect(() => {
-    fetch("/api/dash/cards")
+    fetch("/api/dash/cards", { next: { revalidate: 120 } })
       .then((response) => response.json())
       .then((data) => {
         console.log(data);
@@ -45,6 +48,15 @@ const MainGrid = () => {
         console.log(data);
         setEstUseMonthData({ monthData: data.monthData.map((item) => ({ month: item.month, Usage: item.usage, Estimate: item.estimate })) });
         setEstActMonthData({ monthData: data.monthData.map((item) => ({ month: item.month, Actual: item.actual, Estimate: item.estimate })) });
+        setTypeData({ 
+          monthData: data.monthData.map((item) => ({ 
+            month: item.month, 
+            solarEstimate: item.solarEstimate, 
+            windEstimate: item.windEstimate, 
+            solarUsage: item.solarUsage, 
+            windUsage: item.windUsage 
+          })) 
+        });
       })
       .catch((error) => console.error("Error:", error));
   }, []);
@@ -61,10 +73,14 @@ const MainGrid = () => {
         <div className="col-span-3 lg:col-span-1">
           <InfoCard2 className="" titleText={"Under Registration"} bodyText={"Pending: " + cardData.pending} bodyText2={"Pipeline: " + cardData.pipeline + " Kwh"} Icon={CircleStackIcon} />
         </div>
-        <Card className="col-span-3 lg:col-span-3 h-auto">
+        {/* <Card className="col-span-3 lg:col-span-3 h-auto">
           <CardHeader className="text-center">Estimate vs Usage</CardHeader>
           <EstUse className="h-full" data={estUseMonthData.monthData} />
-        </Card>
+        </Card> */}
+         <Card className="col-span-3 lg:col-span-3 h-auto">
+    <CardHeader className="text-center">Solar vs wind estimate & Usage</CardHeader>
+    <Type className="h-full" data={typeData.monthData} />  
+  </Card>
         <Card className="col-span-3 lg:col-span-3">
           <CardHeader className="text-center">Estimate vs Actual</CardHeader>
           <EstAct className="h-full" data={estActMonthData.monthData} />

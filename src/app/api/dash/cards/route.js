@@ -1,6 +1,7 @@
 import getPSConnection from '@/lib/planetscaledb';
 
 export async function GET(request) {
+  console.log(request.url);
   try {
     const conn = await getPSConnection();
 

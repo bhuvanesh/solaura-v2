@@ -3,6 +3,7 @@ import getPSConnection from '@/lib/planetscaledb';
 
 // Define an asynchronous function to handle GET requests
 export async function GET(request) {
+  console.log(request.url)
   try {
     // Get a connection to the database
     const conn = await getPSConnection();

@@ -80,7 +80,7 @@ const downloadAsExcel = () => {
   const years = uniqueYears.sort((a, b) => b - a);
 
   const filteredData = selectedGroup === "All groups"
-  ? data
+  ? data.filter(item => item["Year"] === selectedYear) 
   : data.filter(
       (item) => item["Group"] === selectedGroup && item["Year"] === selectedYear
     );
