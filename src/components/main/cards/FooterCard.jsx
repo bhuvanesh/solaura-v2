@@ -40,24 +40,24 @@ const FooterCard = (Icon) => {
       <CardContent className="flex justify-between">
 
         <div className="my-auto w-1/3 px-2">
-          <div className="h-4 p-1">{`${year-1}: ${data ? data.total_actual_previous_year : ''} Kwh`}</div>
-          <h4 className="p-1">{`${year}: ${data ? data.total_actual_generation : ''} Kwh`}</h4>
+          <div className="h-4 p-1">{`${year-1}: ${data ? data.total_actual_previous_year : ''} MWh`}</div>
+          <h4 className="p-1">{`${year}: ${data ? data.total_actual_generation : ''} MWh`}</h4>
           <div className="h-6">
             +{data && (Math.floor(((data.total_actual_generation - data.total_actual_previous_year) / data.total_actual_previous_year) * 100))}%
           </div>
         </div>
 
         <div className="my-auto w-1/3 px-2">
-          <div className="h-4 p-1">{`${previousMonth} (${year-1}): ${data ? data.prev_month_actual_generation_previous_year : ''} Kwh`}</div>
-          <h4 className="p-1">{`${previousMonth} (${year}): ${data ? data.prev_month_actual_generation : ''} Kwh`}</h4>
+          <div className="h-4 p-1">{`${previousMonth} (${year-1}): ${data ? data.prev_month_actual_generation_previous_year : ''} MWh`}</div>
+          <h4 className="p-1">{`${previousMonth} (${year}): ${data ? data.prev_month_actual_generation : ''} MWh`}</h4>
           <div className="h-6">
             +{data && (Math.floor(((data.prev_month_actual_generation - data.prev_month_actual_generation_previous_year) / data.prev_month_actual_generation) * 100))}%
           </div>
       </div>
 
       <div className="my-auto w-1/3 px-2">
-          <div className="h-4 p-1">{`${monthBeforePrevMonth} (${year}): ${data ? data.previous_of_previous_month_actual_generation : ''} Kwh`}</div>
-          <h4 className="p-1">{`${previousMonth} (${year}): ${data ? data.prev_month_actual_generation : ''} Kwh`}</h4>
+          <div className="h-4 p-1">{`${monthBeforePrevMonth} (${year}): ${data ? data.previous_of_previous_month_actual_generation : ''} MWh`}</div>
+          <h4 className="p-1">{`${previousMonth} (${year}): ${data ? data.prev_month_actual_generation : ''} MWh`}</h4>
           <div className="h-6">
             +{data && (Math.floor(((data.prev_month_actual_generation - data.previous_of_previous_month_actual_generation) / data.prev_month_actual_generation) * 100))}%
           </div>

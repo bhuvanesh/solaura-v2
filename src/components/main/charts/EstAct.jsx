@@ -34,7 +34,7 @@ const EstAct = ({ data }) => {
           <CartesianGrid strokeDasharray="1 1" />
           <XAxis dataKey="month" stroke="#0c4a6e" fontSize={11} />
           <YAxis
-            tickFormatter={(value) => `${value} kWh`}
+            tickFormatter={(value) => `${value} MWh`}
             fontSize={10}
             stroke="#0c4a6e"
             type="number"
