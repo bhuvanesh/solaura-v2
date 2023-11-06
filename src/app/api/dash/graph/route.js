@@ -5,8 +5,9 @@ export async function GET(request) {
   try {
     const conn = await getPSConnection();
 
+    const year = new Date().getFullYear(); 
     const sql = `
-    SELECT
+    SELECT 
       Month, 
       SUM(Actual) as actual, 
       SUM(Estimated) as estimate,
@@ -17,9 +18,11 @@ export async function GET(request) {
       SUM(CASE WHEN Type = 'Wind' THEN COALESCE(Actual_used, 0) + COALESCE(Estimated_used, 0) ELSE 0 END) as windUsage
     FROM
       inventory2
+    WHERE
+      Year = ${year}
     GROUP BY
       Month
-      `;
+    `;
 
     const rows = await conn.query(sql);
 

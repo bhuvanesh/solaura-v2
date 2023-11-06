@@ -9,12 +9,12 @@ export async function GET(request) {
     const conn = await getPSConnection();
 
     // Define the SQL query
-    const sql = `
+const sql = `
       SELECT 
         SUM(CASE WHEN Month = MONTHNAME(DATE_SUB(CURRENT_DATE, INTERVAL 1 MONTH)) AND Year = YEAR(CURRENT_DATE) - 1 THEN Actual ELSE 0 END) AS prev_month_actual_generation_previous_year,
         SUM(CASE WHEN Month = MONTHNAME(DATE_SUB(CURRENT_DATE, INTERVAL 1 MONTH)) AND Year = YEAR(CURRENT_DATE) THEN Actual ELSE 0 END) AS prev_month_actual_generation,
         SUM(CASE WHEN Month = MONTHNAME(DATE_SUB(CURRENT_DATE, INTERVAL 2 MONTH)) AND Year = YEAR(CURRENT_DATE) THEN Actual ELSE 0 END) AS previous_of_previous_month_actual_generation,
-        SUM(Actual) AS total_actual_generation,
+        SUM(CASE WHEN Year = YEAR(CURRENT_DATE) THEN Actual ELSE 0 END) AS total_actual_generation,
         SUM(CASE WHEN Year = YEAR(CURRENT_DATE) - 1 THEN Actual ELSE 0 END) AS total_actual_previous_year
       FROM inventory2
     `;
