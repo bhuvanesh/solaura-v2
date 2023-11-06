@@ -38,7 +38,6 @@ const EstAct = ({ data }) => {
             fontSize={10}
             stroke="#0c4a6e"
             type="number"
-            domain={[0, dataMax]} //Modify upperbound and use dataMax variable based on the data
             padding={{ top: 10 }}
             width={70}
           />
