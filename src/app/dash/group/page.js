@@ -52,10 +52,10 @@ const Groups = () => {
   
         const tableData = [
           { key: 'No. of Devices', value: groupDetails.no_of_devices },
-          { key: 'Estimated Generation', value: `${groupDetails.estimated_generation} kWh` },
-          { key: 'Actual Generation', value: `${groupDetails.actual_generation ? groupDetails.actual_generation : 0} kWh` },
-          { key: 'Total Issuance', value: `${groupDetails.total_issuance ? groupDetails.total_issuance : 0} kWh` },
-          { key: 'Future Commitment', value: `${groupDetails.future_commitment} kWh` },
+          { key: 'Estimated Generation', value: `${groupDetails.estimated_generation} MWh` },
+          { key: 'Actual Generation', value: `${groupDetails.actual_generation ? groupDetails.actual_generation : 0} MWh` },
+          { key: 'Total Issuance', value: `${groupDetails.total_issuance ? groupDetails.total_issuance : 0} MWh` },
+          { key: 'Future Commitment', value: `${groupDetails.future_commitment} MWh` },
         ];
   
         doc.setFontSize(16);
@@ -207,10 +207,10 @@ const Groups = () => {
                     <h2 className="text-xl font-semibold mb-4">Group Details</h2>
                     <ul className="space-y-2">
                       <li>No. of Devices: {selectedGroupDetails.no_of_devices}</li>
-                      <li>Estimated Generation: {selectedGroupDetails.estimated_generation}KWh</li>
-                      <li>Actual Generation: {selectedGroupDetails.actual_generation ? selectedGroupDetails.actual_generation : 0}KWh</li>
-                     <li>Total Issuance: {selectedGroupDetails.total_issuance ? selectedGroupDetails.total_issuance : 0}KWh</li>
-                      <li>Future Commitment: {selectedGroupDetails.future_commitment}KWh</li>
+                      <li>Estimated Generation: {selectedGroupDetails.estimated_generation} MWh</li>
+                      <li>Actual Generation: {selectedGroupDetails.actual_generation ? selectedGroupDetails.actual_generation : 0} MWh</li>
+                     <li>Total Issuance: {selectedGroupDetails.total_issuance ? selectedGroupDetails.total_issuance : 0} MWh</li>
+                      <li>Future Commitment: {selectedGroupDetails.future_commitment} MWh</li>
                     </ul>
                   </div>
                 </Transition>

@@ -47,7 +47,7 @@ useEffect(() => {
 
         const data = await response.json();
         setData(data);
-
+        console.log(data);
         const uniqueYears = Array.from(new Set(data.map((item) => item["Year"])));
         const years = uniqueYears.sort((a, b) => Number(b) - Number(a));
         setSelectedYear(years[0]);
@@ -79,11 +79,7 @@ const downloadAsExcel = () => {
   const uniqueYears = Array.from(new Set(data.map((item) => item["Year"])));
   const years = uniqueYears.sort((a, b) => b - a);
 
-  const filteredData = selectedGroup === "All groups"
-  ? data.filter(item => item["Year"] === selectedYear) 
-  : data.filter(
-      (item) => item["Group"] === selectedGroup && item["Year"] === selectedYear
-    );
+  const filteredData = selectedGroup.toLowerCase() === "all groups" ? data.filter(item => item["Year"] === selectedYear) : data.filter( (item) => item["Group"].toLowerCase() === selectedGroup.toLowerCase() && item["Year"] === selectedYear );
 
   return (
     <div className="DownloadPage">

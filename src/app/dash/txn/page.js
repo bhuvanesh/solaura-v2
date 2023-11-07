@@ -26,7 +26,7 @@ export default function Table() {
     };
     const handleDelete = async (row) => {
       const transactionId = row['Transaction ID'];
-    
+      const year = row['year'];    
       for (const detail of row.details) {
         const deviceId = detail['Device ID'];
         const monthData = months.reduce((acc, m) => {
@@ -41,7 +41,7 @@ export default function Table() {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ transactionId, deviceId, monthData }),
+          body: JSON.stringify({ transactionId, deviceId, year, monthData }),
         });
     
         if (response.ok) {
@@ -68,7 +68,10 @@ export default function Table() {
                     }
                 }
                 acc[key].details.push(row);
-                acc[key].total += months.reduce((sum, m) => sum + (Number.isInteger(row[m]) ? row[m] : 0), 0);
+                acc[key].total += months.reduce((sum, m) => {
+                  const n = parseFloat(row[m]);
+                  return sum + (isNaN(n) ? 0 : n);
+              }, 0);
                 return acc;
             }, {});
 

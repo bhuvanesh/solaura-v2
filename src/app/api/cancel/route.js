@@ -1,10 +1,11 @@
 import getPSConnection from '@/lib/planetscaledb';
 
 export async function DELETE(req) {
-  const { transactionId, deviceId, monthData } = await req.json();
+  const { transactionId, deviceId, monthData, year} = await req.json();
   console.log(transactionId);
   console.log(deviceId);
   console.log(monthData);
+  console.log(year);
 
   try {
     const conn = await getPSConnection();
@@ -18,16 +19,16 @@ export async function DELETE(req) {
     // Loop through monthData and update the inventory2 table for each month
     for (const [month, valueToSubtract] of Object.entries(monthData)) {
       const lowercaseMonth = month.toLowerCase(); // Convert month name to lowercase
-      const [[inventory2Row]] = await conn.query('SELECT `Actual_used`, `Estimated_used`, COALESCE(`Actual_used`, 0) AS `Actual_used`, COALESCE(`Estimated_used`, 0) AS `Estimated_used` FROM inventory2 WHERE `Device ID` = ? AND `month` = ?', [deviceId, lowercaseMonth]);
+      const [[inventory2Row]] = await conn.query('SELECT `Actual_used`, `Estimated_used`, COALESCE(`Actual_used`, 0) AS `Actual_used`, COALESCE(`Estimated_used`, 0) AS `Estimated_used` FROM inventory2 WHERE `Device ID` = ? AND `month` = ? AND `Year` = ?', [deviceId, lowercaseMonth, year]);
 
       if (inventory2Row) {
         const actualUsed = inventory2Row['Actual_used'];
         const estimatedUsed = inventory2Row['Estimated_used'];
 
         if (actualUsed > 0) {
-          await conn.query('UPDATE inventory2 SET `Actual_used` = COALESCE(`Actual_used`, 0) - ? WHERE `Device ID` = ? AND `month` = ?', [valueToSubtract, deviceId, lowercaseMonth]);
+          await conn.query('UPDATE inventory2 SET `Actual_used` = COALESCE(`Actual_used`, 0) - ? WHERE `Device ID` = ? AND `month` = ? AND `Year` = ?', [valueToSubtract, deviceId, lowercaseMonth, year]);
         } else {
-          await conn.query('UPDATE inventory2 SET `Estimated_used` = COALESCE(`Estimated_used`, 0) - ? WHERE `Device ID` = ? AND `month` = ?', [valueToSubtract, deviceId, lowercaseMonth]);
+          await conn.query('UPDATE inventory2 SET `Estimated_used` = COALESCE(`Estimated_used`, 0) - ? WHERE `Device ID` = ? AND `month` = ? AND `Year` = ?', [valueToSubtract, deviceId, lowercaseMonth, year]);
         }
       }
     }

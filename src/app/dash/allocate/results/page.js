@@ -11,14 +11,15 @@ import 'react-toastify/dist/ReactToastify.css';
 
 
 function calcTotal(obj, monthArray) {
-  return monthArray.reduce((sum, month) => sum + parseInt(obj[month]), 0);
+  monthArray.reduce((sum, month) => sum + parseFloat(obj[month]), 0);
+
 }
 
 const Results = () => {
   const { results, requirement ,organisation } = useContext(ResultsContext);
   const [selectedMonths, setSelectedMonths] = useState(new Map());
   const router = useRouter();
-  const [remainingRequirement, setRemainingRequirement] = useState(parseInt(requirement));
+  const [remainingRequirement, setRemainingRequirement] = useState(parseFloat(requirement));
   const [isLoading, setIsLoading] = useState(false);
   const [manipulatedResults, setManipulatedResults] = useState([...results]);
   const [open, setOpen] = useState(false); 
@@ -49,13 +50,13 @@ const handleUnselect = () => {
   const suggestMonths = () => {
     console.log("Starting Suggestion");
     let suggestion = new Map();
-    let remaining = parseInt(requirement);
+    let remaining = parseFloat(requirement);
     let sorted = [...results].sort((a, b) => calcTotal(b, visibleMonths) - calcTotal(a, visibleMonths));
     outerLoop: for (let i = 0; i < sorted.length && remaining > 0; i++) {
     const result = sorted[i];
     for (const month of visibleMonths) {
       if (remaining <= 0) break outerLoop;
-      let monthValue = parseInt(result[month]);
+      let monthValue = parseFloat(result[month]);
       let adjustedMonthValue = Math.min(monthValue, remaining);
       suggestion.set(`${i}-${month}`, true);
       result[month] = adjustedMonthValue;
@@ -63,7 +64,7 @@ const handleUnselect = () => {
       }
     }
     setSelectedMonths(suggestion);
-    setRemainingRequirement(remaining);
+    setRemainingRequirement(parseFloat(remaining.toFixed(4)));
     console.log("Finished Suggestion");
   };
 
@@ -81,7 +82,7 @@ const handleUnselect = () => {
       }
       return map;
     });
-    setRemainingRequirement(parseInt(requirement));
+    setRemainingRequirement(parseFloat(parseFloat(requirement).toFixed(4)));
   
    
   };
@@ -93,21 +94,21 @@ const handleUnselect = () => {
   const handleMonthClick = (resultIndex, month, adjustedMonthValue) => {
     const key = `${resultIndex}-${month}`;
     const currentValue = selectedMonths.get(key);
-    let monthValue = parseInt(results[resultIndex][month]);
+    let monthValue = parseFloat(results[resultIndex][month]);
     let originalMonthValue = originalResults[resultIndex][month];
     if (!currentValue) {
-        if (remainingRequirement == 0) return;
-        if (remainingRequirement - monthValue < 0) {
-          results[resultIndex][month] = remainingRequirement;
-          setRemainingRequirement(0);
+      if (remainingRequirement === 0) return;
+      if (remainingRequirement - monthValue < 0) {
+        results[resultIndex][month] = remainingRequirement;
+        setRemainingRequirement(0);
+      } else {
+        if (remainingRequirement >= monthValue) {
+          setRemainingRequirement(prev => parseFloat((prev - monthValue).toFixed(4)));
         } else {
-          if (remainingRequirement >= monthValue) {
-            setRemainingRequirement((prev) => prev - monthValue);
-          } else {
-            toast.error("Month value exceeded remaining requirement"); 
-            return;
-          }
+          toast.error("Month value exceeded remaining requirement"); 
+          return;
         }
+      }
       setSelectedMonths((prev) => new Map(prev).set(key, true));
     } else {
       setOpen(true);
@@ -118,7 +119,7 @@ const handleUnselect = () => {
   };
   const handleEdit = () => {
     const [resultIndex, month] = editKey.split("-");
-    const newMonthValue = parseInt(editValue);
+    const newMonthValue = parseFloat(editValue);
     let currentMonthValue = results[resultIndex][month];
   
     if (newMonthValue < 0 || newMonthValue > currentMonthValue){
@@ -130,7 +131,8 @@ const handleUnselect = () => {
   
     if (difference > 0) {
       if (difference <= remainingRequirement) {
-          setRemainingRequirement(prev => prev - difference);
+          setRemainingRequirement(prev => parseFloat((prev - difference).toFixed(4)));
+
       } else {
         toast.warning("The value you entered exceeded the remaining requirement.");
           return;
@@ -138,7 +140,8 @@ const handleUnselect = () => {
     }
   
     if (difference < 0) {
-      setRemainingRequirement(prev => prev - difference);
+      setRemainingRequirement(prev => parseFloat((prev - difference).toFixed(4)));
+
     }
   
     results[resultIndex][month] = newMonthValue;  
@@ -150,7 +153,7 @@ const handleUnselect = () => {
 
   const handleSubmit = async () => {
     setIsLoading(true);
-    let remainingRequirement = parseInt(requirement);
+    let remainingRequirement = parseFloat(requirement);
     const selectedMonthsObject = {};
     let year = null;
 
@@ -158,21 +161,21 @@ const handleUnselect = () => {
     selectedMonths.forEach((value, key) => {
       if (value && remainingRequirement > 0) {
         const [resultIndex, month] = key.split('-');
-        const deviceId = results[parseInt(resultIndex)]['Device ID'];
+        const deviceId = results[parseFloat(resultIndex)]['Device ID'];
         if (!selectedMonthsObject[deviceId]) {
           selectedMonthsObject[deviceId] = {};
         }
         if (!year) {
-          year = results[parseInt(resultIndex)]['Year'];
+          year = results[parseFloat(resultIndex)]['Year'];
         }
   
-        const monthValue = results[parseInt(resultIndex)][month];
+        const monthValue = results[parseFloat(resultIndex)][month];
         const adjustedMonthValue = Math.min(remainingRequirement, monthValue);
         selectedMonthsObject[deviceId][month] = adjustedMonthValue;
         remainingRequirement -= adjustedMonthValue;
       }
     });
-  
+    selectedMonthsObject['Year'] = year;
     const response = await fetch('/api/update', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

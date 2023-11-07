@@ -8,22 +8,23 @@ export async function POST(request) {
     const connection = await getPSConnection();
     await connection.beginTransaction(); 
 
-    // Prepare an array to store all update commands 
     let updateStatements = [];
 
     for (const deviceId in selectedMonths) {
+      if (deviceId === 'Year') continue; 
+    
       const deviceMonths = selectedMonths[deviceId];
       for (const month in deviceMonths) {
         const value = deviceMonths[month];
-
-        // Get the current Actual and Estimated values and update the database accordingly
+    
+        // Include the Year in the UPDATE statement and the parameters array
         updateStatements.push([
           `UPDATE \`inventory2\`
            SET
              \`Actual_used\` = COALESCE(\`Actual_used\`, 0) + (CASE WHEN COALESCE(\`Actual\`, 0) > 0 AND ? > 0 THEN ? ELSE 0 END),
              \`Estimated_used\` = COALESCE(\`Estimated_used\`, 0) + (CASE WHEN COALESCE(\`Actual\`, 0) = 0 THEN ? ELSE 0 END)
-           WHERE \`Device ID\` = ? AND \`Month\` = ?;`, 
-          [value, value, value, deviceId, month]
+           WHERE \`Device ID\` = ? AND \`Month\` = ? AND \`Year\` = ?;`, 
+          [value, value, value, deviceId, month, selectedMonths['Year']]
         ]);
       }
     }

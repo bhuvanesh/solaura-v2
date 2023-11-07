@@ -22,7 +22,7 @@ async function getGroupsData(connection, groupName) {
       SELECT 
         \`Device ID\`, \`company\`, \`Group\`, Type, CoD, Year, Month,\`project\`,
         CASE 
-          WHEN COALESCE(\`Actual\`, 0) = COALESCE(\`Issued\`, 0) AND COALESCE(\`Actual\`, 0) != 0 THEN 'Sold'
+          WHEN COALESCE(\`Actual_used\`, 0) = COALESCE(\`Issued\`, 0) AND COALESCE(\`Actual_used\`, 0) != 0 THEN 'Sold'
           WHEN COALESCE(\`Actual\`, 0) != 0 AND COALESCE(\`Actual\`, 0) = COALESCE(\`Actual_used\`, 0 ) THEN 'Reserved'
           WHEN COALESCE(\`Actual\`, 0) = 0 AND \`Estimated\` = \`Estimated_used\` THEN 'Reserved'
           WHEN COALESCE(\`Actual\`, 0) != 0 THEN COALESCE(\`Actual\`, 0) - COALESCE(\`Actual_used\`, 0)
@@ -51,7 +51,7 @@ async function getGroupsData(connection, groupName) {
       SELECT 
         \`Device ID\`, \`company\`, \`Group\`, Type, CoD, Year, Month,\`project\`,
         CASE
-          WHEN COALESCE(\`Actual\`, 0) = COALESCE(\`Issued\`, 0) AND COALESCE(\`Actual\`, 0) != 0 THEN 'Sold'
+          WHEN COALESCE(\`Actual_used\`, 0) = COALESCE(\`Issued\`, 0) AND COALESCE(\`Actual_used\`, 0) != 0 THEN 'Sold'
           WHEN COALESCE(\`Actual\`, 0) != 0 AND COALESCE(\`Actual\`, 0) = COALESCE(\`Actual_used\`, 0 ) THEN 'Reserved'
           WHEN COALESCE(\`Actual\`, 0) = 0 AND \`Estimated\` = \`Estimated_used\` THEN 'Reserved'
           WHEN COALESCE(\`Actual\`, 0) != 0 THEN COALESCE(\`Actual\`, 0) - COALESCE(\`Actual_used\`, 0)
