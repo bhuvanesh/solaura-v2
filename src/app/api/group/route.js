@@ -2,6 +2,7 @@ import getPSConnection from '@/lib/planetscaledb';
 
 // Updated function to fetch all groups or a specific group from the database
 async function getAllGroups(connection, groupName) {
+  const currentYear = new Date().getFullYear();
   const sql = `
     SELECT
       \`Group\`,
@@ -12,7 +13,7 @@ async function getAllGroups(connection, groupName) {
       SUM(\`Issued\`) as total_issuance,
       SUM(IF(\`Issued\` IS NULL OR \`Issued\` = 0, \`Actual_used\` + \`Estimated_used\`, 0)) as future_commitment
     FROM \`inventory2\`
-    ${groupName ? `WHERE \`Group\` = ?` : ''}
+    ${groupName ? `WHERE \`Group\` = ? AND \`Year\` = ${currentYear}` : `WHERE \`Year\` = ${currentYear}`}
     GROUP BY \`Group\`
 
     UNION ALL
@@ -26,7 +27,7 @@ async function getAllGroups(connection, groupName) {
       SUM(IF(\`Type\` = 'Solar', \`Issued\`, 0)) as total_issuance,
       SUM(IF((\`Type\` = 'Solar') AND (\`Issued\` IS NULL OR \`Issued\` = 0), \`Actual_used\` + \`Estimated_used\`, 0)) as future_commitment
     FROM \`inventory2\`
-    ${groupName ? `WHERE \`Group\` = ?` : ''}
+    ${groupName ? `WHERE \`Group\` = ? AND \`Year\` = ${currentYear}` : `WHERE \`Year\` = ${currentYear}`}
     GROUP BY \`Group\`
 
     UNION ALL
@@ -40,7 +41,7 @@ async function getAllGroups(connection, groupName) {
       SUM(IF(\`Type\` = 'Wind', \`Issued\`, 0)) as total_issuance,
       SUM(IF((\`Type\` = 'Wind') AND (\`Issued\` IS NULL OR \`Issued\` = 0), \`Actual_used\` + \`Estimated_used\`, 0)) as future_commitment
     FROM \`inventory2\`
-    ${groupName ? `WHERE \`Group\` = ?` : ''}
+    ${groupName ? `WHERE \`Group\` = ? AND \`Year\` = ${currentYear}` : `WHERE \`Year\` = ${currentYear}`}
     GROUP BY \`Group\`;
   `;
   const [rows] = await connection.query(sql, groupName ? [groupName, groupName, groupName] : []);
