@@ -16,7 +16,7 @@ import {
 
 const EstAct = ({ data }) => {
   // console.log('chart accessed' , data)
-  const dataMax = 250000
+  const dataMax = 300000
   return (
     <>
       <ResponsiveContainer width="100%" height={350}>
@@ -38,6 +38,7 @@ const EstAct = ({ data }) => {
             fontSize={10}
             stroke="#0c4a6e"
             type="number"
+            domain={[0, dataMax]}
             padding={{ top: 10 }}
             width={70}
           />
