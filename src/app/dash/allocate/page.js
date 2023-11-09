@@ -28,8 +28,10 @@ const FormComponent = () => {
       actualCoDYear = currentYear - 5;
     } else if (CoDYear === 'within10') {
       actualCoDYear = currentYear - 10;
+    } else if (CoDYear === 'within15') {
+      actualCoDYear = currentYear - 15;
     } else if (CoDYear === 'morethan10') {
-      actualCoDYear = 0;
+      actualCoDYear = 0; 
     }
     const response = await fetch('/api/table', {
       method: 'POST',
@@ -43,6 +45,7 @@ const FormComponent = () => {
         year,
       }),
     });
+
 
     const results = await response.json();
     console.log('hello',results);
@@ -132,6 +135,7 @@ const FormComponent = () => {
           <option value="">Select year</option>
           <option value="within5">Within 5 years</option>
           <option value="within10">Within 10 years</option>
+          <option value="within15">within 15 years</option>
           <option value="morethan10">More than 10 years</option>
         </select>
       </div>
