@@ -27,12 +27,12 @@ export async function POST(request) {
     const typeCondition = type === 'Both' ? "(`Type` = 'Solar' OR `Type` = 'Wind')" : "`Type` = ?";
 
     const [rows] = await connection.query(`
-      SELECT \`Device ID\`, \`Year\`, \`Type\`, \`CoD\`, ${monthSums}, SUM(CASE WHEN COALESCE(\`Actual\`, null) = null THEN COALESCE(\`Estimated\`, 0) - COALESCE(\`Estimated_used\`, 0) ELSE COALESCE(\`Actual\`, null) - COALESCE(\`Actual_used\`, 0) END) as Total_Production
-      FROM \`inventory2\`
-      WHERE ${CoDYearCondition !== '' ? `${CoDYearCondition} AND` : ''} ${typeCondition} AND \`Month\` IN (?) AND \`Year\` = ?
-      GROUP BY \`Device ID\`, \`Year\`, \`Type\`, \`CoD\`
-      HAVING Total_Production >= 0
-      ORDER BY Total_Production DESC
+    SELECT \`Device ID\`, \`Group\`, \`Year\`, \`Type\`, \`CoD\`, ${monthSums}, SUM(CASE WHEN COALESCE(\`Actual\`, null) = null THEN COALESCE(\`Estimated\`, 0) - COALESCE(\`Estimated_used\`, 0) ELSE COALESCE(\`Actual\`, null) - COALESCE(\`Actual_used\`, 0) END) as Total_Production
+    FROM \`inventory2\`
+    WHERE ${CoDYearCondition !== '' ? `${CoDYearCondition} AND` : ''} ${typeCondition} AND \`Month\` IN (?) AND \`Year\` = ?
+    GROUP BY \`Device ID\`, \`Group\`, \`Year\`, \`Type\`, \`CoD\`
+    HAVING Total_Production >= 0
+    ORDER BY Total_Production DESC
 `, type === 'Both' ? [selectedMonths, year] : [type, selectedMonths, year]);
 
     return new Response(JSON.stringify(rows), {

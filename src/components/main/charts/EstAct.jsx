@@ -1,28 +1,39 @@
-"use client";
 import React from "react";
 import {
-  BarChart,
-  Bar,
-  Cell,
+  LineChart,
+  Line,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   Legend,
   ResponsiveContainer,
-  LineChart,
-  Line,
 } from "recharts";
 
+const CustomTooltip = ({ active, payload, label }) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="custom-tooltip" style={{ backgroundColor: '#fff', padding: '5px', border: '1px solid #ccc' }}>
+        <p className="label">{`${label}`}</p>
+        <p style={{ color: payload[0].color }}>
+          {`Estimate: ${new Intl.NumberFormat('en-IN').format(payload[0].value)}`}
+        </p>
+        <p style={{ color: payload[1].color }}>
+          {`Actual: ${new Intl.NumberFormat('en-IN').format(payload[1].value)}`}
+        </p>
+      </div>
+    );
+  }
+
+  return null;
+};
+
 const EstAct = ({ data }) => {
-  // console.log('chart accessed' , data)
-  const dataMax = 300000
+  const dataMax = 300000;
   return (
     <>
       <ResponsiveContainer width="100%" height={350}>
         <LineChart
-          // width={500}
-          // height={300}
           data={data}
           margin={{
             top: 5,
@@ -42,7 +53,7 @@ const EstAct = ({ data }) => {
             padding={{ top: 10 }}
             width={70}
           />
-          <Tooltip />
+          <Tooltip content={<CustomTooltip />} />
           <Legend />
           <Line
             type="monotone"

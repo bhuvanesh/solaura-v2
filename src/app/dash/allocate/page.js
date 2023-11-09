@@ -98,7 +98,7 @@ const FormComponent = () => {
       </div>
       <div>
         <label htmlFor="requirement" className="block text-sm font-medium">
-          Requirement (kWh)
+          Requirement (MWh)
         </label>
         <input
           type="number"
@@ -132,7 +132,7 @@ const FormComponent = () => {
           onChange={(e) => setCoDYear(e.target.value)}
           className="p-2 border-sky-800 border block w-full mt-1 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
         >
-          <option value="">Select Year</option>
+          <option value="">Select year</option>
           <option value="within5">Upto 5 years</option>
           <option value="within10">Upto 10 years</option>
           <option value="within15">Upto 15 years</option>

@@ -255,6 +255,7 @@ return (
        <thead className=''>
     <tr className="bg-sky-800 text-white">
       <th className="px-4 py-2">Device ID</th>
+      <th className="px-4 py-2">Group</th>
       <th className="px-4 py-2">Year</th>
       <th className="px-4 py-2">Type</th>
       <th className="px-4 py-2">CoD</th>
@@ -270,9 +271,10 @@ return (
     .map((result, index) => (
       <tr key={index} className={index % 2 === 0 ? "bg-gray-100" : ""}>
         <td className="border px-4 py-2">{result["Device ID"]}</td>
+        <td className="border px-4 py-2">{result["Group"]}</td>
         <td className="border px-4 py-2">{result.Year}</td>
         <td className="border px-4 py-2">{result.Type}</td>
-        <td className="border px-4 py-2">{result.CoD}</td>
+        <td className="border px-4 py-2">{result.CoD.split('T')[0]}</td>
         <td className="border px-4 py-2">{result.Total_Production}</td>
         {visibleMonths.map((month, monthIndex) => (
           <td key={monthIndex} className={`border px-4 py-2 cursor-pointer hover:bg-indigo-100 ${selectedMonths.get(`${index}-${month}`) ? "bg-indigo-200" : ""}`} onClick={() => handleMonthClick(index, month)} >

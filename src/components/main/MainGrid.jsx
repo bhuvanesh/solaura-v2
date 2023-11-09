@@ -65,14 +65,29 @@ const MainGrid = () => {
     <div className="w-full">
       <div className="grid grid-cols-3 gap-2 gap-y-3 mx-1 mt-2">
         <div className="col-span-3 lg:col-span-1">
-          <InfoCard2 className="h-auto" titleText={"Registered Devices " + "(" + currYear + ")"} bodyText={"Estimated: " + cardData.registered} Icon={LightBulbIcon} balance={"Actual: " + cardData.actual + " MWh"} />
-        </div>
+        <InfoCard2 
+  className="h-auto" 
+  titleText={"Registered Devices " + "(" + currYear + ")"} 
+  bodyText={"Estimated: " + new Intl.NumberFormat('en-IN').format(cardData.registered)} 
+  Icon={LightBulbIcon} 
+  balance={"Actual: " + new Intl.NumberFormat('en-IN').format(cardData.actual) + " MWh"} 
+/>        </div>
         <div className="col-span-3 lg:col-span-1">
-          <InfoCard2 className="" titleText={"Usage Stats"} bodyText={"Committed: " + cardData.usage} bodyText2={"Balance: " + Math.floor(((cardData.registered - cardData.usage) / cardData.registered) * 100) + " %"} Icon={WrenchScrewdriverIcon} />
-        </div>
+        <InfoCard2 
+  className="" 
+  titleText={"Usage Stats"} 
+  bodyText={"Committed: " + new Intl.NumberFormat('en-IN').format(cardData.usage)} 
+  bodyText2={"Balance: " + Math.floor(((cardData.registered - cardData.usage) / cardData.registered) * 100) + " %"} 
+  Icon={WrenchScrewdriverIcon} 
+/>        </div>
         <div className="col-span-3 lg:col-span-1">
-          <InfoCard2 className="" titleText={"Under Registration"} bodyText={"Pending: " + cardData.pending} bodyText2={"Pipeline: " + cardData.pipeline + " MWh"} Icon={CircleStackIcon} />
-        </div>
+        <InfoCard2 
+  className="" 
+  titleText={"Under Registration"} 
+  bodyText={"Pending: " + new Intl.NumberFormat('en-IN').format(cardData.pending)} 
+  bodyText2={"Pipeline: " + new Intl.NumberFormat('en-IN').format(cardData.pipeline) + " MWh"} 
+  Icon={CircleStackIcon} 
+/>        </div>
         {/* <Card className="col-span-3 lg:col-span-3 h-auto">
           <CardHeader className="text-center">Estimate vs Usage</CardHeader>
           <EstUse className="h-full" data={estUseMonthData.monthData} />

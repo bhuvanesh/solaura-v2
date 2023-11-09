@@ -90,12 +90,23 @@ export default function Table() {
       pdf.setFontSize(11);
       pdf.setTextColor(100);
     
-      let finalY = 0;
-    
-      // Filter the data based on the statusFilter
       const dataToDownload = data.filter((item) => statusFilter === 'All' || item['Status'] === 'succeeded');
     
-      dataToDownload.forEach((row) => {
+      let transactionCounter = 0; // Initialize the transaction counter
+    
+      dataToDownload.forEach((row, index) => {
+        // Add a new page for each transaction, but not before the first one
+        if (index > 0) {
+          pdf.addPage();
+        }
+    
+        transactionCounter++; // Increment the transaction counter
+    
+        // Display the transaction number
+        pdf.setFontSize(14);
+        pdf.text(`Transaction #${transactionCounter}`, 14, 30);
+        pdf.setFontSize(11);
+    
         const transactionColumns = [
           { header: 'Transaction ID', dataKey: 'Transaction ID' },
           { header: 'Organisation', dataKey: 'Organisation' },
@@ -111,57 +122,50 @@ export default function Table() {
         }];
     
         pdf.autoTable(transactionColumns, transactionData, {
-          startY: finalY === 0 ? 30 : finalY + 10,
+          startY: 40,
           margin: { horizontal: 14 },
           styles: { overflow: 'linebreak', cellWidth: 'wrap' },
           columnStyles: { text: { cellWidth: 'auto' } },
-          didParseCell: function(cell) {
-            if (cell.row.index === 0) {
-              cell.cell.styles.fontStyle = 'bold';
-            }
-          }
         });
     
-        finalY = pdf.autoTable.previous.finalY;
+        const finalY = pdf.autoTable.previous.finalY;
     
-        row.details.forEach((detail) => {
-          const deviceColumns = [
-            { header: 'Device ID', dataKey: 'Device ID' },
-            { header: 'year', dataKey: 'year' },
-            ...months.map(month => (
-              detail[month] ? { header: month, dataKey: month } : null
-            )).filter(Boolean)
-          ];
+        const allDeviceDetails = row.details.reduce((acc, detail) => {
+          months.forEach((month) => {
+            if(detail[month]) {
+              acc.push({
+                'Device ID': detail['Device ID'],
+                'Year': detail['year'],
+                'Month': month,
+                'Value': detail[month]
+              });
+            }
+          });
+          return acc;
+        }, []);
     
-          const deviceData = [
-            months.reduce((acc, month) => {
-              if(detail[month]) {
-                acc[month] = detail[month];
-              }
-              return acc;
-            }, {'Device ID': detail['Device ID'], 'year': detail['year']})
-          ]
+        const deviceColumns = [
+          { header: 'Device ID', dataKey: 'Device ID' },
+          { header: 'Year', dataKey: 'Year' },
+          { header: 'Month', dataKey: 'Month' },
+          { header: 'Value', dataKey: 'Value' },
+        ];
     
-          pdf.autoTable(deviceColumns, deviceData, {
+        if (allDeviceDetails.length > 0) {
+          pdf.autoTable(deviceColumns, allDeviceDetails, {
             startY: finalY + 10,
             margin: { horizontal: 14 },
             styles: { overflow: 'linebreak', cellWidth: 'wrap' },
             columnStyles: { text: { cellWidth: 'auto' } },
-            didParseCell: function(cell) {
-              if (cell.section === 'head') {
-                cell.cell.styles.fillColor = 255; // White color
-                cell.cell.styles.textColor = 0; // Black color
-                cell.cell.styles.fontStyle = 'normal'; // No bold
-              }
-            },
           });
-    
-          finalY = pdf.autoTable.previous.finalY;
-        });
+        }
       });
     
       pdf.save('transaction-data.pdf');
     };
+    
+
+    
   console.log(filteredData);
 
   return (
@@ -224,24 +228,38 @@ export default function Table() {
 </td>
                           </tr>
                           {activeRow === i &&
-                            <tr>
-                              <td colSpan="5" className="px-4 py-4">
-                                {row.details.map((detail, i) => (
-                                  <div key={i}>
-                                    <p className="font-semibold text-sm">Device ID: {detail['Device ID']}</p>
-                                    <p className="font-semibold text-sm">year: {detail['year']}</p>
-                                    {months.map(
-                                      (month, j) =>
-                                        detail[month] &&
-                                        <p key={j} className="text-sm px-4">
-                                          {`${month}: ${detail[month]}`}
-                                        </p>
-                                    )}
-                                  </div>
-                                ))}
-                              </td>
-                            </tr>
-                          }
+  <tr>
+    <td colSpan="5" className="px-4 py-4">
+      <div className="mx-auto w-full">
+        <table className="w-full max-w-3/4 mx-auto text-sm border border-gray-400">
+          <thead>
+            <tr className="bg-gray-200">
+              <th className="px-4 py-2 border-r border-gray-300">Device ID</th>
+              <th className="px-4 py-2 border-r border-gray-300">Year</th>
+              {months.filter(month => row.details.some(detail => detail[month])).map((month, index) => (
+                <th key={index} className="px-4 py-2 border-r border-gray-300">{month}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {row.details.map((detail, index) => (
+              <tr key={index} className="border-t border-gray-300">
+                <td className="px-4 py-2 border-r border-gray-300">{detail['Device ID']}</td>
+                <td className="px-4 py-2 border-r border-gray-300">{detail['year']}</td>
+                {months.filter(month => detail[month]).map((month, monthIndex) => (
+                  <td key={monthIndex} className="px-4 py-2 border-r border-gray-300">
+                    {detail[month]}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </td>
+  </tr>
+}
+
                         </React.Fragment>
                       ))}
                     </tbody>

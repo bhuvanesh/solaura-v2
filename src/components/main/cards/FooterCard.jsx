@@ -1,4 +1,3 @@
-"use client"
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 
@@ -32,16 +31,20 @@ const FooterCard = (Icon) => {
   const year = new Date().getFullYear();
   const previousMonth = getPreviousMonth(new Date());
   const monthBeforePrevMonth = getMonthBeforePrevMonth(new Date());
+
   return (
     <Card className="text-primarybase hover:bg-slate-50 w-full">
       <div>
         <CardHeader className="">Energy Generation Summary</CardHeader>
       </div>
       <CardContent className="flex justify-between">
-  
         <div className="my-auto w-1/3 px-2">
-          <div className="h-4 p-1">{`${year-1}: ${data ? data.total_actual_previous_year : ''} MWh`}</div>
-          <h4 className="p-1">{`${year}: ${data ? data.total_actual_generation : ''} MWh`}</h4>
+          <div className="h-4 p-1">
+            {`${year-1}: ${data ? new Intl.NumberFormat('en-IN').format(data.total_actual_previous_year) : ''} MWh`}
+          </div>
+          <h4 className="p-1">
+            {`${year}: ${data ? new Intl.NumberFormat('en-IN').format(data.total_actual_generation) : ''} MWh`}
+          </h4>
           <div className="h-6">
             <span className={data && ((data.total_actual_generation - data.total_actual_previous_year) / data.total_actual_previous_year) * 100 < 0 ? 'text-red-500' : ''}>
               {(data && (Math.floor(((data.total_actual_generation - data.total_actual_previous_year) / data.total_actual_previous_year) * 100)) >= 0) ? "+" : ""}{data && (Math.floor(((data.total_actual_generation - data.total_actual_previous_year) / data.total_actual_previous_year) * 100))}%
@@ -50,8 +53,12 @@ const FooterCard = (Icon) => {
         </div>
   
         <div className="my-auto w-1/3 px-2">
-          <div className="h-4 p-1">{`${previousMonth} (${year-1}): ${data ? data.prev_month_actual_generation_previous_year : ''} MWh`}</div>
-          <h4 className="p-1">{`${previousMonth} (${year}): ${data ? data.prev_month_actual_generation : ''} MWh`}</h4>
+          <div className="h-4 p-1">
+            {`${previousMonth} (${year-1}): ${data ? new Intl.NumberFormat('en-IN').format(data.prev_month_actual_generation_previous_year) : ''} MWh`}
+          </div>
+          <h4 className="p-1">
+            {`${previousMonth} (${year}): ${data ? new Intl.NumberFormat('en-IN').format(data.prev_month_actual_generation) : ''} MWh`}
+          </h4>
           <div className="h-6">
             <span className={data && ((data.prev_month_actual_generation - data.prev_month_actual_generation_previous_year) / data.prev_month_actual_generation_previous_year) * 100 < 0 ? 'text-red-500' : ''}>
               {(data && (Math.floor(((data.prev_month_actual_generation - data.prev_month_actual_generation_previous_year) / data.prev_month_actual_generation_previous_year) * 100)) >= 0) ? "+" : ""}{data && (Math.floor(((data.prev_month_actual_generation - data.prev_month_actual_generation_previous_year) / data.prev_month_actual_generation_previous_year) * 100))}%
@@ -60,8 +67,12 @@ const FooterCard = (Icon) => {
         </div>
   
         <div className="my-auto w-1/3 px-2">
-          <div className="h-4 p-1">{`${monthBeforePrevMonth} (${year}): ${data ? data.previous_of_previous_month_actual_generation : ''} MWh`}</div>
-          <h4 className="p-1">{`${previousMonth} (${year}): ${data ? data.prev_month_actual_generation : ''} MWh`}</h4>
+          <div className="h-4 p-1">
+            {`${monthBeforePrevMonth} (${year}): ${data ? new Intl.NumberFormat('en-IN').format(data.previous_of_previous_month_actual_generation) : ''} MWh`}
+          </div>
+          <h4 className="p-1">
+            {`${previousMonth} (${year}): ${data ? new Intl.NumberFormat('en-IN').format(data.prev_month_actual_generation) : ''} MWh`}
+          </h4>
           <div className="h-6">
             <span className={data && ((data.prev_month_actual_generation - data.previous_of_previous_month_actual_generation) / data.previous_of_previous_month_actual_generation) * 100 < 0 ? 'text-red-500' : ''}>
               {(data && (Math.floor(((data.prev_month_actual_generation - data.previous_of_previous_month_actual_generation) / data.previous_of_previous_month_actual_generation) * 100)) >= 0) ? "+" : ""}{data && (Math.floor(((data.prev_month_actual_generation - data.previous_of_previous_month_actual_generation) / data.previous_of_previous_month_actual_generation) * 100))}%
