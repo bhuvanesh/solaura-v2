@@ -265,23 +265,24 @@ return (
     </tr>
   </thead>
   <tbody>
-    {results.map((result, index) => (
+  {results
+    .filter(result => parseFloat(result.Total_Production) > 0) // Filter out rows with Total_Production of zero
+    .map((result, index) => (
       <tr key={index} className={index % 2 === 0 ? "bg-gray-100" : ""}>
         <td className="border px-4 py-2">{result["Device ID"]}</td>
         <td className="border px-4 py-2">{result.Year}</td>
         <td className="border px-4 py-2">{result.Type}</td>
         <td className="border px-4 py-2">{result.CoD}</td>
-        <td className="border px-4 py-2">
-          {result.Total_Production}
-        </td>
+        <td className="border px-4 py-2">{result.Total_Production}</td>
         {visibleMonths.map((month, monthIndex) => (
-          <td key={monthIndex} className={`border px-4 py-2 cursor-pointer hover:bg-indigo-100 ${ selectedMonths.get(`${index}-${month}`) ? "bg-indigo-200" : "" }`} onClick={() => handleMonthClick(index, month)} >
+          <td key={monthIndex} className={`border px-4 py-2 cursor-pointer hover:bg-indigo-100 ${selectedMonths.get(`${index}-${month}`) ? "bg-indigo-200" : ""}`} onClick={() => handleMonthClick(index, month)} >
             {result[month]}
           </td>
         ))}
       </tr>
-    ))}
-  </tbody>
+    ))
+  }
+</tbody>
   </table>
   <Dialog open={open} onClose={handleClose}>
       <DialogTitle>Edit your Requirement</DialogTitle>
