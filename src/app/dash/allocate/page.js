@@ -132,11 +132,11 @@ const FormComponent = () => {
           onChange={(e) => setCoDYear(e.target.value)}
           className="p-2 border-sky-800 border block w-full mt-1 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
         >
-          <option value="">Select year</option>
-          <option value="within5">Within 5 years</option>
-          <option value="within10">Within 10 years</option>
-          <option value="within15">within 15 years</option>
-          <option value="morethan10">More than 10 years</option>
+          <option value="">Select Year</option>
+          <option value="within5">Upto 5 years</option>
+          <option value="within10">Upto 10 years</option>
+          <option value="within15">Upto 15 years</option>
+          <option value="morethan10">All Devices</option>
         </select>
       </div>
       <div className="grid grid-cols-2 gap-4">
