@@ -60,7 +60,7 @@ const handleUnselect = () => {
       let adjustedMonthValue = Math.min(monthValue, remaining);
       suggestion.set(`${i}-${month}`, true);
       result[month] = adjustedMonthValue;
-      remaining -= adjustedMonthValue;
+      remaining = parseFloat((remaining - adjustedMonthValue).toFixed(4));
       }
     }
     setSelectedMonths(suggestion);
