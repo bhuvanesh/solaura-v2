@@ -56,7 +56,7 @@ const handleUnselect = () => {
     const result = sorted[i];
     for (const month of visibleMonths) {
       if (remaining <= 0) break outerLoop;
-      let monthValue = parseFloat(result[month]);
+      let monthValue = parseFloat(parseFloat(result[month]).toFixed(4));
       let adjustedMonthValue = Math.min(monthValue, remaining);
       suggestion.set(`${i}-${month}`, true);
       result[month] = adjustedMonthValue;
