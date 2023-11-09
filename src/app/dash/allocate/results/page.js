@@ -64,7 +64,7 @@ const handleUnselect = () => {
       }
     }
     setSelectedMonths(suggestion);
-    setRemainingRequirement(parseFloat(remaining.toFixed(4)));
+    setRemainingRequirement(parseFloat(remaining).toFixed(4));
     console.log("Finished Suggestion");
   };
 
