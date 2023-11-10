@@ -29,6 +29,12 @@ export default function Table() {
   const [activeRow, setActiveRow] = useState(null);
   const [searchQuery, setSearchQuery] = useState(""); // State storing the current search term
   const [statusFilter, setStatusFilter] = useState("Active");
+   
+  const formatNumber = (num) => {
+    return new Intl.NumberFormat('en-IN').format(num);
+  };
+
+  
   const confirmDelete = (row) => {
     if (window.confirm("Do you really want to delete this?")) {
       handleDelete(row).then(() => {
@@ -84,6 +90,7 @@ export default function Table() {
           const n = parseFloat(row[m]);
           return sum + (isNaN(n) ? 0 : n);
         }, 0);
+        acc[key].total = parseFloat(acc[key].total.toFixed(4));
         return acc;
       }, {});
 
@@ -136,7 +143,7 @@ export default function Table() {
           "Transaction ID": row["Transaction ID"],
           Organisation: row["Organisation"],
           Status: row["Status"],
-          total: row["total"],
+          total: formatNumber(row["total"]),
         },
       ];
 
@@ -156,7 +163,7 @@ export default function Table() {
               "Device ID": detail["Device ID"],
               Year: detail["year"],
               Month: month,
-              Value: detail[month],
+              Value: formatNumber(detail[month]),
             });
           }
         });
@@ -273,7 +280,7 @@ export default function Table() {
                               {row["Status"]}
                             </td>
                             <td className="px-4 py-2 whitespace-normal text-sm text-gray-500">
-                              {row["total"]}
+                            {formatNumber(row["total"])}
                             </td>
                             <td className="px-4 py-2 whitespace-normal text-sm text-gray-500">
                               <td className="px-4 py-2 whitespace-normal text-sm text-gray-500">
@@ -340,7 +347,7 @@ export default function Table() {
                                                 key={monthIndex}
                                                 className="px-4 py-2 border-r border-gray-300"
                                               >
-                                                {detail[month]}
+                                                 {detail[month] ? formatNumber(detail[month]) : ''}
                                               </td>
                                             ))}
                                         </tr>
