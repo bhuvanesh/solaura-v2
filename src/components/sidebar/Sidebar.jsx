@@ -14,7 +14,8 @@ const Sidebar = () => {
         <ListItem text={'Upload Data'} navLink={'/dash/upload'} Icon={ArrowUpTrayIcon}/>
         <ListItem text={'Transactions'} navLink={'/dash/txn'} Icon={BanknotesIcon}/>
         <ListItem text={'Device Summary'} navLink={'/dash/sum'} Icon={DocumentMagnifyingGlassIcon}/>
-        <ListItem text={'Group Summary'} navLink={'/dash/group'} Icon={SparklesIcon}/>        
+        <ListItem text={'Group Summary'} navLink={'/dash/group'} Icon={SparklesIcon}/> 
+        <ListItem text={'transaction Beta'} navLink={'/dash/txnbeta'} Icon={SparklesIcon}/>                  
     </div>
     <div className='flex items-center mb-4 mt-4 ml-2'>
         <UserButton afterSignOutUrl='/' />
