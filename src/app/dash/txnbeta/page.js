@@ -31,11 +31,25 @@ export default function Table() {
   const [statusFilter, setStatusFilter] = useState("Active");
   const [selectedRows, setSelectedRows] = useState([]);
 
+  const handleRowClick = (i) => {
+    if (activeRow === i){
+      setActiveRow(null);
+    } else {
+      setActiveRow(i);
+    }
+  };
+
   const handleCheckboxChange = (event, row) => {
     const { checked } = event.target;
-
     setSelectedRows((prev) => {
       if (checked) {
+        if (prev.length > 0) {
+          const firstSelectedRow = data.find(d => d["Transaction ID"] === prev[0]);
+          if (firstSelectedRow["Organisation"].toLowerCase() !== row["Organisation"].toLowerCase()) {
+            window.alert("The merger is not of the same organisation");
+            return prev;
+          }
+        }
         return [...prev, row["Transaction ID"]];
       } else {
         return prev.filter(id => id !== row["Transaction ID"]);
@@ -44,23 +58,30 @@ export default function Table() {
   };
 
   
-const handleSubmit = async () => {
-    const transactionIds = selectedRows;
-    await handleDelete(transactionIds);
-};
+  const handleSubmit = async () => {
+    if (selectedRows.length > 0) {
+      const firstSelectedRow = data.find(d => d["Transaction ID"] === selectedRows[0]);
+      let organisationName = firstSelectedRow["Organisation"];
+      if (organisationName.toLowerCase().startsWith("tpn_")) {
+        organisationName = organisationName.slice(4); // remove "tpn_" from the start
+      }
+      const transactionIds = selectedRows;
+      await handleDelete(organisationName, transactionIds);
+    }
+  };
    
   const formatNumber = (num) => {
     return new Intl.NumberFormat('en-IN').format(num);
   };
 
   
-  const handleDelete = async (transactionIds) => {
+  const handleDelete = async (organisationName, transactionIds) => {
     const response = await fetch("/dash/txnbeta/cancel", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ transactionIds }),
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ organisationName, transactionIds }),
     });
   
     if(response.ok) {
@@ -201,13 +222,14 @@ const handleSubmit = async () => {
                             </td>
                             <td className="px-4 py-2 whitespace-normal text-sm text-gray-500">
                               <td className="px-4 py-2 whitespace-normal text-sm text-gray-500">
-                              {row["Status"] !== "Revoked" && (
-          <input
-            type="checkbox"
-            checked={selectedRows.includes(row["Transaction ID"])}
-            onChange={(e) => handleCheckboxChange(e, row)}
-          />
-        )}
+                              {row["Status"] !== "Revoked" && row["Organisation"].toLowerCase().startsWith("tpn_") && (
+    <input
+      type="checkbox"
+      checked={selectedRows.includes(row["Transaction ID"])}
+      onClick={(e) => e.stopPropagation()} 
+      onChange={(e) => handleCheckboxChange(e, row)}
+    />
+  )}
                               </td>
                             </td>
                           </tr>
