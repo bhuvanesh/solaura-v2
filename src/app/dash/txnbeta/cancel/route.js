@@ -12,7 +12,7 @@ export async function POST(req) {
     const newTransactionId = uuidv4();
 
     for(const oldTransactionId of transactionIds) {
-      const sql = `UPDATE buyersbeta SET \`Transaction ID\`='${newTransactionId}', \`Organisation\`='${organisationName}' WHERE \`Transaction ID\`='${oldTransactionId}'`;
+      const sql = `UPDATE buyers SET \`Transaction ID\`='${newTransactionId}', \`Organisation\`='${organisationName}' WHERE \`Transaction ID\`='${oldTransactionId}'`;
       const [rows, fields] = await dbConnection.execute(sql);
       console.log(`Updated transaction ID ${oldTransactionId} to ${newTransactionId} and Organisation to ${organisationName}`);
     }
