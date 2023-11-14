@@ -15,7 +15,7 @@ const Sidebar = () => {
         <ListItem text={'Transactions'} navLink={'/dash/txn'} Icon={BanknotesIcon}/>
         <ListItem text={'Device Summary'} navLink={'/dash/sum'} Icon={DocumentMagnifyingGlassIcon}/>
         <ListItem text={'Group Summary'} navLink={'/dash/group'} Icon={SparklesIcon}/> 
-        <ListItem text={'transaction Beta'} navLink={'/dash/txnbeta'} Icon={SparklesIcon}/>                  
+        <ListItem text={'Merge transactions'} navLink={'/dash/txnbeta'} Icon={SparklesIcon}/>                  
     </div>
     <div className='flex items-center mb-4 mt-4 ml-2'>
         <UserButton afterSignOutUrl='/' />
