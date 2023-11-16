@@ -214,9 +214,7 @@ const handleUnselect = () => {
     'july', 'august', 'september', 'october', 'november', 'december'
   ];
   const visibleMonths = months.filter(month => results.some(result => result[month]));
-  useEffect(() => {
-    suggestMonths();
-}, []);
+
 
 
 return (

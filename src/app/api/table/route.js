@@ -17,7 +17,7 @@ export async function POST(request) {
   }
 
   // In this map function, we compare `Actual` with null instead of 0
-  const monthSums = selectedMonths.map(month => `SUM(CASE WHEN \`Month\` = '${month}' THEN (CASE WHEN COALESCE(\`Actual\`, null) - COALESCE(\`Actual_used\`, 0) = null THEN COALESCE(\`Estimated\`, 0) - COALESCE(\`Estimated_used\`, 0) ELSE COALESCE(\`Actual\`, null) - COALESCE(\`Actual_used\`, 0) END) ELSE 0 END) as \`${month}\``).join(', ');
+  const monthSums = selectedMonths.map(month => `SUM(CASE WHEN \`Month\` = '${month}' THEN (CASE WHEN \`Actual\` IS null THEN COALESCE(\`Estimated\`, 0) - COALESCE(\`Estimated_used\`, 0) ELSE COALESCE(\`Actual\`, null) - COALESCE(\`Actual_used\`, 0) END) ELSE 0 END) as \`${month}\``).join(', ');
 
   try {
     const connection = await getPSConnection();
@@ -27,12 +27,12 @@ export async function POST(request) {
     const typeCondition = type === 'Both' ? "(`Type` = 'Solar' OR `Type` = 'Wind')" : "`Type` = ?";
 
     const [rows] = await connection.query(`
-    SELECT \`Device ID\`, \`Group\`, \`Year\`, \`Type\`, \`CoD\`, ${monthSums}, SUM(CASE WHEN COALESCE(\`Actual\`, null) = null THEN COALESCE(\`Estimated\`, 0) - COALESCE(\`Estimated_used\`, 0) ELSE COALESCE(\`Actual\`, null) - COALESCE(\`Actual_used\`, 0) END) as Total_Production
-    FROM \`inventory2\`
-    WHERE ${CoDYearCondition !== '' ? `${CoDYearCondition} AND` : ''} ${typeCondition} AND \`Month\` IN (?) AND \`Year\` = ?
-    GROUP BY \`Device ID\`, \`Group\`, \`Year\`, \`Type\`, \`CoD\`
-    HAVING Total_Production >= 0
-    ORDER BY Total_Production DESC
+  SELECT \`Device ID\`, \`Group\`, \`Year\`, \`Type\`, \`CoD\`, ${monthSums},  SUM(CASE WHEN \`Actual\` IS null THEN COALESCE(\`Estimated\`, 0) - COALESCE(\`Estimated_used\`, 0) ELSE COALESCE(\`Actual\`, null) - COALESCE(\`Actual_used\`, 0) END) as Total_Production
+  FROM \`inventory2beta\`
+  WHERE ${CoDYearCondition !== '' ? `${CoDYearCondition} AND` : ''} ${typeCondition} AND \`Month\` IN (?) AND \`Year\` = ?
+  GROUP BY \`Device ID\`, \`Group\`, \`Year\`, \`Type\`, \`CoD\`
+  HAVING Total_Production >= 0
+  ORDER BY Total_Production DESC
 `, type === 'Both' ? [selectedMonths, year] : [type, selectedMonths, year]);
 
     return new Response(JSON.stringify(rows), {
