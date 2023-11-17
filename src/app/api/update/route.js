@@ -23,7 +23,7 @@ export async function POST(request) {
       }
     }
 
-    let sql = `INSERT INTO \`inventory2beta\` (\`Device ID\`, \`Month\`, \`Year\`, \`Actual_used\`, \`Estimated_used\`)
+    let sql = `INSERT INTO \`inventory2\` (\`Device ID\`, \`Month\`, \`Year\`, \`Actual_used\`, \`Estimated_used\`)
                VALUES ${placeholders.join(", ")}
                ON DUPLICATE KEY UPDATE
                  \`Actual_used\` = VALUES(\`Actual_used\`),

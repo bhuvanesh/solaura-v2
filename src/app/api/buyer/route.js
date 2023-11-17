@@ -26,7 +26,7 @@ export async function POST(request) {
     }
 
     const query = `
-      INSERT INTO buyersbeta (\`Transaction ID\`, \`Device ID\`, organisation, year, January, February, March, April, May, June, July, August, September, October, November, December, Status)
+      INSERT INTO buyers (\`Transaction ID\`, \`Device ID\`, organisation, year, January, February, March, April, May, June, July, August, September, October, November, December, Status)
       VALUES ${rows.join(', ')}
     `;
 
