@@ -11,12 +11,12 @@ export async function POST(req) {
     const conn = await getPSConnection();
 
 // Prepare the batch insert query by creating an array of values and placeholders
-const values = rows.flatMap(row => [row.project, row.month.toLowerCase().trim(), row.year, row.actual]);
+const values = rows.flatMap(row => [row['device id'], row.month.toLowerCase().trim(), row.year, row.actual]);
     const placeholders = rows.map(() => '(?, ?, ?, ?)').join(', ');
     
     // Define the SQL query for inserting or updating rows in the inventory2 table
     const insertQuery = `
-      INSERT INTO inventory2 (project, Month, Year, Actual)
+      INSERT INTO inventory2 (\`Device ID\`, Month, Year, Actual)
       VALUES ${placeholders}
       ON DUPLICATE KEY UPDATE
         Actual = VALUES(Actual),
