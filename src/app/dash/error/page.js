@@ -8,6 +8,8 @@ const ErrorDataPage = () => {
   const [selectedRows, setSelectedRows] = useState([]);
   const [filter, setFilter] = useState('all');
   const [isLoading, setIsLoading] = useState(false);
+  const [countRows, setCountRows] = useState(null);
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -16,7 +18,9 @@ const ErrorDataPage = () => {
           method: 'GET',
         });
         const data = await response.json();
-        setErrorData(data);
+        console.log(data)
+        setErrorData(data.rows);
+        setCountRows(data.countRows[0]);
       } catch (error) {
         console.error('Error fetching data:', error);
       }
@@ -46,7 +50,7 @@ const ErrorDataPage = () => {
                   key={key}
                   className="px-6 py-3 text-left text-xs font-medium bg-sky-800 text-white uppercase tracking-wider"
                 >
-                  {key}
+                  {key === 'Status' ? 'Error Type' : key}
                 </th>
               ))}
               <th className="px-6 py-3 text-left text-xs font-medium bg-sky-800 text-white uppercase tracking-wider">
@@ -114,6 +118,11 @@ const ErrorDataPage = () => {
   return (
     <div>
       <h2 className="text-2xl font-semibold text-violet-600 mb-4">Data Errors</h2>
+      <div className="mb-4">
+  <p className="text-lg font-semibold text-blue-600">No of Devices with Actual Error: <span className="font-normal text-gray-700">{countRows?.ActualDistinctDevices || 0}</span></p>
+  <p className="text-lg font-semibold text-blue-600">No of Devices with Issued Error: <span className="font-normal text-gray-700">{countRows?.IssuedDistinctDevices || 0}</span></p>
+</div>
+
       <div className="mb-4">
         <input type="radio" id="all" name="filter" value="all" checked={filter === 'all'} onChange={(e) => setFilter(e.target.value)} />
         <label htmlFor="all" className="mr-4">All</label>
