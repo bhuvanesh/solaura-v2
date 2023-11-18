@@ -58,7 +58,7 @@ const ExcelUpload = () => {
   
           return months.map((month, index) => ({
               'S.No': lowerCaseItem['s.no'],
-              'Device ID': lowerCaseItem['device id'],
+              'Device ID': lowerCaseItem['device id'].replace(/\s+/g, ''),
               month,
               Estimated: monthValues[index],
               Type: lowerCaseItem['device type (wind/solar)'],
