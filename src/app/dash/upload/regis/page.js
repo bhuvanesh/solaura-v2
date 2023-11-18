@@ -9,10 +9,16 @@ const FormPage = () => {
     capacity: '',
     deviceId: '',
     cod: '',
+    year: '',
     deviceType: '',
     months: Array(12).fill(0),
     registered: '',
   });
+
+  const generatePastTenYears = () => {
+    const currentYear = new Date().getFullYear();
+    return Array.from({length: 11}, (_, i) => currentYear - i);
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -37,10 +43,11 @@ const FormPage = () => {
           projectName: formData.projectName,
           capacity: parseFloat(formData.capacity),
           'Device Id': formData.deviceId,
+          year: formData.year,
           CoD: formData.cod,
           Type: formData.deviceType,
           registered: formData.registered,
-          month: monthName,
+          month: monthName.toLowerCase(),
           Estimated: parseInt(monthValue, 10),
         });
       
@@ -55,11 +62,17 @@ const FormPage = () => {
 
     const result = await response.json();
     console.log(result);
+  const userConfirmed = window.confirm(result.message || 'An unknown error occurred.');
+
+  if (userConfirmed) {
+    window.location.reload();
+  }
   };
 
   return (
     <div className="container mx-auto px-4">
       <h1 className="text-2xl font-bold mb-4">Form</h1>
+      <div className="w-full md:w-3/4 lg:w-1/2 mx-auto">
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="block text-sm font-medium">Group Name:</label>
@@ -116,6 +129,23 @@ const FormPage = () => {
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
           />
         </div>
+
+        <div>
+  <label className="block text-sm font-medium">Year:</label>
+  <select
+    name="year"
+    value={formData.year}
+    onChange={handleChange}
+    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+  >
+    <option value="">Select year</option>
+    {generatePastTenYears().map((year) => (
+      <option key={year} value={year}>
+        {year}
+      </option>
+    ))}
+  </select>
+</div>
   
         <div>
           <label className="block text-sm font-medium">CoD:</label>
@@ -166,7 +196,7 @@ const FormPage = () => {
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
           >
             <option value="">Select status</option>
-            <option value="Yes">Yes</option>
+            <option value="Registered">Registered</option>
             <option value="Pending">Pending</option>
             <option value="Pipeline">Pipeline</option>
           </select>
@@ -179,7 +209,8 @@ const FormPage = () => {
           Submit
         </button>
       </form>
-    </div>
+      </div>
+      </div>
   );
         } 
   export default FormPage;
