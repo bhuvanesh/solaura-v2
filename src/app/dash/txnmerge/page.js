@@ -4,7 +4,7 @@ import jsPDF from "jspdf";
 import "jspdf-autotable";
 
 async function fetchData() {
-  const response = await fetch("/dash/txnbeta/btable");
+  const response = await fetch("/dash/txnmerge/btable");
   const data = await response.json();
   return data;
 }
@@ -76,7 +76,7 @@ export default function Table() {
 
   
   const handleDelete = async (organisationName, transactionIds) => {
-    const response = await fetch("/dash/txnbeta/cancel", {
+    const response = await fetch("/dash/txnmerge/cancel", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
