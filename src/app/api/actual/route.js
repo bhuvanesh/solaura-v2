@@ -11,7 +11,7 @@ export async function POST(req) {
     const conn = await getPSConnection();
 
 // Prepare the batch insert query by creating an array of values and placeholders
-const values = rows.flatMap(row => [row['device id'], row.month.toLowerCase().trim(), row.year, row.actual]);
+const values = rows.flatMap(row => [row['device id'].replace(/\s+/g, ''), row.month.toLowerCase().trim(), row.year, row.actual]);
     const placeholders = rows.map(() => '(?, ?, ?, ?)').join(', ');
     
     // Define the SQL query for inserting or updating rows in the inventory2 table

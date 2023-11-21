@@ -11,7 +11,7 @@ export async function POST(req) {
 
     const devicesToUpdate = devices
       .filter(({ status }) => status === 'Issued')
-      .map(({ device, Month, Year }) => [device, Month, Year]);
+      .map(({ device, Month, Year }) => [device.replace(/\s+/g, ''), Month, Year]);
 
     if (devicesToUpdate.length > 0) {
 

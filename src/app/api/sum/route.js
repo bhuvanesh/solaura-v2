@@ -63,7 +63,7 @@ async function getGroupsData(connection, groupName) {
     GROUP BY \`Device ID\`, \`company\`, \`Group\`, Type, CoD, Year,\`project\`;`;
   } else {
     query = `
-    SELECT DISTINCT \`Group\` 
+    SELECT DISTINCT \`Group\`, Year
     FROM \`inventory2\`;`;
   }
 

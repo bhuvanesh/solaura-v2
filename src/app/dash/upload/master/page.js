@@ -63,7 +63,7 @@ const ExcelUpload = () => {
               Estimated: monthValues[index],
               Type: lowerCaseItem['device type (wind/solar)'],
               Company: lowerCaseItem['company name'],
-              Group: lowerCaseItem['group name'],
+              Group: lowerCaseItem['group name'].trim(),
               Year: lowerCaseItem['year'],
               project: lowerCaseItem['project name'],
               'Capacity (MW)': lowerCaseItem['capacity (mw)'],

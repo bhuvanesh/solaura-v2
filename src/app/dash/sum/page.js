@@ -8,7 +8,9 @@ const DownloadPage = () => {
   const [groups, setGroups] = useState([]);
   const [data, setData] = useState([]);
   const [selectedGroup, setSelectedGroup] = useState("");
-  const [selectedYear, setSelectedYear] = useState(null);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [unfilteredGroups, setUnfilteredGroups] = useState([]);
+
 
 // Fetch the groups when the component mounts
 useEffect(() => {
@@ -22,16 +24,22 @@ useEffect(() => {
     });
 
     const data = await response.json();
-    const allGroupsOption = {Group: "All groups"};
-    data.unshift(allGroupsOption); // Add 'All groups' option at the start
-    setGroups(data);
-
-    if (data[1]) {   // data[0] is 'All groups', so data[1] will be the first group
+    const allGroupsOption = {Group: "All groups", Year: "All years"};
+    data.unshift(allGroupsOption);
+    setUnfilteredGroups(data);
+    if (data[1]) {   
       setSelectedGroup(data[1].Group);
+      setSelectedYear(data[1].Year);
     }
   };
   fetchGroups();
 }, []);
+
+useEffect(() => {
+  // Filter the unfilteredGroups based on the selected year
+  const filteredGroups = unfilteredGroups.filter(group => group.Year === selectedYear || group.Group === "All groups");
+  setGroups(filteredGroups);
+}, [selectedYear]);
 
   // Fetch the data when the selected group changes
   useEffect(() => {
@@ -74,8 +82,7 @@ const downloadAsExcel = () => {
 
   const handleYearChange = (e) => {
     setSelectedYear(parseInt(e.target.value));
-  };
-
+  };  
   const uniqueYears = Array.from(new Set(data.map((item) => item["Year"])));
   const years = uniqueYears.sort((a, b) => b - a);
 
@@ -101,7 +108,14 @@ const downloadAsExcel = () => {
   onChange={handleGroupChange}
   className="border px-4 py-2 rounded-md border-sky-800"
 >
-  {groups.map((group, index) => (
+  {groups.sort((a, b) => {
+    if(a.Group === "All groups") return -1;
+    if(b.Group === "All groups") return 1;
+    if(a.Group && b.Group) {
+      return a.Group.localeCompare(b.Group)
+    }
+    return 0;
+  }).map((group, index) => (
     <option key={index} value={group.Group}>
       {group.Group}
     </option>
