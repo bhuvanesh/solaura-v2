@@ -374,6 +374,7 @@ const [oldMonthValue, setOldMonthValue] = useState("");
                                   <button
                                     onClick={() => confirmDelete(row)}
                                     className="bg-red-200 rounded-md text-black p-1 hover:bg-red-300"
+                                    disabled={true}
                                   >
                                     Revoke Txn
                                   </button>
