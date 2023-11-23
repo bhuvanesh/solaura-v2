@@ -18,9 +18,11 @@ const CustomTooltip = ({ active, payload, label }) => {
         <p style={{ color: payload[0].color }}>
           {`Estimate: ${new Intl.NumberFormat('en-IN').format(payload[0].value)}`}
         </p>
-        <p style={{ color: payload[1].color }}>
-          {`Actual: ${new Intl.NumberFormat('en-IN').format(payload[1].value)}`}
-        </p>
+        {payload[1] && (
+          <p style={{ color: payload[1].color }}>
+            {`Actual: ${new Intl.NumberFormat('en-IN').format(payload[1].value)}`}
+          </p>
+        )}
       </div>
     );
   }
