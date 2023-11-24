@@ -62,14 +62,10 @@ export default function Table() {
     if (selectedRows.length > 0) {
       const firstSelectedRow = data.find(d => d["Transaction ID"] === selectedRows[0]);
       let organisationName = firstSelectedRow["Organisation"];
-      if (organisationName.toLowerCase().startsWith("tmp_")) {
-        organisationName = organisationName.slice(4); // remove "tmp_" from the start
-      }
       const transactionIds = selectedRows;
       await handleDelete(organisationName, transactionIds);
     }
   };
-   
   const formatNumber = (num) => {
     return new Intl.NumberFormat('en-IN').format(num);
   };
@@ -122,8 +118,7 @@ export default function Table() {
   const filteredData = data.filter((item) => {
     return (
       item["Organisation"].toLowerCase().includes(searchQuery.toLowerCase()) &&
-      (statusFilter === "All" || item["Status"] === "succeeded") &&
-      item["Organisation"].toLowerCase().includes("tmp_")
+      (statusFilter === "All" || item["Status"] === "succeeded")
     );
   });
 
@@ -223,14 +218,14 @@ export default function Table() {
                             </td>
                             <td className="px-4 py-2 whitespace-normal text-sm text-gray-500">
                               <td className="px-4 py-2 whitespace-normal text-sm text-gray-500">
-                              {row["Status"] !== "Revoked" && row["Organisation"].toLowerCase().startsWith("tmp_") && (
-    <input
-      type="checkbox"
-      checked={selectedRows.includes(row["Transaction ID"])}
-      onClick={(e) => e.stopPropagation()} 
-      onChange={(e) => handleCheckboxChange(e, row)}
-    />
-  )}
+                              {row["Status"] !== "Revoked" && (
+  <input
+    type="checkbox"
+    checked={selectedRows.includes(row["Transaction ID"])}
+    onClick={(e) => e.stopPropagation()} 
+    onChange={(e) => handleCheckboxChange(e, row)}
+  />
+)}
                               </td>
                             </td>
                           </tr>
