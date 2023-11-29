@@ -38,6 +38,10 @@ const [currentYear, setCurrentYear] = useState("");
 const [currentDeviceId, setCurrentDeviceId] = useState("");
 const [currentTransactionId, setCurrentTransactionId] = useState("");
 const [oldMonthValue, setOldMonthValue] = useState("");
+const rowsPerPage = 10;
+const [currentPage, setCurrentPage] = useState(1); 
+  const [totalPages, setTotalPages] = useState(1);  
+
 
 
 
@@ -160,9 +164,9 @@ const [oldMonthValue, setOldMonthValue] = useState("");
   };
 
   useEffect(() => {
-    fetchData().then((data) => {
+    fetchData().then((rawData) => {
       // Group data by Transaction ID
-      const groupedData = data.reduce((acc, row) => {
+      const groupedData = rawData.reduce((acc, row) => {
         const key = row["Transaction ID"];
         if (!acc[key]) {
           acc[key] = {
@@ -181,9 +185,31 @@ const [oldMonthValue, setOldMonthValue] = useState("");
       }, {});
 
       setData(Object.values(groupedData));
+
+      // Calculate total pages 
+      const calculatedTotalPages = Math.ceil(Object.values(groupedData).length / rowsPerPage);
+      setTotalPages(calculatedTotalPages);
     });
   }, []);
+   // Pagination functions
+   const goToNextPage = () => {
+    setCurrentPage((prevPage) => prevPage + 1);
+  };
 
+  const goToPreviousPage = () => {
+    setCurrentPage((prevPage) => prevPage - 1);
+  };
+
+  const changePage = (event) => {
+    const pageNumber = Number(event.target.value);
+    setCurrentPage(pageNumber);
+  };
+
+  const getPaginatedData = (data) => {
+    const startIndex = currentPage * rowsPerPage - rowsPerPage;
+    const endIndex = startIndex + rowsPerPage;
+    return data.slice(startIndex, endIndex);
+  };
   const filteredData = data.filter((item) => {
     return (
       item["Organisation"].toLowerCase().includes(searchQuery.toLowerCase()) &&
@@ -277,6 +303,8 @@ const [oldMonthValue, setOldMonthValue] = useState("");
   };
 
   console.log(filteredData);
+  const paginatedData = getPaginatedData(filteredData);
+
 
   return (
     <div className="flex items-center justify-center min-h-screen w-full px-4 sm:px-6 lg:px-8 py-6">
@@ -346,7 +374,7 @@ const [oldMonthValue, setOldMonthValue] = useState("");
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200 text-left">
-                      {filteredData.map((row, i) => (
+                      {paginatedData.map((row, i) => (
                         <React.Fragment key={i}>
                           <tr
                             onClick={() =>
@@ -488,6 +516,23 @@ const [oldMonthValue, setOldMonthValue] = useState("");
             </div>
           </div>
         </div>
+        <div className="flex justify-center mt-4">
+        <button
+          onClick={goToPreviousPage}
+          className={`px-4 py-2 bg-blue-500 text-white rounded-lg ${currentPage === 1 ? 'opacity-50' : ''}`}
+          disabled={currentPage === 1}
+        >
+          Prev
+        </button>
+        <p className="px-4 py-2 text-lg">{`Page ${currentPage} of ${totalPages}`}</p>
+        <button
+          onClick={goToNextPage}
+          className={`px-4 py-2 bg-blue-500 text-white rounded-lg ${currentPage === totalPages ? 'opacity-50' : ''}`}
+          disabled={currentPage === totalPages}
+        >
+          Next
+        </button>
+      </div>
       </div>
     </div>
   );
