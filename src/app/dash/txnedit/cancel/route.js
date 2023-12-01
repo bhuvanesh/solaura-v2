@@ -1,36 +1,85 @@
 import getPSConnection from '@/lib/planetscaledb';
 
+function generateSQLQuery(deviceMonths) {
+  const tuples = deviceMonths.map(() => '(?, ?, ?)').join(', ');
+  return `SELECT \`Device ID\`, \`month\`, \`Year\`, \`Actual_used\`, \`Estimated_used\`, IFNULL(\`Actual_used\`, 0) AS \`Actual_used\`, IFNULL(\`Estimated_used\`, 0) AS \`Estimated_used\` FROM inventory2 WHERE (\`Device ID\`, \`month\`, \`Year\`) IN (${tuples})`;
+}
+
 export async function DELETE(req) {
-  const { transactionId, deviceId, monthData, year} = await req.json();
+  const { transactionId, deviceData, year } = await req.json();
   console.log(transactionId);
-  console.log(deviceId);
-  console.log(monthData);
+  console.log(deviceData);
   console.log(year);
 
-  try {
-    const conn = await getPSConnection();
+  const conn = await getPSConnection();
 
+  try {
     // Begin transaction
     await conn.beginTransaction();
 
     // Delete the row from the buyers table
-    await conn.query('UPDATE buyers SET `Status` = "Revoked" WHERE `Transaction ID` = ?', [transactionId]);
+    await conn.execute('UPDATE buyers SET `Status` = "Revoked" WHERE `Transaction ID` = ?', [transactionId]);
 
-    // Loop through monthData and update the inventory2 table for each month
-    for (const [month, valueToSubtract] of Object.entries(monthData)) {
-      const lowercaseMonth = month.toLowerCase(); // Convert month name to lowercase
-      const [[inventory2Row]] = await conn.query('SELECT `Actual_used`, `Estimated_used`, COALESCE(`Actual_used`, 0) AS `Actual_used`, COALESCE(`Estimated_used`, 0) AS `Estimated_used` FROM inventory2 WHERE `Device ID` = ? AND `month` = ? AND `Year` = ?', [deviceId, lowercaseMonth, year]);
+    // Prepare a list of device IDs and months
+    const deviceMonths = [];
+    for (const device of deviceData) {
+      const deviceId = device.deviceId;
+      for (const month of Object.keys(device.monthData)) {
+        deviceMonths.push([deviceId, month.toLowerCase(), year]);
+      }
+    }
 
-      if (inventory2Row) {
-        const actualUsed = inventory2Row['Actual_used'];
-        const estimatedUsed = inventory2Row['Estimated_used'];
+    // Fetch data for all devices and months in a single query
+    if (deviceMonths.length > 0) {
+      const sqlQuery = generateSQLQuery(deviceMonths);
+      const flattenedDeviceMonths = deviceMonths.flat();
+      const [inventory2Rows] = await conn.execute(sqlQuery, flattenedDeviceMonths);
 
-        if (actualUsed > 0) {
-          await conn.query('UPDATE inventory2 SET `Actual_used` = COALESCE(`Actual_used`, 0) - ? WHERE `Device ID` = ? AND `month` = ? AND `Year` = ?', [valueToSubtract, deviceId, lowercaseMonth, year]);
-        } else {
-          await conn.query('UPDATE inventory2 SET `Estimated_used` = COALESCE(`Estimated_used`, 0) - ? WHERE `Device ID` = ? AND `month` = ? AND `Year` = ?', [valueToSubtract, deviceId, lowercaseMonth, year]);
+      // Prepare data for batch update
+      let actualUsedData = [];
+      let estimatedUsedData = [];
+
+      for (const inventory2Row of inventory2Rows) {
+        const deviceId = inventory2Row['Device ID'];
+        const month = inventory2Row['month'];
+        const actualUsed = parseFloat(inventory2Row['Actual_used']);
+        const estimatedUsed = parseFloat(inventory2Row['Estimated_used']);
+
+        // Capitalize the first letter of the month variable
+        const capitalizedMonth = month.charAt(0).toUpperCase() + month.slice(1);
+
+        const valueToSubtract = parseFloat(deviceData.find(device => device.deviceId === deviceId).monthData[capitalizedMonth]);
+
+        let newValue;
+
+        if (!isNaN(actualUsed) && actualUsed > 0) {
+          console.log(`Subtracting: (${actualUsed} - ${valueToSubtract})`);
+          newValue = parseFloat((actualUsed - valueToSubtract).toFixed(4));
+          actualUsedData.push([deviceId, month, year, newValue]);
+        } else if (!isNaN(estimatedUsed)) {
+          console.log(`Subtracting: (${estimatedUsed} - ${valueToSubtract})`);
+          newValue = parseFloat((estimatedUsed - valueToSubtract).toFixed(4));
+          estimatedUsedData.push([deviceId, month, year, newValue]);
         }
       }
+
+      // Perform batch update for Actual_used
+      if (actualUsedData.length > 0) {
+        console.log('actualUsedData:', actualUsedData);
+        const placeholders = actualUsedData.map(() => '(?, ?, ?, ?)').join(', ');
+        const actualUsedQuery = `INSERT INTO inventory2 (\`Device ID\`, \`month\`, \`Year\`, \`Actual_used\`) VALUES ${placeholders} ON DUPLICATE KEY UPDATE \`Actual_used\` = VALUES(\`Actual_used\`)`;
+        await conn.query(actualUsedQuery, actualUsedData.flat());
+      }
+
+      // Perform batch update for Estimated_used
+      if (estimatedUsedData.length > 0) {
+        console.log('estimatedUsedData:', estimatedUsedData);
+        const placeholders = estimatedUsedData.map(() => '(?, ?, ?, ?)').join(', ');
+        const estimatedUsedQuery = `INSERT INTO inventory2 (\`Device ID\`, \`month\`, \`Year\`, \`Estimated_used\`) VALUES ${placeholders} ON DUPLICATE KEY UPDATE \`Estimated_used\` = VALUES(\`Estimated_used\`)`;
+        await conn.query(estimatedUsedQuery, estimatedUsedData.flat()); 
+      }
+    } else {
+      console.log('No device months to process');
     }
 
     // Commit transaction

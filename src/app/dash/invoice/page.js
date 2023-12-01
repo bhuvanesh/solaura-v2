@@ -52,7 +52,7 @@ const onSubmit = data => {
   .then(responseData => {
     // Check if responseData is null or empty
     if (!responseData || Object.keys(responseData).length === 0) {
-      window.alert('Company Details not Found');
+      window.alert('Invoice details not Found');
       return;
     }
   

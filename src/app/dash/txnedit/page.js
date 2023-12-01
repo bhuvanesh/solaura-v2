@@ -135,7 +135,7 @@ const [currentPage, setCurrentPage] = useState(1);
   const handleDelete = async (row) => {
     const transactionId = row["Transaction ID"];
     const year = row["year"];
-    for (const detail of row.details) {
+    const deviceData = row.details.map(detail => {
       const deviceId = detail["Device ID"];
       const monthData = months.reduce((acc, m) => {
         if (detail[m]) {
@@ -143,23 +143,22 @@ const [currentPage, setCurrentPage] = useState(1);
         }
         return acc;
       }, {});
-
-      const response = await fetch("/dash/txnedit/cancel", {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ transactionId, deviceId, year, monthData }),
-      });
-
-      if (response.ok) {
-        // Remove the row from the data state
-        setData((prevData) =>
-          prevData.filter((item) => item["Transaction ID"] !== transactionId)
-        );
-      } else {
-        console.error("Failed to delete the row");
-      }
+      return { deviceId, monthData };
+    });
+  
+    const response = await fetch("/dash/txnedit/cancel", {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ transactionId, year, deviceData }),
+    });
+  
+    if (response.ok) {
+      // Remove the row from the data state
+      setData((prevData) => prevData.filter((item) => item["Transaction ID"] !== transactionId));
+    } else {
+      console.error("Failed to delete the row");
     }
   };
 
