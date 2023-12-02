@@ -8,13 +8,12 @@ export async function POST(req) {
     const connection = await getPSConnection();
 
     // Check if the device ID, month, and year exist in the table
-    const [deviceExistsResult] = await connection.query('SELECT COUNT(*) as count FROM inventory2 WHERE `Device ID` = ? AND `Month` = ? AND `Year` = ?', [rows[0]['Device Id'], rows[0].month, rows[0].year]);
-    const deviceExists = deviceExistsResult[0].count > 0;
+    const [deviceExistsResult] = await connection.query(`SELECT COUNT(*) as count FROM ${process.env.MASTER_TABLE} WHERE \`Device ID\` = ? AND \`Month\` = ? AND \`Year\` = ?`, [rows[0]['Device Id'], rows[0].month, rows[0].year]);    const deviceExists = deviceExistsResult[0].count > 0;
 
     if (!deviceExists) {
       // Prepare the query and values for batch insert
       const query = `
-        INSERT INTO inventory2 (
+        INSERT INTO ${process.env.MASTER_TABLE} (
           \`Device ID\`, \`Group\`, company, project, \`Type\`, \`CoD\`, \`Capacity (MW)\`, \`Month\`, Estimated, Registered, \`Year\`
         ) VALUES ?;
       `;

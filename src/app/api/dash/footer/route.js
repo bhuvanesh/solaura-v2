@@ -16,7 +16,7 @@ const sql = `
         SUM(CASE WHEN Month = MONTHNAME(DATE_SUB(CURRENT_DATE, INTERVAL 3 MONTH)) AND Year = YEAR(CURRENT_DATE) THEN Actual ELSE 0 END) AS previous_of_previous_month_actual_generation,
         SUM(CASE WHEN Year = YEAR(CURRENT_DATE) THEN Actual ELSE 0 END) AS total_actual_generation,
         SUM(CASE WHEN Year = YEAR(CURRENT_DATE) - 1 THEN Actual ELSE 0 END) AS total_actual_previous_year
-      FROM inventory2
+      FROM ${process.env.MASTER_TABLE}
     `;
 
     // Execute the SQL query

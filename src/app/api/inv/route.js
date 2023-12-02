@@ -5,7 +5,7 @@ import getPSConnection from '@/lib/planetscaledb';
 
 // Define an asynchronous function to fetch all data from the inventory2 table
 async function getAllData(connection) {
-  const [rows] = await connection.query('SELECT * FROM `inventory2`');
+  const [rows] = await connection.query(`SELECT * FROM ${process.env.MASTER_TABLE}`);
   return rows;
 }
 

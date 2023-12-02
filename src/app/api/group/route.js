@@ -12,7 +12,7 @@ async function getAllGroups(connection, groupName) {
       SUM(\`Actual\`) as actual_generation,
       SUM(\`Issued\`) as total_issuance,
       SUM(IF(\`Issued\` IS NULL OR \`Issued\` = 0, \`Actual_used\` + \`Estimated_used\`, 0)) as future_commitment
-    FROM \`inventory2\`
+    FROM \`${process.env.MASTER_TABLE}\`
     ${groupName ? `WHERE \`Group\` = ? AND \`Year\` = ${currentYear}` : `WHERE \`Year\` = ${currentYear}`}
     GROUP BY \`Group\`
 
@@ -26,7 +26,7 @@ async function getAllGroups(connection, groupName) {
       SUM(IF(\`Type\` = 'Solar', \`Actual\`, 0)) as actual_generation,
       SUM(IF(\`Type\` = 'Solar', \`Issued\`, 0)) as total_issuance,
       SUM(IF((\`Type\` = 'Solar') AND (\`Issued\` IS NULL OR \`Issued\` = 0), \`Actual_used\` + \`Estimated_used\`, 0)) as future_commitment
-    FROM \`inventory2\`
+    FROM \`${process.env.MASTER_TABLE}\`
     ${groupName ? `WHERE \`Group\` = ? AND \`Year\` = ${currentYear}` : `WHERE \`Year\` = ${currentYear}`}
     GROUP BY \`Group\`
 
@@ -40,7 +40,7 @@ async function getAllGroups(connection, groupName) {
       SUM(IF(\`Type\` = 'Wind', \`Actual\`, 0)) as actual_generation,
       SUM(IF(\`Type\` = 'Wind', \`Issued\`, 0)) as total_issuance,
       SUM(IF((\`Type\` = 'Wind') AND (\`Issued\` IS NULL OR \`Issued\` = 0), \`Actual_used\` + \`Estimated_used\`, 0)) as future_commitment
-    FROM \`inventory2\`
+    FROM \`${process.env.MASTER_TABLE}\`
     ${groupName ? `WHERE \`Group\` = ? AND \`Year\` = ${currentYear}` : `WHERE \`Year\` = ${currentYear}`}
     GROUP BY \`Group\`;
   `;
@@ -54,7 +54,7 @@ async function getGroupNames(connection) {
     SELECT
       DISTINCT \`Group\`
     FROM
-      \`inventory2\`;
+      \`${process.env.MASTER_TABLE}\`;
   `);
   return rows;
 }

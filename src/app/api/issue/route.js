@@ -20,7 +20,7 @@ export async function POST(req) {
       const flattenedDevices = [].concat.apply([], devicesToUpdate);
 
       const updateQuery = `
-        INSERT INTO inventory2 (\`Device ID\`, Month, Year)
+        INSERT INTO ${process.env.MASTER_TABLE} (\`Device ID\`, Month, Year)
         VALUES ${values}
         ON DUPLICATE KEY UPDATE Issued = Actual;
       `;

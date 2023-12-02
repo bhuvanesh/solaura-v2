@@ -18,7 +18,7 @@ export async function GET(request) {
           END
       END AS \`Status\`
     FROM
-      \`inventory2\`
+      \`${process.env.MASTER_TABLE}\`
     WHERE
       \`Estimated\` IS NULL;
   `);
@@ -29,7 +29,7 @@ const [countRows] = await connection.execute(`
     COUNT(DISTINCT CASE WHEN \`Actual\` IS NOT NULL THEN \`Device ID\` END) AS \`ActualDistinctDevices\`,
     COUNT(DISTINCT CASE WHEN \`Actual\` IS NULL THEN \`Device ID\` END) AS \`IssuedDistinctDevices\`
   FROM
-    \`inventory2\`
+    \`${process.env.MASTER_TABLE}\`
   WHERE
     \`Estimated\` IS NULL;
 `);

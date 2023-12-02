@@ -22,7 +22,7 @@ export async function POST(request) {
     }
 
     // Fetch the 'Actual' values for the device id, month, and year tuples
-    let [rows] = await connection.query(`SELECT \`Device ID\`, Month, Year, Actual FROM inventory2 WHERE (\`Device ID\`, Month, Year) IN (?)`, [deviceMonthYearTuples]);
+    let [rows] = await connection.query(`SELECT \`Device ID\`, Month, Year, Actual FROM ${process.env.MASTER_TABLE} WHERE (\`Device ID\`, Month, Year) IN (?)`, [deviceMonthYearTuples]);
     let actualValues = {};
     for (let row of rows) {
       let key = `${row['Device ID']}-${row.Month}-${row.Year}`;
@@ -43,7 +43,7 @@ export async function POST(request) {
       placeholders.push("(?, ?, ?, ?, ?)");
     }
 
-    let sql = `INSERT INTO \`inventory2\` (\`Device ID\`, \`Month\`, \`Year\`, \`Actual_used\`, \`Estimated_used\`)
+    let sql = `INSERT INTO \`${process.env.MASTER_TABLE}\` (\`Device ID\`, \`Month\`, \`Year\`, \`Actual_used\`, \`Estimated_used\`)
     VALUES ${placeholders.join(", ")}
     ON DUPLICATE KEY UPDATE
       \`Actual_used\` = COALESCE(\`Actual_used\`, 0) + VALUES(\`Actual_used\`),

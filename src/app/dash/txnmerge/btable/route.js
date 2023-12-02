@@ -3,10 +3,9 @@ import { revalidatePath } from 'next/cache';
 
 // Function to fetch all buyers from database
 async function getAllBuyers(connection) {
-  const [rows] = await connection.query('SELECT * FROM `buyers`');
+  const [rows] = await connection.query(`SELECT * FROM \`${process.env.BUYERS_TABLE}\``);
   return rows;
 }
-
 // Route handler
 export async function GET(request) {
   try {

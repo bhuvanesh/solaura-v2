@@ -28,7 +28,7 @@ async function getGroupsData(connection, groupName) {
           WHEN COALESCE(\`Actual\`, 0) != 0 THEN COALESCE(\`Actual\`, 0) - COALESCE(\`Actual_used\`, 0)
           ELSE COALESCE(\`Estimated\`, 0) - COALESCE(\`Estimated_used\`, 0)
         END AS Sold
-      FROM \`inventory2\`
+      FROM \`${process.env.MASTER_TABLE}\`
     ) AS subquery
     GROUP BY \`Device ID\`, \`company\`, \`Group\`, Type, CoD, Year,\`project\`;`
   } else if (groupName) {
@@ -57,14 +57,14 @@ async function getGroupsData(connection, groupName) {
           WHEN COALESCE(\`Actual\`, 0) != 0 THEN COALESCE(\`Actual\`, 0) - COALESCE(\`Actual_used\`, 0)
           ELSE COALESCE(\`Estimated\`, 0) - COALESCE(\`Estimated_used\`, 0)
         END AS Sold
-      FROM \`inventory2\`
+      FROM \`${process.env.MASTER_TABLE}\`
       WHERE \`Group\` = ?
     ) AS subquery
     GROUP BY \`Device ID\`, \`company\`, \`Group\`, Type, CoD, Year,\`project\`;`;
   } else {
     query = `
     SELECT DISTINCT \`Group\`, Year
-    FROM \`inventory2\`;`;
+    FROM \`${process.env.MASTER_TABLE}\`;`;
   }
 
   const [rows] = await connection.query(query, groupName ? [groupName] : []);

@@ -32,7 +32,7 @@ export async function POST(request) {
     \`Project\`,
     MIN(\`Capacity (MW)\`) AS Capacity,
     SUM(Issued) AS TotalIssued
-  FROM inventory2beta
+  FROM ${process.env.MASTER_TABLE}
   WHERE 
     company = ? AND 
     \`Group\` = ? AND 

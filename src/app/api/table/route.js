@@ -28,7 +28,7 @@ export async function POST(request) {
 
     const [rows] = await connection.query(`
   SELECT \`Device ID\`, \`Group\`, \`Year\`, \`Type\`, \`CoD\`, ${monthSums},  SUM(CASE WHEN \`Actual\` IS null THEN COALESCE(\`Estimated\`, 0) - COALESCE(\`Estimated_used\`, 0) ELSE COALESCE(\`Actual\`, null) - COALESCE(\`Actual_used\`, 0) END) as Total_Production
-  FROM \`inventory2\`
+  FROM \`${process.env.MASTER_TABLE}\`
   WHERE ${CoDYearCondition !== '' ? `${CoDYearCondition} AND` : ''} ${typeCondition} AND \`Month\` IN (?) AND \`Year\` = ?
   GROUP BY \`Device ID\`, \`Group\`, \`Year\`, \`Type\`, \`CoD\`
   HAVING Total_Production >= 0

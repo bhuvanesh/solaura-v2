@@ -7,7 +7,7 @@ export async function POST(req) {
     const connection = await getPSConnection();
 
     const query = `
-    INSERT INTO inventory2 (
+    INSERT INTO ${process.env.MASTER_TABLE} (
         \`Device ID\`, \`Group\`, company, project, \`Type\`, \`CoD\`, \`Capacity (MW)\`, \`Month\`, Estimated, Registered, \`Year\`
     ) VALUES ? ON DUPLICATE KEY UPDATE
         \`Device ID\` = VALUES(\`Device ID\`),

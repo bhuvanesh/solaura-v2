@@ -11,7 +11,7 @@ export async function DELETE(req) {
 
     // Prepare the DELETE statement
     const deleteStmt = `
-      DELETE FROM inventory2
+      DELETE FROM ${process.env.MASTER_TABLE}
       WHERE \`Device ID\` = ? AND Month = ? AND Year = ?
     `;
 

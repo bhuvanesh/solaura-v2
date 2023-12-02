@@ -16,7 +16,7 @@ const values = rows.flatMap(row => [row['device id'].replace(/\s+/g, ''), row.mo
     
     // Define the SQL query for inserting or updating rows in the inventory2 table
     const insertQuery = `
-      INSERT INTO inventory2 (\`Device ID\`, Month, Year, Actual)
+      INSERT INTO ${process.env.MASTER_TABLE} (\`Device ID\`, Month, Year, Actual)
       VALUES ${placeholders}
       ON DUPLICATE KEY UPDATE
         Actual = VALUES(Actual),

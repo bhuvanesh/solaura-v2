@@ -2,7 +2,7 @@ import getPSConnection from '@/lib/planetscaledb';
 
 function generateSQLQuery(deviceMonths) {
   const tuples = deviceMonths.map(() => '(?, ?, ?)').join(', ');
-  return `SELECT \`Device ID\`, \`month\`, \`Year\`, \`Actual_used\`, \`Estimated_used\`, IFNULL(\`Actual_used\`, 0) AS \`Actual_used\`, IFNULL(\`Estimated_used\`, 0) AS \`Estimated_used\` FROM inventory2 WHERE (\`Device ID\`, \`month\`, \`Year\`) IN (${tuples})`;
+  return `SELECT \`Device ID\`, \`month\`, \`Year\`, \`Actual_used\`, \`Estimated_used\`, IFNULL(\`Actual_used\`, 0) AS \`Actual_used\`, IFNULL(\`Estimated_used\`, 0) AS \`Estimated_used\` FROM ${process.env.MASTER_TABLE} WHERE (\`Device ID\`, \`month\`, \`Year\`) IN (${tuples})`;
 }
 
 export async function DELETE(req) {
@@ -18,8 +18,7 @@ export async function DELETE(req) {
     await conn.beginTransaction();
 
     // Delete the row from the buyers table
-    await conn.execute('UPDATE buyers SET `Status` = "Revoked" WHERE `Transaction ID` = ?', [transactionId]);
-
+    await conn.execute(`UPDATE ${process.env.BUYERS_TABLE} SET \`Status\` = "Revoked" WHERE \`Transaction ID\` = ?`, [transactionId]);
     // Prepare a list of device IDs and months
     const deviceMonths = [];
     for (const device of deviceData) {
@@ -67,7 +66,7 @@ export async function DELETE(req) {
       if (actualUsedData.length > 0) {
         console.log('actualUsedData:', actualUsedData);
         const placeholders = actualUsedData.map(() => '(?, ?, ?, ?)').join(', ');
-        const actualUsedQuery = `INSERT INTO inventory2 (\`Device ID\`, \`month\`, \`Year\`, \`Actual_used\`) VALUES ${placeholders} ON DUPLICATE KEY UPDATE \`Actual_used\` = VALUES(\`Actual_used\`)`;
+        const actualUsedQuery = `INSERT INTO ${process.env.MASTER_TABLE} (\`Device ID\`, \`month\`, \`Year\`, \`Actual_used\`) VALUES ${placeholders} ON DUPLICATE KEY UPDATE \`Actual_used\` = VALUES(\`Actual_used\`)`;
         await conn.query(actualUsedQuery, actualUsedData.flat());
       }
 
@@ -75,7 +74,7 @@ export async function DELETE(req) {
       if (estimatedUsedData.length > 0) {
         console.log('estimatedUsedData:', estimatedUsedData);
         const placeholders = estimatedUsedData.map(() => '(?, ?, ?, ?)').join(', ');
-        const estimatedUsedQuery = `INSERT INTO inventory2 (\`Device ID\`, \`month\`, \`Year\`, \`Estimated_used\`) VALUES ${placeholders} ON DUPLICATE KEY UPDATE \`Estimated_used\` = VALUES(\`Estimated_used\`)`;
+        const estimatedUsedQuery = `INSERT INTO ${process.env.MASTER_TABLE} (\`Device ID\`, \`month\`, \`Year\`, \`Estimated_used\`) VALUES ${placeholders} ON DUPLICATE KEY UPDATE \`Estimated_used\` = VALUES(\`Estimated_used\`)`;
         await conn.query(estimatedUsedQuery, estimatedUsedData.flat()); 
       }
     } else {

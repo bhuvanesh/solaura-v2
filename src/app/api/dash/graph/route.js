@@ -17,7 +17,7 @@ export async function GET(request) {
       SUM(CASE WHEN Type = 'Solar' THEN COALESCE(Actual_used, 0) + COALESCE(Estimated_used, 0) ELSE 0 END) as solarUsage,
       SUM(CASE WHEN Type = 'Wind' THEN COALESCE(Actual_used, 0) + COALESCE(Estimated_used, 0) ELSE 0 END) as windUsage
     FROM
-      inventory2
+      ${process.env.MASTER_TABLE}
     WHERE
       Year = ${year}
     GROUP BY

@@ -8,11 +8,11 @@ export async function GET(request) {
     const year = new Date().getFullYear(); 
     const sql = `
       SELECT 
-        (SELECT SUM(Estimated) FROM inventory2 WHERE Registered = 'Registered' AND Estimated IS NOT NULL AND Year = ${year}) AS total_estimated_registered,
-        (SELECT SUM(Estimated) FROM inventory2 WHERE Registered = 'Pending' AND Estimated IS NOT NULL AND Year = ${year}) AS total_estimated_pending,
-        (SELECT SUM(Estimated) FROM inventory2 WHERE Registered = 'Pipeline' AND Estimated IS NOT NULL AND Year = ${year}) AS total_estimated_pipeline,
-        (SELECT SUM(Actual_used) + SUM(Estimated_used) FROM inventory2 WHERE Registered = 'Registered' AND Year = ${year}) AS total_committed_registered,
-        (SELECT SUM(Actual) FROM inventory2 WHERE Year = ${year}) AS total_actual_generation
+        (SELECT SUM(Estimated) FROM ${process.env.MASTER_TABLE} WHERE Registered = 'Registered' AND Estimated IS NOT NULL AND Year = ${year}) AS total_estimated_registered,
+        (SELECT SUM(Estimated) FROM ${process.env.MASTER_TABLE} WHERE Registered = 'Pending' AND Estimated IS NOT NULL AND Year = ${year}) AS total_estimated_pending,
+        (SELECT SUM(Estimated) FROM ${process.env.MASTER_TABLE} WHERE Registered = 'Pipeline' AND Estimated IS NOT NULL AND Year = ${year}) AS total_estimated_pipeline,
+        (SELECT SUM(Actual_used) + SUM(Estimated_used) FROM ${process.env.MASTER_TABLE} WHERE Registered = 'Registered' AND Year = ${year}) AS total_committed_registered,
+        (SELECT SUM(Actual) FROM ${process.env.MASTER_TABLE} WHERE Year = ${year}) AS total_actual_generation
       `;
 
     const resultSet = await conn.query(sql);

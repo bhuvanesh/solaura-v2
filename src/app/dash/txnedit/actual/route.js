@@ -14,7 +14,7 @@ export async function POST(req) {
                 WHEN IFNULL(Actual, 0) = 0 THEN Estimated
                 ELSE Actual
               END AS Actual
-       FROM inventory2
+       FROM ${process.env.MASTER_TABLE}
        WHERE \`Device ID\` = ? AND Month = ? AND Year = ?`,
       [deviceId, month, year]
     );
