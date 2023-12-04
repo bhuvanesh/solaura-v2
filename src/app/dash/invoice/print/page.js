@@ -2,12 +2,15 @@
 import React, { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import ExcelModifier from '@/components/invoice';
+import ExcelJS from 'exceljs';
+import { saveAs } from 'file-saver';
 
 const Invoiceprint = () => {
   const searchParams = useSearchParams();
   const dataString = searchParams.get('data');
   const [downloadClicked, setDownloadClicked] = useState(false);
   const [saveClicked, setSaveClicked] = useState(false);
+
 
 
  
@@ -42,12 +45,13 @@ const Invoiceprint = () => {
   };
   
   const keyMapping = {
+    invoiceid: 'Invoice ID',
     capacity: 'Capacity (MW)',
     regNo: 'No of Registration',
     issued:'Issued (MWh)',
     ISP:'Indicative Unit Sale Price (USD)',
     issuanceFee:'Issuance Fee (Euros)',
-    registrationFee:'Registration Fee',
+    registrationFee:'Registration Fee(Euros)',
     USDExchange:'USD to INR Exchange rate',
     EURExchange:'EUR to INR Exchange rate',
     gross:'Gross Revenue (INR)',
@@ -59,9 +63,32 @@ const Invoiceprint = () => {
     netRate:'Net Trade Rate (INR/MWh)',
 
   };
-  const keysToIgnore = ['regdevice', 'groupName','invoicePeriodFrom','invoicePeriodTo','pan','gst','address','project'];
+  const keysToIgnore = ['regdevice', 'groupName','invoicePeriodFrom','invoicePeriodTo','pan','gst','address','project','date'];
 
-
+  const downloadAsWorksheet = () => {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Data');
+  
+    // Add columns without headers
+    worksheet.columns = [
+      { key: 'key', width: 10 },
+      { key: 'value', width: 30 },
+    ];
+  
+    // Add rows
+    Object.entries(data).forEach(([key, value]) => {
+      if (!keysToIgnore.includes(key)) {
+        const displayKey = keyMapping[key] || key;
+        worksheet.addRow({ key: displayKey, value });
+      }
+    });
+  
+    // Write to buffer and then convert to Blob for saving
+    workbook.xlsx.writeBuffer().then((buffer) => {
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      saveAs(blob, 'Invoice data.xlsx');
+    });
+  };
   return (
     <div className="container mx-auto px-4">
       <h1 className="text-2xl font-bold mb-4">Invoice Preview</h1>
@@ -80,6 +107,13 @@ const Invoiceprint = () => {
       >
         Download Invoice
       </button>
+
+      <button 
+      className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded ml-4"
+      onClick={downloadAsWorksheet}
+    >
+      Download as Worksheet
+    </button>
   
       {downloadClicked && <ExcelModifier data={data} />}
       <div style={{ overflowX: 'auto'}} className="border-2 rounded-lg mx-auto w-3/4 h-2/3 mt-4">

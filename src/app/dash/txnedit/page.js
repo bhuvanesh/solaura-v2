@@ -132,6 +132,41 @@ const [currentPage, setCurrentPage] = useState(1);
       });
     }
   };
+  const handleUndo = async (row) => {
+    const transactionId = row["Transaction ID"];
+    const year = row["year"];
+    const deviceData = row.details.map(detail => {
+      const deviceId = detail["Device ID"];
+      const monthData = months.reduce((acc, m) => {
+        if (detail[m]) {
+          acc[m] = detail[m];
+        }
+        return acc;
+      }, {});
+      return { deviceId, monthData };
+    });
+    const response = await fetch("/dash/txnedit/undo", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ transactionId, year, deviceData }),
+    });
+  
+    if (response.ok) {
+      window.alert("Undo successful");
+      window.location.reload();
+    } else {
+      console.error("Failed to undo the transaction");
+      window.alert("Undo failed");
+    }
+  };
+  
+  const confirmUndo = (row) => {
+    if (window.confirm("Do you really want to undo this transaction?")) {
+      handleUndo(row);
+    }
+  };
   const handleDelete = async (row) => {
     const transactionId = row["Transaction ID"];
     const year = row["year"];
@@ -396,17 +431,22 @@ const [currentPage, setCurrentPage] = useState(1);
                             {formatNumber(row["total"])}
                             </td>
                             <td className="px-4 py-2 whitespace-normal text-sm text-gray-500">
-                              <td className="px-4 py-2 whitespace-normal text-sm text-gray-500">
-                                {row["Status"] !== "Revoked" && (
-                                  <button
-                                    onClick={() => confirmDelete(row)}
-                                    className="bg-red-200 rounded-md text-black p-1 hover:bg-red-300"
-                                  >
-                                    Revoke Txn
-                                  </button>
-                                )}
-                              </td>
-                            </td>
+  {row["Status"] !== "Revoked" ? (
+    <button
+      onClick={() => confirmDelete(row)}
+      className="bg-red-200 rounded-md text-black p-1 hover:bg-red-300"
+    >
+      Revoke Txn
+    </button>
+  ) : (
+    <button
+      onClick={() => confirmUndo(row)}
+      className="bg-green-200 rounded-md text-black p-1 hover:bg-green-300"
+    >
+      Undo Txn
+    </button>
+  )}
+</td>
                           </tr>
                           {activeRow === i && (
                             <tr>

@@ -4,6 +4,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
 import { z } from 'zod';
+import { nanoid } from 'nanoid';
 const currentYear = new Date().getFullYear();
 const years = Array.from({ length: currentYear - 2021 }, (_, i) => 2022 + i);
 const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -19,6 +20,8 @@ const schema = z.object({
   invoicePeriodTo: z.string(),
   unitSalePrice: z.number(),
   successFee: z.number(),
+  usdExchangeRate: z.number(), 
+  eurExchangeRate: z.number(),
 });
 export default function InvoiceForm() {
 const { register, handleSubmit, control, setValue, formState: { errors } } = useForm({
@@ -30,6 +33,8 @@ const [filteredCompanies, setFilteredCompanies] = useState([]);
 const [selectedGroup, setSelectedGroup] = useState('');
 const [selectedCompany, setSelectedCompany] = useState('');
 const [selectedInvoicePeriodFrom, setSelectedInvoicePeriodFrom] = useState('');
+const [usdExchangeRate, setUsdExchangeRate] = useState(null);
+const [eurExchangeRate, setEurExchangeRate] = useState(null);
 const onSubmit = data => {
    console.log('Submitting:', data);
  
@@ -75,14 +80,21 @@ const formatProjectNames = (responseData) => {
    const projects = new Set(responseData.map(item => item.Project));
    return Array.from(projects).join(' and ');
 };
+useEffect(() => {
+  fetch(`https://api.freecurrencyapi.com/v1/latest?apikey=fca_live_KwIbDzv5cNwTsNscUp4Jan2Q5OkTcDOxvUW70qEB&currencies=INR&base_currency=EUR`)
+    .then(response => response.json())
+    .then(data => setValue('eurExchangeRate', parseFloat(data.data.INR).toFixed(4))); 
 
-
+  fetch(`https://api.freecurrencyapi.com/v1/latest?apikey=fca_live_KwIbDzv5cNwTsNscUp4Jan2Q5OkTcDOxvUW70qEB&currencies=INR`)
+    .then(response => response.json())
+    .then(data => setValue('usdExchangeRate', parseFloat(data.data.INR).toFixed(4))); 
+}, []);
  const preprocess = async (formData, responseData, pan, gst, address) => {
 
    console.log('PAN:', pan);
    console.log('GST:', gst);
    console.log('Address:', address);
-   console.log('responsed data',responseData)
+   console.log('responsed data',formData)
    const formattedInvoicePeriodFrom = formatInvoicePeriodFrom(formData.invoicePeriodFrom, formData.year);
    const formattedInvoicePeriodTo = formatInvoicePeriodTo(formData.invoicePeriodTo, formData.year);
    const projectNames = formatProjectNames(responseData);
@@ -123,20 +135,13 @@ const formatProjectNames = (responseData) => {
   }, 0);
 
 
-
-
-   const response = await fetch(`https://api.freecurrencyapi.com/v1/latest?apikey=fca_live_KwIbDzv5cNwTsNscUp4Jan2Q5OkTcDOxvUW70qEB&currencies=INR&base_currency=EUR`);
-   const response2 = await fetch(`https://api.freecurrencyapi.com/v1/latest?apikey=fca_live_KwIbDzv5cNwTsNscUp4Jan2Q5OkTcDOxvUW70qEB&currencies=INR`);
-   const EUR = await response.json();
-   const USD = await response2.json();
- 
    const capacity = responseData.reduce((acc, device) => acc + parseFloat(device.Capacity), 0);
    const regNo = responseData.length;
    const issued = responseData.reduce((acc, device) => acc + parseFloat(device.TotalIssued), 0);
    const ISP = formData.unitSalePrice;
    const issuanceFee = parseFloat((0.025 * issued).toFixed(4));
-   const USDExchange = parseFloat(USD.data.INR.toFixed(4));
-   const EURExchange = parseFloat(EUR.data.INR.toFixed(4));
+   const USDExchange = formData.usdExchangeRate;
+   const EURExchange = formData.eurExchangeRate;
    const gross = parseFloat((issued * ISP * USDExchange).toFixed(4));
    const regFeeINR = parseFloat((registrationFee * EURExchange).toFixed(4));
    const issuanceINR = parseFloat((issuanceFee * EURExchange).toFixed(4));
@@ -144,8 +149,20 @@ const formatProjectNames = (responseData) => {
    const successFee = parseFloat((formData.successFee * 0.01 * netRevenue).toFixed(4));
    const finalRevenue = parseFloat((netRevenue - successFee).toFixed(4));
    const netRate = parseFloat((finalRevenue / issued).toFixed(4));
+   const invoiceid = nanoid(12);
+   const formatDate = (date) => {
+    const day = date.getDate() < 10 ? '0' + date.getDate() : date.getDate();
+    const month = date.getMonth() < 9 ? '0' + (date.getMonth() + 1) : (date.getMonth() + 1);
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+  };
+
+  const today = new Date();
+  const formattedDate = formatDate(today);
+
  
    const processedData = {
+     invoiceid,
      groupName: formData.groupName,
      capacity,
      regNo,
@@ -168,8 +185,9 @@ const formatProjectNames = (responseData) => {
      netRate,
      pan,
      gst,
-     address
-   };
+     address,
+     date: formattedDate,
+    };
  
    console.log('Processed Data:', processedData);
    const processedDataParam = encodeURIComponent(JSON.stringify(processedData));
@@ -332,6 +350,16 @@ return (
       />
      {errors.successFee && <p className="text-red-500 text-xs mt-2">{errors.successFee.message}</p>} 
    </div>
+   <div>
+  <label htmlFor="usdExchangeRate" className="block text-sm font-medium text-gray-700">USD Exchange Rate</label>
+  <input type="number" step="0.0001" {...register("usdExchangeRate", { setValueAs: value => value === "" ? null : parseFloat(value) })} value={usdExchangeRate} onChange={(e) => setUsdExchangeRate(e.target.value)} className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" />
+  {errors.usdExchangeRate && <p className="text-red-500 text-xs mt-2">{errors.usdExchangeRate.message}</p>}
+</div>
+<div>
+  <label htmlFor="eurExchangeRate" className="block text-sm font-medium text-gray-700">EUR Exchange Rate</label>
+  <input type="number" step="0.0001" {...register("eurExchangeRate", { setValueAs: value => value === "" ? null : parseFloat(value) })} value={eurExchangeRate} onChange={(e) => setEurExchangeRate(e.target.value)} className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" />
+{errors.eurExchangeRate && <p className="text-red-500 text-xs mt-2">{errors.eurExchangeRate.message}</p>}
+</div>
    <button type="submit" className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Generate Invoice</button>
 </form>
 );
