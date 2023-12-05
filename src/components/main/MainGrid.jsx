@@ -68,7 +68,7 @@ const MainGrid = () => {
         <InfoCard2 
   className="h-auto" 
   titleText={"Registered Devices " + "(" + currYear + ")"} 
-  bodyText={"Estimated: " + new Intl.NumberFormat('en-IN').format(cardData.registered)} 
+  bodyText={"Estimated: " + new Intl.NumberFormat('en-IN').format(cardData.registered)+" MWh"} 
   Icon={LightBulbIcon} 
   balance={"Actual: " + new Intl.NumberFormat('en-IN').format(cardData.actual) + " MWh"} 
 />        </div>
@@ -76,16 +76,16 @@ const MainGrid = () => {
         <InfoCard2 
   className="" 
   titleText={"Usage Stats"} 
-  bodyText={"Committed: " + new Intl.NumberFormat('en-IN').format(cardData.usage)} 
+  bodyText={"Committed: " + new Intl.NumberFormat('en-IN').format(cardData.usage)+" MWh"} 
   bodyText2={"Balance: " + Math.floor(((cardData.registered - cardData.usage) / cardData.registered) * 100) + " %"} 
   Icon={WrenchScrewdriverIcon} 
 />        </div>
         <div className="col-span-3 lg:col-span-1">
         <InfoCard2 
   className="" 
-  titleText={"Under Registration"} 
-  bodyText={"Pending: " + new Intl.NumberFormat('en-IN').format(cardData.pending)} 
-  bodyText2={"Pipeline: " + new Intl.NumberFormat('en-IN').format(cardData.pipeline) + " MWh"} 
+  titleText={"Pending Devices"} 
+  bodyText={"No of pending Devices: " + new Intl.NumberFormat('en-IN').format(cardData.pending)} 
+  bodyText2={"Total Capacity: " + new Intl.NumberFormat('en-IN').format(cardData.pendingcap) + " MW"} 
   Icon={CircleStackIcon} 
 />        </div>
         {/* <Card className="col-span-3 lg:col-span-3 h-auto">

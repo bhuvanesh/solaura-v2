@@ -13,7 +13,7 @@ const InfoCard2 = ({ titleText, bodyText,bodyText2, Icon, balance }) => {
       <CardContent className='flex justify-between'>
         <div className="my-auto">
           {/* <p className="font-bold text-lg">{titleText}</p> */}
-          <p className="text-lg">{`${bodyText} MWh`}</p>
+          <p className="text-lg">{`${bodyText}`}</p>
           {bodyText2 &&  <p className="text-lg">{`${bodyText2}`}</p>}
           {balance && <p className="text-md text-teal-600">{balance}</p>}
         </div>
