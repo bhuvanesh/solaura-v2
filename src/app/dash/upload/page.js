@@ -16,7 +16,7 @@ const UploadButtons = () => {
 
 
   return (
-    <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 space-x-2">
+    <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 space-x-2 flex">
       <Link href="/dash/upload/master">
         <button className="cursor-pointer transform transition duration-500 ease-in-out bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded hover:scale-105 active:scale-95">
           Master Upload
@@ -35,6 +35,11 @@ const UploadButtons = () => {
       <Link href="/dash/upload/issue">
         <button className="cursor-pointer transform transition duration-500 ease-in-out bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded hover:scale-105 active:scale-95">
           Issued Upload
+        </button>
+      </Link>
+      <Link href="/dash/upload/seller">
+        <button className="cursor-pointer transform transition duration-500 ease-in-out bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded hover:scale-105 active:scale-95">
+          sellers data
         </button>
       </Link>
       <button
