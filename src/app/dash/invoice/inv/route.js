@@ -26,7 +26,8 @@ export async function POST(request) {
   const placeholders = months.map(() => '?').join(',');
 
   // SQL query to fetch sum of Issued and distinct Device IDs
-  const query = `
+// SQL query to fetch sum of Issued and distinct Device IDs
+const query = `
   SELECT 
     \`Device ID\`,
     \`Project\`,
@@ -38,7 +39,8 @@ export async function POST(request) {
     \`Group\` = ? AND 
     Year = ? AND 
     Month IN (${placeholders}) AND
-    Issued = Actual_used
+    Issued = Actual_used AND
+    invoice_status = 'False'
   GROUP BY \`Device ID\`, \`Project\`
 `;
 

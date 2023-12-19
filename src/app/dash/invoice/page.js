@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
 import { z } from 'zod';
 import { nanoid } from 'nanoid';
+import LoadingButton from '@/components/Loading';
 const currentYear = new Date().getFullYear();
 const years = Array.from({ length: currentYear - 2021 }, (_, i) => 2022 + i);
 const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -35,7 +36,9 @@ const [selectedCompany, setSelectedCompany] = useState('');
 const [selectedInvoicePeriodFrom, setSelectedInvoicePeriodFrom] = useState('');
 const [usdExchangeRate, setUsdExchangeRate] = useState(null);
 const [eurExchangeRate, setEurExchangeRate] = useState(null);
+const [isLoading, setIsLoading] = useState(false);
 const onSubmit = data => {
+  setIsLoading(true);
    console.log('Submitting:', data);
  
    // Find the selected company's details
@@ -67,6 +70,8 @@ const onSubmit = data => {
   .catch((error) => {
     console.error('Error:', error);
   });
+  setIsLoading(false);
+
  };
  const formatDate = (month, year, isEndOfMonth) => {
    const monthIndex = months.indexOf(month);
@@ -187,6 +192,9 @@ useEffect(() => {
      gst,
      address,
      date: formattedDate,
+     deviceIds,
+     formData,
+     responseData,
     };
  
    console.log('Processed Data:', processedData);
@@ -360,7 +368,16 @@ return (
   <input type="number" step="0.0001" {...register("eurExchangeRate", { setValueAs: value => value === "" ? null : parseFloat(value) })} value={eurExchangeRate} onChange={(e) => setEurExchangeRate(e.target.value)} className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" />
 {errors.eurExchangeRate && <p className="text-red-500 text-xs mt-2">{errors.eurExchangeRate.message}</p>}
 </div>
-   <button type="submit" className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Generate Invoice</button>
+<LoadingButton
+  isLoading={isLoading}
+  loadingLabel="Generating..."
+  type="submit"
+  color="primary"
+  variant="contained"
+  className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+>
+  Generate Invoice
+</LoadingButton>
 </form>
 );
 }

@@ -1,48 +1,133 @@
 "use client"
-import React, { useState } from 'react';
+import React, { useState ,useEffect, useMemo} from 'react';
 import { useSearchParams } from 'next/navigation';
 import ExcelModifier from '@/components/invoice';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
+import Select from 'react-select'; // import the react-select 
+
+
 
 const Invoiceprint = () => {
   const searchParams = useSearchParams();
   const dataString = searchParams.get('data');
   const [downloadClicked, setDownloadClicked] = useState(false);
   const [saveClicked, setSaveClicked] = useState(false);
+  const [data, setData] = useState({});
 
 
 
  
 
   // Parse the data string into an object
-  let data;
-  try {
-    data = JSON.parse(dataString);
-  } catch (error) {
-    console.error('Failed to parse data:', error);
-  }
+  useEffect(() => {
+    try {
+      const parsedData = JSON.parse(dataString);
+      setData(parsedData);
+    } catch (error) {
+      console.error('Failed to parse data:', error);
+    }
+  }, [dataString]);
+
+  const preprocess = (selectedDeviceIds) => {
+    const selectedData = data.responseData.filter(device =>
+      selectedDeviceIds.some(selectedDevice => selectedDevice.value === device["Device ID"])
+    );
+
+    // Log formData, USDExchange, and EURExchange
+    console.log('formData:', data.formData);
+    console.log('USDExchange:', data.USDExchange);
+    console.log('EURExchange:', data.EURExchange);
+
+    console.log(selectedData);
+    return selectedData;
+  };
 
   const saveData = () => {
-    if (data.regdevice != null) { 
+    const updatedData = { ...data };
+    const selectedDeviceIdsString = selectedDeviceIds.map(device => device.value).join();
+    if (selectedDeviceIdsString) {
       fetch('print/invoiceupd', {
         method: 'POST',
-        headers: {
+        headers: {   
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ deviceIds: data.regdevice }),
+        body: JSON.stringify({ deviceIds: selectedDeviceIdsString }),
       })
       .then(response => response.json())
-      .then(data => {
-        console.log('Success:', data);
-        setSaveClicked(true);
-        window.alert("Invoice Created Successfully");
-      })
-      .catch((error) => {
-        console.error('Error:', error);
-      });
-    }
-  };
+      .then(responseData => {
+        console.log('Success:', responseData);
+        const selectedData = preprocess(selectedDeviceIds);
+
+              // Calculate registration fee
+      const noDevices = data.regdevice.split(',');
+      const noDeviceCapacities = data.responseData
+        .filter(device => noDevices.includes(device['Device ID']) && selectedDeviceIdsString.includes(device['Device ID']))
+        .map(device => parseFloat(device.Capacity));
+      const registrationFee = noDeviceCapacities.reduce((acc, capacity) => {
+        if (capacity >= 3) {
+          return acc + 1000;
+        } else if (capacity > 1 && capacity < 3) {
+          return acc + 500;
+        } else if (capacity > 0.25 && capacity <= 1) {
+          return acc + 100;
+        } else {
+          return acc + 100;
+        }
+      }, 0);
+      updatedData.registrationFee = registrationFee;
+      updatedData.regFeeINR = parseFloat((registrationFee * data.EURExchange).toFixed(4));
+  
+        // Calculate new values
+        updatedData.deviceIds = selectedDeviceIdsString;
+        updatedData.capacity = selectedData.reduce((acc, device) => acc + parseFloat(device.Capacity), 0);
+        updatedData.regNo = selectedData.length;
+        updatedData.issued = selectedData.reduce((acc, device) => acc + parseFloat(device.TotalIssued), 0);
+        updatedData.ISP = data?.formData?.unitSalePrice;
+        updatedData.issuanceFee = parseFloat((0.025 * updatedData.issued).toFixed(4));  
+        updatedData.gross = parseFloat((updatedData.issued * updatedData.ISP * updatedData.USDExchange).toFixed(4));
+        updatedData.issuanceINR = parseFloat((updatedData.issuanceFee * updatedData.EURExchange).toFixed(4));
+        updatedData.netRevenue = parseFloat((updatedData.gross - (updatedData.regFeeINR + updatedData.issuanceINR)).toFixed(4));
+        updatedData.successFee = parseFloat((data?.formData?.successFee * 0.01 * updatedData.netRevenue).toFixed(4));
+        updatedData.finalRevenue = parseFloat((updatedData.netRevenue - updatedData.successFee).toFixed(4));
+        updatedData.netRate = parseFloat((updatedData.finalRevenue / updatedData.issued).toFixed(4));
+  
+ // Send the data to 'print/invoicedata'
+ return fetch('print/invoicedata', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify(updatedData),
+});
+})
+.then(response => response.json())
+.then(data => {
+console.log('Success:', data);
+setData(updatedData); // update the state here
+setSaveClicked(true);
+window.alert("Invoice Created Successfully");
+
+// Now send the data to 'print/invenupdate'
+return fetch('print/invenupdate', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify(updatedData),
+});
+})
+.then(response => response.json())
+.then(data => {
+console.log('Success:', data);
+})
+.catch((error) => {
+console.error('Error:', error);
+});
+}
+};
+  
+  
   
   const keyMapping = {
     invoiceid: 'Invoice ID',
@@ -63,8 +148,33 @@ const Invoiceprint = () => {
     netRate:'Net Trade Rate (INR/MWh)',
 
   };
-  const keysToIgnore = ['regdevice', 'groupName','invoicePeriodFrom','invoicePeriodTo','pan','gst','address','project','date'];
+  const keysToIgnore = ['regdevice', 'groupName','invoicePeriodFrom','invoicePeriodTo','pan','gst','address','project','date','deviceIds','responseData','formData'];
+  // Holds selected device ids
+  const [selectedDeviceIds, setSelectedDeviceIds] = useState([]);
 
+  // creating options for the multi select 
+  const deviceOptions = useMemo(() => {
+    let options = [];
+    try {
+      if (data && data.deviceIds) {
+        options = data.deviceIds.split(',').map(id => ({ value: id, label: id })) || [];
+      }
+    } catch (error) {
+      console.error('Failed to map device ids:', error);
+    }
+    return options;
+  }, [data.deviceIds]);
+
+  // Update selectedDeviceIds once deviceOptions is populated
+  useEffect(() => {
+    setSelectedDeviceIds(deviceOptions);
+  }, [deviceOptions]);
+
+  // function to handle selected device ids
+  const handleSelectChange = (selectedOptions) => {
+    setSelectedDeviceIds(selectedOptions);
+  };
+  
   const downloadAsWorksheet = () => {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Data');
@@ -114,6 +224,13 @@ const Invoiceprint = () => {
     >
       Download as Worksheet
     </button>
+    
+    <Select
+      isMulti
+      options={deviceOptions}
+      onChange={handleSelectChange}
+      value={selectedDeviceIds}
+    />
   
       {downloadClicked && <ExcelModifier data={data} />}
       <div style={{ overflowX: 'auto'}} className="border-2 rounded-lg mx-auto w-3/4 h-2/3 mt-4">
