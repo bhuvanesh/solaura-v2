@@ -43,88 +43,99 @@ const Invoiceprint = () => {
     return selectedData;
   };
 
-  const saveData = () => {
-    const updatedData = { ...data };
-    const selectedDeviceIdsString = selectedDeviceIds.map(device => device.value).join();
-    if (selectedDeviceIdsString) {
-      fetch('print/invoiceupd', {
+// New function for calculations
+const calculateData = (selectedDeviceIds, data) => {
+  const updatedData = { ...data };
+  const selectedData = preprocess(selectedDeviceIds);
+  const selectedDeviceIdsString = selectedDeviceIds.map(device => device.value).join();
+
+  // Calculate registration fee
+  const noDevices = data.regdevice.split(',');
+  const noDeviceCapacities = data.responseData
+    .filter(device => noDevices.includes(device['Device ID']) && selectedDeviceIdsString.includes(device['Device ID']))
+    .map(device => parseFloat(device.Capacity));
+  const registrationFee = noDeviceCapacities.reduce((acc, capacity) => {
+    if (capacity >= 3) {
+      return acc + 1000;
+    } else if (capacity > 1 && capacity < 3) {
+      return acc + 500;
+    } else if (capacity > 0.25 && capacity <= 1) {
+      return acc + 100;
+    } else {
+      return acc + 100;
+    }
+  }, 0);
+  updatedData.registrationFee = registrationFee;
+  updatedData.regFeeINR = parseFloat((registrationFee * data.EURExchange).toFixed(4));
+
+  // Calculate new values
+  updatedData.deviceIds = selectedDeviceIdsString;
+  updatedData.capacity = selectedData.reduce((acc, device) => acc + parseFloat(device.Capacity), 0);
+  updatedData.regNo = selectedData.length;
+  updatedData.issued = selectedData.reduce((acc, device) => acc + parseFloat(device.TotalIssued), 0);
+  updatedData.ISP = data?.formData?.unitSalePrice;
+  updatedData.issuanceFee = parseFloat((0.025 * updatedData.issued).toFixed(4));  
+  updatedData.gross = parseFloat((updatedData.issued * updatedData.ISP * updatedData.USDExchange).toFixed(4));
+  updatedData.issuanceINR = parseFloat((updatedData.issuanceFee * updatedData.EURExchange).toFixed(4));
+  updatedData.netRevenue = parseFloat((updatedData.gross - (updatedData.regFeeINR + updatedData.issuanceINR)).toFixed(4));
+  updatedData.successFee = parseFloat((data?.formData?.successFee * 0.01 * updatedData.netRevenue).toFixed(4));
+  updatedData.finalRevenue = parseFloat((updatedData.netRevenue - updatedData.successFee).toFixed(4));
+  updatedData.netRate = parseFloat((updatedData.finalRevenue / updatedData.issued).toFixed(4));
+
+  return updatedData;
+};
+
+// Updated saveData function
+const saveData = () => {
+  const selectedDeviceIdsString = selectedDeviceIds.map(device => device.value).join();
+  if (selectedDeviceIdsString) {
+    fetch('print/invoiceupd', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ deviceIds: selectedDeviceIdsString }),
+    })
+    .then(response => response.json())
+    .then(responseData => {
+      console.log('Success:', responseData);
+
+      // Call the new calculateData function
+      const updatedData = calculateData(selectedDeviceIds, data);
+
+      // Send the data to 'print/invoicedata'
+      return fetch('print/invoicedata', {
         method: 'POST',
-        headers: {   
+        headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ deviceIds: selectedDeviceIdsString }),
-      })
-      .then(response => response.json())
-      .then(responseData => {
-        console.log('Success:', responseData);
-        const selectedData = preprocess(selectedDeviceIds);
+        body: JSON.stringify(updatedData),
+      });
+    })
+    .then(response => response.json())
+    .then(data => {
+      console.log('Success:', data);
+      setData(updatedData); // update the state here
+      setSaveClicked(true);
+      window.alert("Invoice Created Successfully");
 
-              // Calculate registration fee
-      const noDevices = data.regdevice.split(',');
-      const noDeviceCapacities = data.responseData
-        .filter(device => noDevices.includes(device['Device ID']) && selectedDeviceIdsString.includes(device['Device ID']))
-        .map(device => parseFloat(device.Capacity));
-      const registrationFee = noDeviceCapacities.reduce((acc, capacity) => {
-        if (capacity >= 3) {
-          return acc + 1000;
-        } else if (capacity > 1 && capacity < 3) {
-          return acc + 500;
-        } else if (capacity > 0.25 && capacity <= 1) {
-          return acc + 100;
-        } else {
-          return acc + 100;
-        }
-      }, 0);
-      updatedData.registrationFee = registrationFee;
-      updatedData.regFeeINR = parseFloat((registrationFee * data.EURExchange).toFixed(4));
-  
-        // Calculate new values
-        updatedData.deviceIds = selectedDeviceIdsString;
-        updatedData.capacity = selectedData.reduce((acc, device) => acc + parseFloat(device.Capacity), 0);
-        updatedData.regNo = selectedData.length;
-        updatedData.issued = selectedData.reduce((acc, device) => acc + parseFloat(device.TotalIssued), 0);
-        updatedData.ISP = data?.formData?.unitSalePrice;
-        updatedData.issuanceFee = parseFloat((0.025 * updatedData.issued).toFixed(4));  
-        updatedData.gross = parseFloat((updatedData.issued * updatedData.ISP * updatedData.USDExchange).toFixed(4));
-        updatedData.issuanceINR = parseFloat((updatedData.issuanceFee * updatedData.EURExchange).toFixed(4));
-        updatedData.netRevenue = parseFloat((updatedData.gross - (updatedData.regFeeINR + updatedData.issuanceINR)).toFixed(4));
-        updatedData.successFee = parseFloat((data?.formData?.successFee * 0.01 * updatedData.netRevenue).toFixed(4));
-        updatedData.finalRevenue = parseFloat((updatedData.netRevenue - updatedData.successFee).toFixed(4));
-        updatedData.netRate = parseFloat((updatedData.finalRevenue / updatedData.issued).toFixed(4));
-  
- // Send the data to 'print/invoicedata'
- return fetch('print/invoicedata', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  body: JSON.stringify(updatedData),
-});
-})
-.then(response => response.json())
-.then(data => {
-console.log('Success:', data);
-setData(updatedData); // update the state here
-setSaveClicked(true);
-window.alert("Invoice Created Successfully");
-
-// Now send the data to 'print/invenupdate'
-return fetch('print/invenupdate', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  body: JSON.stringify(updatedData),
-});
-})
-.then(response => response.json())
-.then(data => {
-console.log('Success:', data);
-})
-.catch((error) => {
-console.error('Error:', error);
-});
-}
+      // Now send the data to 'print/invenupdate'
+      return fetch('print/invenupdate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedData),
+      });
+    })
+    .then(response => response.json())
+    .then(data => {
+      console.log('Success:', data);
+    })
+    .catch((error) => {
+      console.error('Error:', error);
+    });
+  }
 };
   
   
@@ -148,32 +159,44 @@ console.error('Error:', error);
     netRate:'Net Trade Rate (INR/MWh)',
 
   };
+
+  const refreshStatus = () => {
+    const updatedData = calculateData(selectedDeviceIds, data);
+    setData(updatedData);
+  };
   const keysToIgnore = ['regdevice', 'groupName','invoicePeriodFrom','invoicePeriodTo','pan','gst','address','project','date','deviceIds','responseData','formData'];
   // Holds selected device ids
   const [selectedDeviceIds, setSelectedDeviceIds] = useState([]);
 
-  // creating options for the multi select 
-  const deviceOptions = useMemo(() => {
-    let options = [];
-    try {
-      if (data && data.deviceIds) {
-        options = data.deviceIds.split(',').map(id => ({ value: id, label: id })) || [];
-      }
-    } catch (error) {
-      console.error('Failed to map device ids:', error);
+// creating options for the multi select
+const deviceOptions = useMemo(() => {
+  let options = [];
+  try {
+    if (data && data.responseData) {
+      options = data.responseData.map(device => ({
+        value: device["Device ID"],
+        label: device["Device ID"]
+      }));
     }
-    return options;
-  }, [data.deviceIds]);
-
+  } catch (error) {
+    console.error('Failed to map device ids:', error);
+  }
+  return options;
+}, [data.responseData]);
   // Update selectedDeviceIds once deviceOptions is populated
   useEffect(() => {
     setSelectedDeviceIds(deviceOptions);
   }, [deviceOptions]);
 
-  // function to handle selected device ids
-  const handleSelectChange = (selectedOptions) => {
-    setSelectedDeviceIds(selectedOptions);
-  };
+// function to handle selected device ids
+const handleSelectChange = (selectedOptions) => {
+  setSelectedDeviceIds(selectedOptions || []); 
+  // When selected options change, re-calculate data
+  if(selectedOptions && selectedOptions.length > 0) {
+      const updatedData = calculateData(selectedOptions, data);
+      setData(updatedData);
+  }
+};
   
   const downloadAsWorksheet = () => {
     const workbook = new ExcelJS.Workbook();
@@ -199,38 +222,54 @@ console.error('Error:', error);
       saveAs(blob, 'Invoice data.xlsx');
     });
   };
+
+  const isDeviceSelected = selectedDeviceIds.length > 0;
+  useEffect(() => {
+    setSelectedDeviceIds(deviceOptions);
+    if(deviceOptions && deviceOptions.length > 0) {
+        const updatedData = calculateData(deviceOptions, data);
+        setData(updatedData);
+    }
+}, [deviceOptions]);
+  
+
   return (
     <div className="container mx-auto px-4">
       <h1 className="text-2xl font-bold mb-4">Invoice Preview</h1>
-      <button
-        className={`bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded mb-4 ${saveClicked ? 'opacity-50 cursor-not-allowed' : ''}`}
-        onClick={saveData}
-        disabled={saveClicked}
-      >
-        Save
-      </button>
-  
       <button 
-        className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ml-4 ${!saveClicked && 'opacity-50 cursor-not-allowed'}`}
-        onClick={() => setDownloadClicked(true)}
-        disabled={!saveClicked}
-      >
-        Download Invoice
-      </button>
+  className={`bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded mb-4 ${saveClicked || !isDeviceSelected ? 'opacity-50 cursor-not-allowed' : ''}`} 
+  onClick={saveData} 
+  disabled={saveClicked || !isDeviceSelected} 
+>
+  Save 
+</button>
 
-      <button 
-      className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded ml-4"
-      onClick={downloadAsWorksheet}
-    >
-      Download as Worksheet
-    </button>
+<button 
+  className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ml-4 ${!saveClicked || !isDeviceSelected ? 'opacity-50 cursor-not-allowed' : ''}`} 
+  onClick={() => setDownloadClicked(true)} 
+  disabled={!saveClicked || !isDeviceSelected} 
+>
+  Download Invoice 
+</button>
+
+<button 
+  className={`bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded ml-4 ${!isDeviceSelected ? 'opacity-50 cursor-not-allowed' : ''}`} 
+  onClick={downloadAsWorksheet} 
+  disabled={!isDeviceSelected} 
+>
+  Download as Worksheet 
+</button>
+
+    <button className="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded ml-4" onClick={refreshStatus}>
+  Refresh Status
+</button>
     
-    <Select
-      isMulti
-      options={deviceOptions}
-      onChange={handleSelectChange}
-      value={selectedDeviceIds}
-    />
+<Select
+  isMulti
+  options={deviceOptions}
+  onChange={handleSelectChange}
+  value={selectedDeviceIds}
+/>
   
       {downloadClicked && <ExcelModifier data={data} />}
       <div style={{ overflowX: 'auto'}} className="border-2 rounded-lg mx-auto w-3/4 h-2/3 mt-4">
