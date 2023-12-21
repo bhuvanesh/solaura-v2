@@ -6,7 +6,7 @@ async function checkAndInsertDeviceIds(connection, deviceIds) {
   let newIds = [];
 
   for (const deviceId of deviceIds) {
-    const [rows] = await connection.query('SELECT `Device ID` FROM `invoicereg` WHERE `Device ID` = ?', [deviceId]);
+const [rows] = await connection.query(`SELECT \`Device ID\` FROM \`${process.env.INVOICE_REG}\` WHERE \`Device ID\` = ?`, [deviceId]);
     if (rows.length > 0) {
       // Device ID exists in the database
       existingIds.push(deviceId);

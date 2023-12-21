@@ -72,7 +72,7 @@ const calculateData = (selectedDeviceIds, data) => {
   updatedData.deviceIds = selectedDeviceIdsString;
   updatedData.capacity = selectedData.reduce((acc, device) => acc + parseFloat(device.Capacity), 0);
   updatedData.regNo = selectedData.length;
-  updatedData.issued = selectedData.reduce((acc, device) => acc + parseFloat(device.TotalIssued), 0);
+  updatedData.issued = parseFloat((selectedData.reduce((acc, device) => acc + parseFloat(device.TotalIssued), 0)).toFixed(4));
   updatedData.ISP = data?.formData?.unitSalePrice;
   updatedData.issuanceFee = parseFloat((0.025 * updatedData.issued).toFixed(4));  
   updatedData.gross = parseFloat((updatedData.issued * updatedData.ISP * updatedData.USDExchange).toFixed(4));
@@ -192,10 +192,8 @@ const deviceOptions = useMemo(() => {
 const handleSelectChange = (selectedOptions) => {
   setSelectedDeviceIds(selectedOptions || []); 
   // When selected options change, re-calculate data
-  if(selectedOptions && selectedOptions.length > 0) {
-      const updatedData = calculateData(selectedOptions, data);
-      setData(updatedData);
-  }
+  const updatedData = calculateData(selectedOptions || [], data);
+  setData(updatedData);
 };
   
   const downloadAsWorksheet = () => {

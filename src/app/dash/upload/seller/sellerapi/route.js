@@ -9,16 +9,19 @@ export async function POST(req) {
     // Start transaction
     await connection.beginTransaction();
 
-    for (let row of rows) {
-      const { seller, group, gst, pan, address, 'indicative unit sale price': indicative_price, 'success fee': success_fee } = row;
+    const values = rows
+      .filter(row => row['indicative unit sale price'] !== undefined && row['success fee'] !== undefined)
+      .map(row => {
+        const { seller, group, gst, pan, address, 'indicative unit sale price': indicative_price, 'success fee': success_fee } = row;
+        return `("${seller}", '${group}', "${gst}", "${pan}", "${address}", "${indicative_price}", "${success_fee}")`;
+      }).join(',');
 
-      // Prepare SQL query
-      const sql = `INSERT INTO sellers (seller, \`group\`, gst, pan, address, indicative_price, success_fee) VALUES (?, ?, ?, ?, ?, ?, ?)
-                   ON DUPLICATE KEY UPDATE seller = VALUES(seller), \`group\` = VALUES(\`group\`), address = VALUES(address), indicative_price = VALUES(indicative_price), success_fee = VALUES(success_fee)`;
+    // Prepare SQL query
+    const sql = `INSERT INTO sellers (seller, \`group\`, gst, pan, address, indicative_price, success_fee) VALUES ${values}
+                 ON DUPLICATE KEY UPDATE seller = VALUES(seller), \`group\` = VALUES(\`group\`), address = VALUES(address), indicative_price = VALUES(indicative_price), success_fee = VALUES(success_fee)`;
 
-      // Execute SQL query
-      await connection.execute(sql, [seller, group, gst, pan, address, indicative_price, success_fee]);
-    }
+    // Execute SQL query
+    await connection.execute(sql);
 
     // Commit transaction
     await connection.commit();

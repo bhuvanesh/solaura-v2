@@ -15,6 +15,7 @@ export async function POST(request) {
     year,
     invoicePeriodFrom,
     invoicePeriodTo,
+    pan
   } = await request.json();
   
   console.log('POST message body:', { groupName, companyName, year, invoicePeriodFrom, invoicePeriodTo });
@@ -26,27 +27,25 @@ export async function POST(request) {
   const placeholders = months.map(() => '?').join(',');
 
   // SQL query to fetch sum of Issued and distinct Device IDs
-// SQL query to fetch sum of Issued and distinct Device IDs
-const query = `
-  SELECT 
-    \`Device ID\`,
-    \`Project\`,
-    MIN(\`Capacity (MW)\`) AS Capacity,
-    SUM(Issued) AS TotalIssued
-  FROM ${process.env.MASTER_TABLE}
-  WHERE 
-    company = ? AND 
-    \`Group\` = ? AND 
-    Year = ? AND 
-    Month IN (${placeholders}) AND
-    Issued = Actual_used AND
-    invoice_status = 'False'
-  GROUP BY \`Device ID\`, \`Project\`
-`;
+  const query = `
+    SELECT 
+      \`Device ID\`,
+      \`Project\`,
+      MIN(\`Capacity (MW)\`) AS Capacity,
+      SUM(Issued) AS TotalIssued
+    FROM ${process.env.MASTER_TABLE}
+    WHERE 
+      PAN = ? AND 
+      Year = ? AND 
+      Month IN (${placeholders}) AND
+      Issued = Actual_used AND
+      invoice_status = 'False'
+    GROUP BY \`Device ID\`, \`Project\`
+  `;
 
   try {
     const db = await getPSConnection();
-    const inven = await db.query(query, [companyName, groupName, year, ...months]);
+    const inven = await db.query(query, [pan, year, ...months]);
 
     // Return response with status 200 and data
     return new Response(JSON.stringify(inven[0]), { status: 200 });

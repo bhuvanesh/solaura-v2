@@ -3,8 +3,7 @@ import getPSConnection from '@/lib/planetscaledb';
 // Function to insert device IDs
 async function insertDeviceIds(connection, deviceIds) {
   for (const deviceId of deviceIds) {
-    await connection.query('INSERT INTO `invoicereg` (`Device ID`) VALUES (?) ON DUPLICATE KEY UPDATE `Device ID` = VALUES(`Device ID`)', [deviceId]);
-  }
+    await connection.query(`INSERT INTO \`${process.env.INVOICE_REG}\` (\`Device ID\`) VALUES (?) ON DUPLICATE KEY UPDATE \`Device ID\` = VALUES(\`Device ID\`)`, [deviceId]);  }
 }
 
 // Route handler

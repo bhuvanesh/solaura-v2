@@ -11,14 +11,14 @@ export async function POST(req) {
 
   // Define the SQL INSERT statement
   const insertQuery = `
-    INSERT INTO invoicedata (
-      invoiceid, groupName, capacity, regNo, regdevice, issued, ISP,
-      registrationFee, issuanceFee, USDExchange, EURExchange,
-      invoicePeriodFrom, invoicePeriodTo, gross, regFeeINR, issuanceINR,
-      netRevenue, successFee, finalRevenue, project, netRate, pan, gst,
-      address, date, deviceIds, companyName
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `;
+  INSERT INTO ${process.env.INVOICE_DATA} (
+    invoiceid, groupName, capacity, regNo, regdevice, issued, ISP,
+    registrationFee, issuanceFee, USDExchange, EURExchange,
+    invoicePeriodFrom, invoicePeriodTo, gross, regFeeINR, issuanceINR,
+    netRevenue, successFee, finalRevenue, project, netRate, pan, gst,
+    address, date, deviceIds, companyName
+  ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+`;
 
   // Convert the dates to the correct format
   const invoicePeriodFrom = data.invoicePeriodFrom.split('-').reverse().join('-');
