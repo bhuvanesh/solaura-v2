@@ -41,6 +41,10 @@ const [oldMonthValue, setOldMonthValue] = useState("");
 const rowsPerPage = 10;
 const [currentPage, setCurrentPage] = useState(1); 
   const [totalPages, setTotalPages] = useState(1);  
+  const [yearFilter, setYearFilter] = useState("All"); 
+  const years = [...new Set(data.map(item => item.year))]; 
+
+
 
 
 
@@ -247,9 +251,12 @@ const [currentPage, setCurrentPage] = useState(1);
   const filteredData = data.filter((item) => {
     return (
       item["Organisation"].toLowerCase().includes(searchQuery.toLowerCase()) &&
-      (statusFilter === "All" || item["Status"] === "succeeded")
+      (statusFilter === "All" || item["Status"] === "succeeded") &&
+      (yearFilter === "All" || item["year"] === parseInt(yearFilter))
     );
   });
+  
+  
 
   const downloadAsPDF = () => {
     const pdf = new jsPDF();
@@ -377,15 +384,26 @@ const [currentPage, setCurrentPage] = useState(1);
                 <label htmlFor="active">Active</label>
               </div>
               <div className="mt-2">
-                <div className="py-2">
-                  <input
-                    type="text"
-                    placeholder="Search organisation"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="border rounded-md p-2 border-sky-800"
-                  />
-                </div>
+              <div className="flex space-x-2 py-2">
+                <input
+                  type="text"
+                  placeholder="Search organisation"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="border rounded-md p-2 border-sky-800"
+                />
+                <select
+                  value={yearFilter}
+                  onChange={(e) => setYearFilter(e.target.value)}
+                  className="border rounded-md p-2 border-sky-800"
+                >
+                  <option value="All">All</option>
+                  {years.map((year, index) => (
+                    <option key={index} value={year}>{year}</option>
+                  ))}
+                </select>
+              </div>
+
                 <div className="grid grid-cols-1 gap-2">
                   <table className="table-auto w-full divide-y divide-gray-200 border-1">
                     <thead className="bg-sky-800 text-white rounded-md">
