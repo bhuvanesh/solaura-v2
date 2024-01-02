@@ -1,11 +1,11 @@
 import getPSConnection from '@/lib/planetscaledb';
 
-export async function GET(request) {
-  console.log(request.url)
+export async function POST(req) {
+  const { year } = await req.json();
+  console.log(year);
   try {
     const conn = await getPSConnection();
 
-    const year = new Date().getFullYear(); 
     const sql = `
     SELECT 
       Month, 

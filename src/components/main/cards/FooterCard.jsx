@@ -15,20 +15,9 @@ const getMonthBeforePrevMonth = (date) => {
   return newDate.toLocaleString('default', { month: 'long' });
 };
 
-const FooterCard = (Icon) => {
-  const [data, setData] = useState(null);
+const FooterCard = ({ footerData: data, selectedYear }) => {  
 
-  useEffect(() => {
-    fetch('/api/dash/footer')
-      .then((response) => response.json())
-      .then((data) => {
-        console.log(data);
-        setData(data[0]);
-      })
-      .catch((error) => console.error(`Error: ${error}`));
-  }, []);
 
-  const year = new Date().getFullYear();
   const getThreeMonthsAgo = (date) => {
     let newDate = new Date(date);
     newDate.setMonth(newDate.getMonth() - 3);
@@ -45,10 +34,10 @@ const FooterCard = (Icon) => {
       <CardContent className="flex justify-between">
         <div className="my-auto w-1/3 px-2">
           <div className="h-4 p-1">
-            {`${year-1}: ${data ? new Intl.NumberFormat('en-IN').format(data.total_actual_previous_year) : ''} MWh`}
+            {`${selectedYear-1}: ${data ? new Intl.NumberFormat('en-IN').format(data.total_actual_previous_year) : ''} MWh`}
           </div>
           <h4 className="p-1">
-            {`${year}: ${data ? new Intl.NumberFormat('en-IN').format(data.total_actual_generation) : ''} MWh`}
+            {`${selectedYear}: ${data ? new Intl.NumberFormat('en-IN').format(data.total_actual_generation) : ''} MWh`}
           </h4>
           <div className="h-6">
             <span className={data && ((data.total_actual_generation - data.total_actual_previous_year) / data.total_actual_previous_year) * 100 < 0 ? 'text-red-500' : ''}>
@@ -59,10 +48,10 @@ const FooterCard = (Icon) => {
   
         <div className="my-auto w-1/3 px-2">
           <div className="h-4 p-1">
-            {`${monthBeforePrevMonth} (${year-1}): ${data ? new Intl.NumberFormat('en-IN').format(data.prev_month_actual_generation_previous_year) : ''} MWh`}
+            {`${monthBeforePrevMonth} (${selectedYear-1}): ${data ? new Intl.NumberFormat('en-IN').format(data.prev_month_actual_generation_previous_year) : ''} MWh`}
           </div>
           <h4 className="p-1">
-            {`${monthBeforePrevMonth} (${year}): ${data ? new Intl.NumberFormat('en-IN').format(data.prev_month_actual_generation) : ''} MWh`}
+            {`${monthBeforePrevMonth} (${selectedYear}): ${data ? new Intl.NumberFormat('en-IN').format(data.prev_month_actual_generation) : ''} MWh`}
           </h4>
           <div className="h-6">
             <span className={data && ((data.prev_month_actual_generation - data.prev_month_actual_generation_previous_year) / data.prev_month_actual_generation_previous_year) * 100 < 0 ? 'text-red-500' : ''}>
@@ -73,10 +62,10 @@ const FooterCard = (Icon) => {
   
         <div className="my-auto w-1/3 px-2">
           <div className="h-4 p-1">
-            {`${threeMonthsAgo} (${year}): ${data ? new Intl.NumberFormat('en-IN').format(data.previous_of_previous_month_actual_generation) : ''} MWh`}
+            {`${threeMonthsAgo} (${selectedYear}): ${data ? new Intl.NumberFormat('en-IN').format(data.previous_of_previous_month_actual_generation) : ''} MWh`}
           </div>
           <h4 className="p-1">
-            {`${monthBeforePrevMonth} (${year}): ${data ? new Intl.NumberFormat('en-IN').format(data.prev_month_actual_generation) : ''} MWh`}
+            {`${monthBeforePrevMonth} (${selectedYear}): ${data ? new Intl.NumberFormat('en-IN').format(data.prev_month_actual_generation) : ''} MWh`}
           </h4>
           <div className="h-6">
             <span className={data && ((data.prev_month_actual_generation - data.previous_of_previous_month_actual_generation) / data.previous_of_previous_month_actual_generation) * 100 < 0 ? 'text-red-500' : ''}>
@@ -90,3 +79,5 @@ const FooterCard = (Icon) => {
 };
 
 export default FooterCard;
+
+
