@@ -11,14 +11,15 @@ export async function POST(req) {
 
     // Define the SQL query
     const sql = `
-      SELECT 
-        SUM(CASE WHEN Month = MONTHNAME(DATE_SUB(CURRENT_DATE, INTERVAL 2 MONTH)) AND Year = ${year} - 1 THEN Actual ELSE 0 END) AS prev_month_actual_generation_previous_year,
-        SUM(CASE WHEN Month = MONTHNAME(DATE_SUB(CURRENT_DATE, INTERVAL 2 MONTH)) AND Year = ${year} THEN Actual ELSE 0 END) AS prev_month_actual_generation,
-        SUM(CASE WHEN Month = MONTHNAME(DATE_SUB(CURRENT_DATE, INTERVAL 3 MONTH)) AND Year = ${year} THEN Actual ELSE 0 END) AS previous_of_previous_month_actual_generation,
-        SUM(CASE WHEN Year = ${year} THEN Actual ELSE 0 END) AS total_actual_generation,
-        SUM(CASE WHEN Year = ${year} - 1 THEN Actual ELSE 0 END) AS total_actual_previous_year
-      FROM ${process.env.MASTER_TABLE}
-    `;
+    SELECT 
+      SUM(CASE WHEN Month = MONTHNAME(DATE_SUB(CURRENT_DATE, INTERVAL 2 MONTH)) AND Year = IF(MONTH(CURRENT_DATE) = 1, ${year} - 2, ${year} - 1) THEN Actual ELSE 0 END) AS prev_month_actual_generation_previous_year,
+      SUM(CASE WHEN Month = MONTHNAME(DATE_SUB(CURRENT_DATE, INTERVAL 2 MONTH)) AND Year = IF(MONTH(CURRENT_DATE) = 1, ${year} - 1, ${year}) THEN Actual ELSE 0 END) AS prev_month_actual_generation,
+      SUM(CASE WHEN Month = MONTHNAME(DATE_SUB(CURRENT_DATE, INTERVAL 3 MONTH)) AND Year = IF(MONTH(CURRENT_DATE) = 1, ${year} - 1, ${year}) THEN Actual ELSE 0 END) AS previous_of_previous_month_actual_generation,
+      SUM(CASE WHEN Year = ${year} THEN Actual ELSE 0 END) AS total_actual_generation,
+      SUM(CASE WHEN Year = ${year} - 1 THEN Actual ELSE 0 END) AS total_actual_previous_year
+    FROM ${process.env.MASTER_TABLE}
+  `;
+  
 
     // Execute the SQL query
     const [rows] = await conn.query(sql);

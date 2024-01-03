@@ -1,14 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 
-// Function to get previous month
-const getthreeMonthsAgo = (date) => {
-  let newDate = new Date(date);
-  newDate.setMonth(newDate.getMonth() - 1);
-  return newDate.toLocaleString('default', { month: 'long' });
-};
-
-// Function to get month before previous month
 const getMonthBeforePrevMonth = (date) => {
   let newDate = new Date(date);
   newDate.setMonth(newDate.getMonth() - 2);
@@ -16,7 +8,9 @@ const getMonthBeforePrevMonth = (date) => {
 };
 
 const FooterCard = ({ footerData: data, selectedYear }) => {  
-
+  const currentMonth = new Date().getMonth();
+  const adjustedYear = currentMonth === 0 ? selectedYear - 1 : selectedYear;
+  const adjustedPrevYear = currentMonth === 0 ? selectedYear - 2 : selectedYear - 1;
 
   const getThreeMonthsAgo = (date) => {
     let newDate = new Date(date);
@@ -48,10 +42,10 @@ const FooterCard = ({ footerData: data, selectedYear }) => {
   
         <div className="my-auto w-1/3 px-2">
           <div className="h-4 p-1">
-            {`${monthBeforePrevMonth} (${selectedYear-1}): ${data ? new Intl.NumberFormat('en-IN').format(data.prev_month_actual_generation_previous_year) : ''} MWh`}
+            {`${monthBeforePrevMonth} (${adjustedPrevYear}): ${data ? new Intl.NumberFormat('en-IN').format(data.prev_month_actual_generation_previous_year) : ''} MWh`}
           </div>
           <h4 className="p-1">
-            {`${monthBeforePrevMonth} (${selectedYear}): ${data ? new Intl.NumberFormat('en-IN').format(data.prev_month_actual_generation) : ''} MWh`}
+            {`${monthBeforePrevMonth} (${adjustedYear}): ${data ? new Intl.NumberFormat('en-IN').format(data.prev_month_actual_generation) : ''} MWh`}
           </h4>
           <div className="h-6">
             <span className={data && ((data.prev_month_actual_generation - data.prev_month_actual_generation_previous_year) / data.prev_month_actual_generation_previous_year) * 100 < 0 ? 'text-red-500' : ''}>
@@ -62,10 +56,10 @@ const FooterCard = ({ footerData: data, selectedYear }) => {
   
         <div className="my-auto w-1/3 px-2">
           <div className="h-4 p-1">
-            {`${threeMonthsAgo} (${selectedYear}): ${data ? new Intl.NumberFormat('en-IN').format(data.previous_of_previous_month_actual_generation) : ''} MWh`}
+            {`${threeMonthsAgo} (${adjustedYear}): ${data ? new Intl.NumberFormat('en-IN').format(data.previous_of_previous_month_actual_generation) : ''} MWh`}
           </div>
           <h4 className="p-1">
-            {`${monthBeforePrevMonth} (${selectedYear}): ${data ? new Intl.NumberFormat('en-IN').format(data.prev_month_actual_generation) : ''} MWh`}
+            {`${monthBeforePrevMonth} (${adjustedYear}): ${data ? new Intl.NumberFormat('en-IN').format(data.prev_month_actual_generation) : ''} MWh`}
           </h4>
           <div className="h-6">
             <span className={data && ((data.prev_month_actual_generation - data.previous_of_previous_month_actual_generation) / data.previous_of_previous_month_actual_generation) * 100 < 0 ? 'text-red-500' : ''}>
@@ -79,5 +73,3 @@ const FooterCard = ({ footerData: data, selectedYear }) => {
 };
 
 export default FooterCard;
-
-
