@@ -17,8 +17,7 @@ const Sidebar = () => {
         <ListItem text={'Group Summary'} navLink={'/dash/group'} Icon={SparklesIcon}/> 
         <ListItem text={'Merge transactions'} navLink={'/dash/txnmerge'} Icon={SparklesIcon}/>
         <ListItem text={'Data Errors'} navLink={'/dash/error'} Icon={SparklesIcon}/>
-        <ListItem text={'Invoice'} navLink={'/dash/invoice'} Icon={SparklesIcon}/>                            
-    </div>
+        {process.env.NEXT_PUBLIC_INVOICE_TOGGLE === 'on' && <ListItem text={'Invoice'} navLink={'/dash/invoice'} Icon={SparklesIcon}/>}    </div>
     <div className='flex items-center mb-4 mt-4 ml-2'>
         <UserButton afterSignOutUrl='/' />
         {user && <span className='ml-2'>{user.username}</span>}
