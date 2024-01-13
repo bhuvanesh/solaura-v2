@@ -3,9 +3,9 @@ import React, { useEffect, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
+import LoadingButton from '@/components/Loading';
 import { z } from 'zod';
 import { nanoid } from 'nanoid';
-import LoadingButton from '@/components/Loading';
 const currentYear = new Date().getFullYear();
 const years = Array.from({ length: currentYear - 2021 }, (_, i) => 2022 + i);
 const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -68,9 +68,9 @@ const onSubmit = data => {
     preprocess(data, responseData, pan, gst, address);  // Include PAN, GST, and address here
   })
   .catch((error) => {
+    setIsLoading(false);
     console.error('Error:', error);
   });
-  setIsLoading(false);
 
  };
  const formatDate = (month, year, isEndOfMonth) => {
@@ -369,11 +369,9 @@ return (
 {errors.eurExchangeRate && <p className="text-red-500 text-xs mt-2">{errors.eurExchangeRate.message}</p>}
 </div>
 <LoadingButton
-  isLoading={isLoading}
-  loadingLabel="Generating..."
   type="submit"
-  color="primary"
-  variant="contained"
+  isLoading={isLoading}
+  loadingLabel="Generating Invoice..."
   className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
 >
   Generate Invoice
