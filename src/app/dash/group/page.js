@@ -5,6 +5,11 @@ import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import LoadingButton from '@/components/Loading';
 
+const generateYearsArray = (startYear) => {
+  const currentYear = new Date().getFullYear();
+  return Array.from({ length: currentYear - startYear + 1 }, (_, i) => startYear + i);
+};
+
 const Groups = () => {
   const [groups, setGroups] = useState([]);
   const [selectedGroup, setSelectedGroup] = useState('');
@@ -12,6 +17,10 @@ const Groups = () => {
   const [selectedGroupDetails, setSelectedGroupDetails] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const yearsArray = generateYearsArray(2022);
+
+
 
   
   
@@ -80,8 +89,13 @@ const Groups = () => {
   const handleTypeChange = (event) => {
     setSelectedType(event.target.value);
   };
+  useEffect(() => {
+    if (selectedGroup && selectedType && selectedYear) {
+      fetchGroupDetails(selectedGroup, selectedType, selectedYear);
+    }
+  }, [selectedGroup, selectedType, selectedYear]);
 
-  const fetchGroupDetails = async (groupName, groupType) => {
+  const fetchGroupDetails = async (groupName, groupType, year) => {
     setLoading(true);
 
     try {
@@ -90,7 +104,7 @@ const Groups = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ group: groupName }),
+        body: JSON.stringify({ group: groupName, year: year }), 
       });
       const data = await response.json();
 
@@ -176,6 +190,16 @@ const Groups = () => {
                 ))}
               </select>
             </div>
+
+            <div className="w-full">
+      <select value={selectedYear} onChange={(event) => setSelectedYear(event.target.value)} className="w-full p-2 mb-6 text-center text-gray-600 text-sm bg-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-800">
+        {yearsArray.map((year) => (
+          <option key={year} value={year}>
+            {year}
+          </option>
+        ))}
+      </select>
+    </div>
 
             {loading ? (
               <Transition

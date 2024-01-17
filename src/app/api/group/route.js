@@ -1,8 +1,7 @@
 import getPSConnection from '@/lib/planetscaledb';
 
 // Updated function to fetch all groups or a specific group from the database
-async function getAllGroups(connection, groupName) {
-  const currentYear = new Date().getFullYear();
+async function getAllGroups(connection, groupName, year) {
   const sql = `
     SELECT
       \`Group\`,
@@ -13,7 +12,7 @@ async function getAllGroups(connection, groupName) {
       SUM(\`Issued\`) as total_issuance,
       SUM(IF(\`Issued\` IS NULL OR \`Issued\` = 0, \`Actual_used\` + \`Estimated_used\`, 0)) as future_commitment
     FROM \`${process.env.MASTER_TABLE}\`
-    ${groupName ? `WHERE \`Group\` = ? AND \`Year\` = ${currentYear}` : `WHERE \`Year\` = ${currentYear}`}
+    ${groupName ? `WHERE \`Group\` = ? AND \`Year\` = ${year}` : `WHERE \`Year\` = ${year}`}
     GROUP BY \`Group\`
 
     UNION ALL
@@ -27,7 +26,7 @@ async function getAllGroups(connection, groupName) {
       SUM(IF(\`Type\` = 'Solar', \`Issued\`, 0)) as total_issuance,
       SUM(IF((\`Type\` = 'Solar') AND (\`Issued\` IS NULL OR \`Issued\` = 0), \`Actual_used\` + \`Estimated_used\`, 0)) as future_commitment
     FROM \`${process.env.MASTER_TABLE}\`
-    ${groupName ? `WHERE \`Group\` = ? AND \`Year\` = ${currentYear}` : `WHERE \`Year\` = ${currentYear}`}
+    ${groupName ? `WHERE \`Group\` = ? AND \`Year\` = ${year}` : `WHERE \`Year\` = ${year}`}
     GROUP BY \`Group\`
 
     UNION ALL
@@ -41,7 +40,7 @@ async function getAllGroups(connection, groupName) {
       SUM(IF(\`Type\` = 'Wind', \`Issued\`, 0)) as total_issuance,
       SUM(IF((\`Type\` = 'Wind') AND (\`Issued\` IS NULL OR \`Issued\` = 0), \`Actual_used\` + \`Estimated_used\`, 0)) as future_commitment
     FROM \`${process.env.MASTER_TABLE}\`
-    ${groupName ? `WHERE \`Group\` = ? AND \`Year\` = ${currentYear}` : `WHERE \`Year\` = ${currentYear}`}
+    ${groupName ? `WHERE \`Group\` = ? AND \`Year\` = ${year}` : `WHERE \`Year\` = ${year}`}
     GROUP BY \`Group\`;
   `;
   const [rows] = await connection.query(sql, groupName ? [groupName, groupName, groupName] : []);
@@ -64,10 +63,10 @@ export async function POST(request) {
     const connection = await getPSConnection();
     const requestBody = await request.json();
     const groupName = requestBody.group;
+    const year = requestBody.year; 
     const groups = groupName
-      ? await getAllGroups(connection, groupName)
+      ? await getAllGroups(connection, groupName, year) 
       : await getGroupNames(connection);
-
 
     // Return response with status 200 and data
     return new Response(JSON.stringify(groups), { status: 200 });
