@@ -25,66 +25,69 @@ const Groups = () => {
   
   
   
-  const handleDownload = async () => {
-    setIsDownloading(true);
-    const logoUrl = 'https://i.imgur.com/1Tl8SjL.jpg';
-    const logoResponse = await fetch(logoUrl);
-    const logoBlob = await logoResponse.blob();
-    const logoBase64 = await new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result);
-      reader.readAsDataURL(logoBlob);
-    });
-  
-    const types = ['Total', 'Solar', 'Wind'];
-  
-    const doc = new jsPDF();
-    doc.addImage(logoBase64, 'JPEG', 10, 10, 30, 30); // Add the logo to the PDF
-    doc.setFontSize(18);
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const groupNameX = (pageWidth / 2);
-    doc.text(selectedGroup, groupNameX, 40); // Center the groupName text and position slightly lower than the logo
-  
-    let startY = 50;
-  
-    for (const type of types) {
-      try {
-        const response = await fetch('/api/group', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ group: selectedGroup }),
-        });
-        const data = await response.json();
-        const groupDetails = data.find(g => g.Type === type); // Find the details for the current type
-  
-        const tableData = [
-          { key: 'No. of Devices', value: groupDetails.no_of_devices },
-          { key: 'Estimated Generation', value: `${groupDetails.estimated_generation} MWh` },
-          { key: 'Actual Generation', value: `${groupDetails.actual_generation ? groupDetails.actual_generation : 0} MWh` },
-          { key: 'Total Issuance', value: `${groupDetails.total_issuance ? groupDetails.total_issuance : 0} MWh` },
-          { key: 'Future Commitment', value: `${groupDetails.future_commitment} MWh` },
-        ];
-  
-        doc.setFontSize(16);
-        doc.text(`${type}`, 10, startY + 10);
-        doc.autoTable({
-          startY: startY + 15,
-          head: [['Measure', 'Value']],
-          body: tableData.map((detail) => [detail.key, detail.value]),
-        });
-  
-        startY = doc.previousAutoTable.finalY + 10;
-      } catch (error) {
-        console.error(`Error fetching group details for the type ${type}:`, error);
-      }
-    }
-  
-    doc.save(`${selectedGroup}.pdf`);
-    setIsDownloading(false);
+const handleDownload = async () => {
+  setIsDownloading(true);
+  const logoUrl = 'https://i.imgur.com/1Tl8SjL.jpg';
+  const logoResponse = await fetch(logoUrl);
+  const logoBlob = await logoResponse.blob();
+  const logoBase64 = await new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result);
+    reader.readAsDataURL(logoBlob);
+  });
 
-  };
+  const types = ['Total', 'Solar', 'Wind'];
+
+  const doc = new jsPDF();
+  doc.addImage(logoBase64, 'JPEG', 10, 10, 30, 30); // Add the logo to the PDF
+  doc.setFontSize(18);
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const groupNameX = (pageWidth / 2);
+  doc.text(selectedGroup, groupNameX, 40); // Center the groupName text and position slightly lower than the logo
+
+  let startY = 50;
+
+  doc.setFontSize(16);
+  doc.text(`Year: ${selectedYear}`, 10, startY + 10);
+  startY += 10;
+
+  for (const type of types) {
+    try {
+      const response = await fetch('/api/group', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ group: selectedGroup, year: selectedYear }),
+      });
+      const data = await response.json();
+      const groupDetails = data.find(g => g.Type === type); // Find the details for the current type
+
+      const tableData = [
+        { key: 'No. of Devices', value: groupDetails.no_of_devices },
+        { key: 'Estimated Generation', value: `${groupDetails.estimated_generation} MWh` },
+        { key: 'Actual Generation', value: `${groupDetails.actual_generation ? groupDetails.actual_generation : 0} MWh` },
+        { key: 'Total Issuance', value: `${groupDetails.total_issuance ? groupDetails.total_issuance : 0} MWh` },
+        { key: 'Future Commitment', value: `${groupDetails.future_commitment} MWh` },
+      ];
+
+      doc.setFontSize(16);
+      doc.text(`${type}`, 10, startY + 10);
+      doc.autoTable({
+        startY: startY + 15,
+        head: [['Measure', 'Value']],
+        body: tableData.map((detail) => [detail.key, detail.value]),
+      });
+
+      startY = doc.previousAutoTable.finalY + 10;
+    } catch (error) {
+      console.error(`Error fetching group details for the type ${type}:`, error);
+    }
+  }
+
+  doc.save(`${selectedGroup}.pdf`);
+  setIsDownloading(false);
+};
 
   const handleTypeChange = (event) => {
     setSelectedType(event.target.value);
