@@ -80,6 +80,10 @@ const FormComponent = () => {
     "November",
     "December",
   ];
+
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: currentYear - 2021 }, (_, i) => 2022 + i);
+
   return (
   
     <div className='p-8'>
@@ -111,15 +115,17 @@ const FormComponent = () => {
       <div>
   <label htmlFor="year" className="block text-sm font-medium">Year</label>
   <select
-    id="year"
-    value={year}
-    onChange={(e) => setYear(e.target.value)}
-    className="p-2 border-sky-800 border block w-full mt-1 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-  >
-    <option value="">Select year</option>
-    <option value="2022">2022</option>
-    <option value="2023">2023</option>
-  </select>
+      id="year"
+      value={year}
+      onChange={(e) => setYear(e.target.value)}
+      className="p-2 border-sky-800 border block w-full mt-1 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+    >
+      <option value="">Select year</option>
+      {years.map((year) => (
+        <option key={year} value={year}>{year}</option>
+      ))}
+    </select>
+
 </div>
 
       <div>
