@@ -63,16 +63,30 @@ useEffect(() => {
       fetchGroupDetails();
     }
   }, [selectedGroup]);
-const downloadAsExcel = () => {
-  // Filter data for the selected year
-  const filteredData = data.filter(item => item["Year"] === selectedYear);
-
-  // Convert the filtered data to an Excel file
-  const ws = XLSX.utils.json_to_sheet(filteredData);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
-  XLSX.writeFile(wb, "data.xlsx");
-};
+  const downloadAsExcel = () => {
+    // Filter data for the selected year
+    const filteredData = data.filter(item => item["Year"] === selectedYear);
+  
+    // Replace 'Reserved' or 'Sold' with 0
+    const modifiedData = filteredData.map(item => {
+      const newItem = {};
+      for (const key in item) {
+        if (item[key] === "Reserved" || item[key] === "Sold") {
+          newItem[key] = 0;
+        } else {
+          newItem[key] = item[key];
+        }
+      }
+      return newItem;
+    });
+  
+    // Convert the modified data to an Excel file
+    const ws = XLSX.utils.json_to_sheet(modifiedData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+    XLSX.writeFile(wb, "data.xlsx");
+  };
+  
 
   const handleGroupChange = (e) => {
     setSelectedGroup(e.target.value);
