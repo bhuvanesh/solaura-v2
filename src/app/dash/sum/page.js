@@ -74,7 +74,7 @@ useEffect(() => {
         if (item[key] === "Reserved" || item[key] === "Sold") {
           newItem[key] = 0;
         } else {
-          newItem[key] = item[key];
+          newItem[key] = isNaN(Number(item[key])) ? item[key] : Number(item[key]);
         }
       }
       return newItem;
