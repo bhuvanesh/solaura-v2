@@ -30,7 +30,7 @@ async function getGroupsData(connection, groupName) {
         END AS Sold
       FROM \`${process.env.MASTER_TABLE}\`
     ) AS subquery
-    GROUP BY \`Group\`,\`Device ID\`, \`company\`, Type, CoD, Year,\`project\`;`
+    GROUP BY \`Group\`, \`company\`, \`Device ID\`, Type, CoD, Year,\`project\`;`
   } else if (groupName) {
     query = `
     SELECT 
@@ -60,7 +60,7 @@ async function getGroupsData(connection, groupName) {
       FROM \`${process.env.MASTER_TABLE}\`
       WHERE \`Group\` = ?
     ) AS subquery
-    GROUP BY \`Group\`,\`Device ID\`, \`company\`,  Type, CoD, Year,\`project\`;`;
+    GROUP BY \`Group\`, \`company\`, \`Device ID\`,  Type, CoD, Year,\`project\`;`;
   } else {
     query = `
     SELECT DISTINCT \`Group\`, Year
