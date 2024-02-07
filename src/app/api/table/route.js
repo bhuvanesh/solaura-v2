@@ -5,6 +5,8 @@ import getPSConnection from '@/lib/planetscaledb';
 export async function POST(request) {
   const { requirement, CoDYear, productionPeriodFrom, productionPeriodTo, type, year } = await request.json();
 
+  console.log(requirement, CoDYear, productionPeriodFrom, productionPeriodTo, type, year);
+
   const monthColumns = [
     'january', 'february', 'march', 'april', 'may', 'june',
     'july', 'august', 'september', 'october', 'november', 'december'

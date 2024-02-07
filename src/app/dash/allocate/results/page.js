@@ -16,7 +16,17 @@ function calcTotal(obj, monthArray) {
 }
 
 const Results = () => {
-  const { results, requirement ,organisation } = useContext(ResultsContext);
+const {
+  results,
+  requirement,
+  organisation,
+  CoDYear,
+  productionPeriodFrom,
+  productionPeriodTo,
+  type,
+  draftData, 
+} = useContext(ResultsContext);
+ 
   const [selectedMonths, setSelectedMonths] = useState(new Map());
   const router = useRouter();
   const [remainingRequirement, setRemainingRequirement] = useState(parseFloat(requirement));
@@ -25,7 +35,15 @@ const Results = () => {
   const [open, setOpen] = useState(false); 
 const [editKey, setEditKey] = useState(''); 
 const [editValue, setEditValue] = useState(0);
-const [oldValue, setOldValue] = useState(0); 
+const [oldValue, setOldValue] = useState(0);
+const [draftDataWithoutYear, setDraftDataWithoutYear] = useState(null);
+const [isButtonLoading, setIsButtonLoading] = useState(false);
+const { setDraftData } = useContext(ResultsContext);
+
+
+
+
+
 
 
 const handleClose = () => {
@@ -205,6 +223,49 @@ const handleUnselect = () => {
       toast.error('Error updating Database');
     }
     setIsLoading(false);
+    setDraftData(null);
+
+  };
+
+  const handleSubmitDraft = async () => {
+    setIsButtonLoading(true);
+    let remainingRequirement = parseFloat(requirement);
+    const selectedMonthsObject = {};
+    let year = null;
+  
+    selectedMonths.forEach((value, key) => {
+      if (value && remainingRequirement > 0) {
+        const [resultIndex, month] = key.split('-');
+        const deviceId = results[parseFloat(resultIndex)]['Device ID'];
+        if (!selectedMonthsObject[deviceId]) {
+          selectedMonthsObject[deviceId] = {};
+        }
+        if (!year) {
+          year = results[parseFloat(resultIndex)]['Year'];
+        }
+  
+        const monthValue = results[parseFloat(resultIndex)][month];
+        const adjustedMonthValue = Math.min(remainingRequirement, monthValue);
+        selectedMonthsObject[deviceId][month] = adjustedMonthValue;
+        remainingRequirement -= adjustedMonthValue;
+      }
+    });
+    selectedMonthsObject['Year'] = year;
+    const uniqueId = uuidv4();
+    const response = await fetch('/api/draft', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ organisation, selectedMonths: selectedMonthsObject, uniqueId, year, requirement,productionPeriodFrom,productionPeriodTo, CoDYear,type}),
+    });
+    const updatedResults = await response.json();
+    console.log(updatedResults);
+  
+    if (updatedResults.message === 'Data updated successfully') {
+      toast.success('Draft saved successfully');
+   ;}
+   setIsButtonLoading(false);
+   setDraftData(null);
+   router.push(`/dash/allocate`);
 
   };
   
@@ -215,6 +276,42 @@ const handleUnselect = () => {
   ];
   const visibleMonths = months.filter(month => results.some(result => result[month]));
 
+  useEffect(() => {
+    // This ensures handleApplyDraftData runs only if draftData is available when component mounts
+    if (draftData) {
+      const { Year, ...dataWithoutYear } = draftData;
+      handleApplyDraftData(dataWithoutYear);
+    }
+  }, []); // Ensure this effect runs only once at component mount
+
+const handleApplyDraftData = (dataWithoutYear) => {
+  const newSelectedMonths = new Map();
+  let newRemainingRequirement = remainingRequirement;
+
+  for (const deviceId in dataWithoutYear) {
+    if (dataWithoutYear.hasOwnProperty(deviceId)) {
+      const deviceData = dataWithoutYear[deviceId];
+
+      for (const month in deviceData) {
+        if (deviceData.hasOwnProperty(month)) {
+          const deviceIndex = results.findIndex(result => result["Device ID"] === deviceId);
+
+          if (deviceIndex !== -1) {
+            newSelectedMonths.set(`${deviceIndex}-${month}`, true);
+
+            const monthValue = parseFloat(parseFloat(deviceData[month]).toFixed(4));
+            results[deviceIndex][month] = monthValue;
+
+            newRemainingRequirement -= monthValue;
+          }
+        }
+      }
+    }
+  }
+
+  setSelectedMonths(newSelectedMonths);
+  setRemainingRequirement(parseFloat(newRemainingRequirement.toFixed(4)));
+};
 
 
 return (
@@ -237,6 +334,15 @@ return (
         >
           Remove Suggestions
         </button>
+      </div>
+      <div className="flex justify-end pb-2">
+      <LoadingButton
+      isLoading={isButtonLoading} 
+      onClick={handleSubmitDraft} 
+      loadingLabel="Saving..." 
+    >
+      Save as Draft
+    </LoadingButton>
       </div>
       <div className="flex justify-end pb-2">
       <LoadingButton
