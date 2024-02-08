@@ -10,10 +10,11 @@ export async function POST(req) {
   try {
     // Get a connection to the PlanetscaleDB database
     const conn = await getPSConnection();
+    const tableName = process.env.DRAFT;
 
     // Define the SQL query for updating the Status column
     const updateQuery = `
-      UPDATE draft
+      UPDATE ${tableName}
       SET Status = 0
       WHERE Transaction_ID = ?
     `;

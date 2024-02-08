@@ -25,6 +25,7 @@ const {
   productionPeriodTo,
   type,
   draftData, 
+  draftid,
 } = useContext(ResultsContext);
  
   const [selectedMonths, setSelectedMonths] = useState(new Map());
@@ -251,23 +252,27 @@ const handleUnselect = () => {
       }
     });
     selectedMonthsObject['Year'] = year;
-    const uniqueId = uuidv4();
+  
+    // Use draftId if it is not null, otherwise use the uniqueId
+    const uniqueId = draftid || uuidv4();
+  
     const response = await fetch('/api/draft', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ organisation, selectedMonths: selectedMonthsObject, uniqueId, year, requirement,productionPeriodFrom,productionPeriodTo, CoDYear,type}),
+      // Include the conditionally determined id
+      body: JSON.stringify({ uniqueId, organisation, selectedMonths: selectedMonthsObject, year, requirement, productionPeriodFrom, productionPeriodTo, CoDYear, type }),
     });
     const updatedResults = await response.json();
     console.log(updatedResults);
   
     if (updatedResults.message === 'Data updated successfully') {
       toast.success('Draft saved successfully');
-   ;}
-   setIsButtonLoading(false);
-   setDraftData(null);
-   router.push(`/dash/allocate`);
-
+    }
+    setIsButtonLoading(false);
+    setDraftData(null);
+    router.push(`/dash/allocate`);
   };
+  
   
 
   const months = [

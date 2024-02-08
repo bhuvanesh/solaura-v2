@@ -13,6 +13,7 @@ const Layout = ({children}) => {
   const [productionPeriodTo, setProductionPeriodTo] = useState('');
   const [type, setType] = useState('');
   const [draftData, setDraftData] = useState({}); 
+  const [draftid, setdraftid] = useState('');
 
   return (
     <ResultsContext.Provider value={{
@@ -24,7 +25,8 @@ const Layout = ({children}) => {
       productionPeriodFrom, setProductionPeriodFrom,
       productionPeriodTo, setProductionPeriodTo,
       type, setType,
-      draftData, setDraftData // Now providing these to context
+      draftData, setDraftData ,
+      draftid, setdraftid
     }}>
       <div className="flex space-x-2">
         <Sidebar className=""/>

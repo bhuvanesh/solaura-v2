@@ -15,7 +15,8 @@ const FormComponent = () => {
     setProductionPeriodFrom,
     setProductionPeriodTo,
     setType,
-    setDraftData, 
+    setDraftData,
+    setdraftid,
   } = useContext(ResultsContext);
   const [requirement, _setRequirement] = useState("");
   const [CoDYear, _setCoDYear] = useState("");
@@ -48,6 +49,7 @@ const FormComponent = () => {
     _setType(data.type || "");
     _setCoDYear(data.CoDYear || "");
     setYear(data.Year || ""); 
+    setdraftid(data.draft_id || "");
   
     
     setDraftData(data.devicedata || "");    

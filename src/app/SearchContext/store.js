@@ -10,6 +10,7 @@ const ResultsContext = React.createContext({
   productionPeriodTo: '',
   type: '',
   draftData: {}, 
+  draftid: '', 
   setResults: () => {},
   setRequirement: () => {},
   setGroupName: () => {},
@@ -19,6 +20,7 @@ const ResultsContext = React.createContext({
   setProductionPeriodTo: () => {},
   setType: () => {},
   setDraftData: () => {}, 
+  setdraftid: () => {}, 
 });
 
 export default ResultsContext;

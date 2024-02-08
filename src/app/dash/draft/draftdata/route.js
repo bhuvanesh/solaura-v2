@@ -2,10 +2,11 @@ import getPSConnection from "@/lib/planetscaledb";
 
 export async function GET(req) {
     console.log(req.url);
+    const tableName = process.env.DRAFT;
     try {
         const conn = await getPSConnection();
         const query = `
-            SELECT * FROM draft WHERE Status = 1;
+            SELECT * FROM ${tableName} WHERE Status = 1;
         `;
         const [rows] = await conn.query(query);
         await conn.end();

@@ -39,6 +39,7 @@ const DraftButton = ({ onApply }) => {
             type: draft.type,
             CoDYear: draft.CoDYear,
             Year: draft.Draft_Data.Year, 
+            draft_id: draft.Transaction_ID, 
         };
 
         onApply(draftToApply);
