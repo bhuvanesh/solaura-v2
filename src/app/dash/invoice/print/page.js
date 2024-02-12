@@ -100,7 +100,7 @@ const saveData = () => {
     .then(responseData => {
       console.log('Success:', responseData);
 
-      // Call the new calculateData function
+      // Call the calculateData function here and ensure updatedData is defined in this scope
       const updatedData = calculateData(selectedDeviceIds, data);
 
       // Send the data to 'print/invoicedata'
@@ -110,12 +110,15 @@ const saveData = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(updatedData),
+      }).then((response) => {
+        return response.json().then((data) => {
+          return { data, updatedData }; // Pass updatedData along with the response to the next .then
+        });
       });
     })
-    .then(response => response.json())
-    .then(data => {
+    .then(({ data, updatedData }) => { // Receive both data and updatedData here
       console.log('Success:', data);
-      setData(updatedData); // update the state here
+      setData(updatedData); // Use updatedData to update the state here
       setSaveClicked(true);
       window.alert("Invoice Created Successfully");
 
@@ -137,6 +140,7 @@ const saveData = () => {
     });
   }
 };
+
   
   
   
