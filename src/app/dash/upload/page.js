@@ -39,14 +39,16 @@ const UploadButtons = () => {
       </Link>
       <Link href="/dash/upload/seller">
         <button className="cursor-pointer transform transition duration-500 ease-in-out bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded hover:scale-105 active:scale-95">
-          sellers data upload
+          sellers data upload 
         </button>
       </Link>
       <button
-        className="cursor-pointer transform transition duration-500 ease-in-out bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded hover:scale-105 active:scale-95"
-        onClick={handleMasterReset}
-      > Master Reset
-      </button>
+  disabled
+  className="cursor-not-allowed transform transition duration-500 ease-in-out bg-red-500 text-white font-bold py-2 px-4 rounded"
+  onClick={handleMasterReset}
+>
+  Master Reset
+</button>
     </div>
   );
 };
