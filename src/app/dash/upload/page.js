@@ -2,7 +2,12 @@
 import Link from 'next/link';
 
 const UploadButtons = () => {
+  const isResetEnabled = process.env.NEXT_PUBLIC_RESET_TOGGLE === 'on';
+
+  
+  
   const handleMasterReset = async () => {
+    if (!isResetEnabled) return;
     try {
       const response = await fetch('/api/truncate', { method: 'DELETE' });
       if (!response.ok) {
@@ -43,12 +48,16 @@ const UploadButtons = () => {
         </button>
       </Link>
       <button
-  disabled
-  className="cursor-not-allowed transform transition duration-500 ease-in-out bg-red-500 text-white font-bold py-2 px-4 rounded"
-  onClick={handleMasterReset}
->
-  Master Reset
-</button>
+        disabled={!isResetEnabled}
+        className={`cursor-pointer transform transition duration-500 ease-in-out ${
+          isResetEnabled ? 'bg-red-500 hover:bg-red-700' : 'bg-red-300'
+        } text-white font-bold py-2 px-4 rounded ${
+          isResetEnabled ? 'hover:scale-105 active:scale-95' : 'cursor-not-allowed'
+        }`}
+        onClick={handleMasterReset}
+      >
+        Master Reset
+      </button>
     </div>
   );
 };
