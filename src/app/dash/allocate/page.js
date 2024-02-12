@@ -29,7 +29,7 @@ const FormComponent = () => {
   const [loadingState, setLoadingState] = useState(false);
 
   const [searchTrigger, setSearchTrigger] = useState(false); 
-
+  const isDraftToggleOn = process.env.NEXT_PUBLIC_DRAFT_TOGGLE === 'on';
 
   useEffect(() => {
     // This effect runs whenever searchTrigger is changed and is true.
@@ -253,10 +253,12 @@ const FormComponent = () => {
           </LoadingButton>
         </div>
       </div>
-      <div className="space-y-4 col-span-1 flex flex-col justify-start">
-        <h className = "text-2xl font-semibold text-sky-800">Saved Drafts</h>
-        <DraftButton onApply={handleApplyDraftData} />
-      </div>
+      {isDraftToggleOn && (
+        <div className="space-y-4 col-span-1 flex flex-col justify-start">
+          <h className="text-2xl font-semibold text-sky-800">Saved Drafts</h>
+          <DraftButton onApply={handleApplyDraftData} />
+        </div>
+      )}
     </div>
   </div>
   
