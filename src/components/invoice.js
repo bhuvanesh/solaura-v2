@@ -41,6 +41,20 @@ const ExcelModifier = ({ data }) => {
       const column = worksheet.getColumn(columnLetter);
       column.width = width;
     };
+    const addressParts = data.address.split(',').map(part => part.trim());
+    let addressLine1 = '';
+    let addressLine2 = '';
+    let addressLine3 = '';
+  
+    if (addressParts.length > 2) {
+      addressLine1 = addressParts.slice(0, 2).join(', ') + ',';
+      addressLine2 = addressParts.slice(2, 4).join(', ') + ',';
+      addressLine3 = addressParts.slice(4).join(', ');
+    } else {
+      addressLine1 = data.address;
+    }
+  
+
   
     setColumnWidth('I', 13);
     setColumnWidth('K', 13);
@@ -51,8 +65,9 @@ const ExcelModifier = ({ data }) => {
     modifyCell('C20', data.project, 12);
     modifyCell('C6', 'GST: ' + data.gst, 14, true);
     modifyCell('C5', 'PAN: ' + data.pan, 14, true);
-    modifyCell('K13', data.address, 13);
-  
+    modifyCell('K13', addressLine1, 13);
+    modifyCell('K14', addressLine2, 13);
+    modifyCell('K15', addressLine3, 13);  
     const calcValue = parseFloat((data.issued * data.netRate).toFixed(4));
     const calcValueWithRate = parseFloat((calcValue * 0.09).toFixed(4));
     const o38Value = calcValue + 2 * calcValueWithRate;
