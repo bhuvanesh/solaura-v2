@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import LoadingButton from '@/components/Loading';
 import { z } from 'zod';
 import { nanoid } from 'nanoid';
+import Invoices from '@/components/invoicelist';
 const currentYear = new Date().getFullYear();
 const years = Array.from({ length: currentYear - 2021 }, (_, i) => 2022 + i);
 const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -252,8 +253,8 @@ setValue('successFee', '');
 }, [selectedGroup, setValue]);
 console.log(errors);
 return (
-<form onSubmit={handleSubmit(onSubmit)} className="space-y-4 p-5">
-   <div>
+<div className="page-layout" style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 p-5" style={{flex: 1}}>   <div>
       <label htmlFor="groupName" className="block text-sm font-medium text-gray-700">Group Name</label>
       <Controller
           name="groupName"
@@ -377,5 +378,7 @@ return (
   Generate Invoice
 </LoadingButton>
 </form>
+ <Invoices />
+ </div>
 );
 }
