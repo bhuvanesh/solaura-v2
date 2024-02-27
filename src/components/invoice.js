@@ -6,6 +6,7 @@ const ExcelModifier = ({ data }) => {
   const [workbook, setWorkbook] = useState(null);
 
 
+
   useEffect(() => {
     const loadFile = async () => {
       const response = await fetch('/template.xlsx');
@@ -60,9 +61,18 @@ const ExcelModifier = ({ data }) => {
     setColumnWidth('K', 13);
     setColumnWidth('O', 15);
   
-    modifyCell('C4', data.groupName, 17, true);
+    modifyCell('C4', data.formData.companyName, 17, true);
     modifyCell('H20', `${data.invoicePeriodFrom} to ${data.invoicePeriodTo}`, 12);
-    modifyCell('C20', data.project, 12);
+    const projectIndex = data.project.indexOf(' and ');
+    if (projectIndex !== -1) {
+      const firstPart = data.project.substring(0, projectIndex);
+      const secondPart = data.project.substring(projectIndex + 5); 
+      modifyCell('C20', firstPart, 12); 
+      modifyCell('C21', secondPart, 12);
+    } else {
+      // No 'and' in the string, just set the whole project in C20
+      modifyCell('C20', data.project, 12);
+    }
     modifyCell('C6', 'GST: ' + data.gst, 14, true);
     modifyCell('C5', 'PAN: ' + data.pan, 14, true);
     modifyCell('K13', addressLine1, 13);

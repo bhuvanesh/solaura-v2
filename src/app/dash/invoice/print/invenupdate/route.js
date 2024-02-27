@@ -27,7 +27,7 @@ export async function POST(req) {
   for (let deviceId of deviceIds) {
     for (let month of monthRange) {
       // Add the device ID, month, year, and invoice_status to the query values
-      queryValues.push(`('${deviceId}', '${month}', ${year}, 'True')`);
+      queryValues.push(`('${deviceId}', '${month}', ${year}, 'False')`);
     }
   }
 
