@@ -141,8 +141,8 @@ useEffect(() => {
   }, 0);
 
 
-   const capacity = responseData.reduce((acc, device) => acc + parseFloat(device.Capacity), 0);
-   const regNo = responseData.length;
+  const capacity = responseData.reduce((acc, device) => acc + parseFloat(device.Capacity), 0).toFixed(2); 
+  const regNo = responseData.length;
    const issued = responseData.reduce((acc, device) => acc + parseFloat(device.TotalIssued), 0);
    const ISP = formData.unitSalePrice;
    const issuanceFee = parseFloat((0.025 * issued).toFixed(4));

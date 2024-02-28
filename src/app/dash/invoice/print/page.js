@@ -6,6 +6,8 @@ import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import Select from 'react-select'; // import the react-select 
 import { useRouter } from 'next/navigation';
+import jsPDF from "jspdf";
+import "jspdf-autotable";
 
 
 
@@ -72,7 +74,7 @@ const calculateData = (selectedDeviceIds, data) => {
 
   // Calculate new values
   updatedData.deviceIds = selectedDeviceIdsString;
-  updatedData.capacity = selectedData.reduce((acc, device) => acc + parseFloat(device.Capacity), 0);
+  updatedData.capacity = selectedData.reduce((acc, device) => acc + parseFloat(device.Capacity), 0).toFixed(2);
   updatedData.regNo = selectedData.length;
   updatedData.issued = parseFloat((selectedData.reduce((acc, device) => acc + parseFloat(device.TotalIssued), 0)).toFixed(4));
   updatedData.ISP = data?.formData?.unitSalePrice;
@@ -144,7 +146,73 @@ const saveData = () => {
 };
 
   
-  
+
+
+const downloadWorksheetPdf = () => {
+  const doc = new jsPDF();
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const groupName = data.groupName || "N/A"; // Fallback to "N/A" if groupName is not defined in data
+
+  doc.setFontSize(18);
+  // Calculate text width
+  const groupNameWidth = doc.getTextWidth(groupName);
+
+  // Calculate center position (divide page width by 2 and subtract half of the text width)
+  const groupNameX = (pageWidth / 2) - (groupNameWidth / 2);
+
+  // Set groupName as the title or heading of the PDF, positioned in the center
+  doc.text(groupName, groupNameX, 22);
+
+  // Adjust startY for the first table based on the heading's position
+  const startYFirstTable = 30;
+
+  const companyHeaderRow = [["Company Name", data.formData?.companyName || "N/A"]];
+
+  // Primary Table Rows for Key-Value pairs
+  const tableRows = [];
+  Object.entries(data).forEach(([key, value]) => {
+      if (!keysToIgnore.includes(key) && key !== 'formData' && key !== 'groupName') { // Exclude specific keys to avoid duplication
+          const displayKey = keyMapping[key] || key;
+          tableRows.push([displayKey, value]);
+      }
+  });
+
+  // Adding the first table to the PDF
+  doc.autoTable({
+      body: [...companyHeaderRow, ...tableRows],
+      willDrawCell: function(data) {
+          if (data.column.index === 0) {
+              data.cell.styles.fontStyle = 'bold';
+          }
+      },
+      theme: 'grid',
+      startY: startYFirstTable,
+      styles: { font: "helvetica", fontSize: 10 },
+  });
+
+  // Prepare a secondary table for selected device IDs and their TotalIssued values
+  const selectedDevicesRows = selectedDeviceIds.map(deviceId => {
+    const totalIssuedValue = data.responseData.find(device => device["Device ID"] === deviceId.value)?.TotalIssued || "N/A";
+    return [deviceId.value, totalIssuedValue.toString()];
+  });
+
+  // Determine the starting Y position for the second table based on the final Y position of the first table
+  const startYSecondTable = doc.lastAutoTable.finalY + 10;
+
+  // Adding the secondary table to the PDF
+  doc.autoTable({
+      head: [["Device ID", "Total Issued"]],
+      body: selectedDevicesRows,
+      theme: 'grid',
+      startY: startYSecondTable,
+      styles: { font: "helvetica", fontSize: 10 },
+  });
+
+  // Save the PDF with a dynamic filename that reflects the groupName
+  doc.save(`${groupName.replace(/ /g, '_')}_Invoice_data.pdf`);
+};
+
+
   
   const keyMapping = {
     invoiceid: 'Invoice ID',
@@ -291,6 +359,10 @@ const handleSelectChange = (selectedOptions) => {
 >
   Download as PDF
 </button>
+
+<button className="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded ml-4" onClick={downloadWorksheetPdf}>
+        Download Worksheet PDF
+      </button>
 
     
 <Select
