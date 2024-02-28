@@ -5,6 +5,7 @@ import ExcelModifier from '@/components/invoice';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import Select from 'react-select'; // import the react-select 
+import { useRouter } from 'next/navigation';
 
 
 
@@ -14,6 +15,7 @@ const Invoiceprint = () => {
   const [downloadClicked, setDownloadClicked] = useState(false);
   const [saveClicked, setSaveClicked] = useState(false);
   const [data, setData] = useState({});
+  const router = useRouter();
 
 
 
@@ -163,7 +165,25 @@ const saveData = () => {
     netRate:'Net Trade Rate (INR/MWh)',
 
   };
+  const downloadAsPdf = () => {
+    const queryParams = serializeData(data); // Utilize the serializeData function
+    router.push(`/dash/invoice/print/pdfpreview?${queryParams}`);
+  };
 
+  function serializeData(dataObject) {
+    const params = new URLSearchParams();
+    Object.entries(dataObject).forEach(([key, value]) => {
+        // If the value is an object, we stringify it
+        if (typeof value === "object") {
+            params.append(key, JSON.stringify(value));
+        } else {
+            params.append(key, value);
+        }
+    });
+    return params.toString();
+}
+
+  
   const refreshStatus = () => {
     const updatedData = calculateData(selectedDeviceIds, data);
     setData(updatedData);
@@ -265,6 +285,13 @@ const handleSelectChange = (selectedOptions) => {
     <button className="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded ml-4" onClick={refreshStatus}>
   Refresh Status
 </button>
+<button 
+  className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded ml-4" 
+  onClick={downloadAsPdf}
+>
+  Download as PDF
+</button>
+
     
 <Select
   isMulti
