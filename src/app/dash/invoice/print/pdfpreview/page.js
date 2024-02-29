@@ -18,6 +18,7 @@ export default function Invoicepdf(args) {
   
   const data = args.searchParams;
   const formDataObj = JSON.parse(data.formData);
+  console.log(args);
 
 
 
@@ -143,10 +144,14 @@ export default function Invoicepdf(args) {
       </div>
       {/* Info section-4 */}
       <div className="mt-2 grid p-1 sm: grid-cols-12 gap-2 w-full">
-        <div className="min-h-[50px] flex flex-col sm: col-span-4">
-          <span className="text-sm font-medium">Project Name</span>
-          <span className="text-xs">{data.project}</span>
-        </div>
+      <div className="min-h-[50px] flex flex-col sm: col-span-4">
+    <span className="text-sm font-medium">Project Name</span>
+    {data.project &&
+        data.project.split(" and ").map((projectName, index) => (
+            <span key={index} className="text-xs">{projectName}</span>
+        ))
+    }
+</div>
         <div className="min-h-[50px] flex flex-col  sm: col-span-4">
           <span className="text-sm font-medium">Volume Period</span>
           <span className="text-xs">{data.invoicePeriodFrom} to {data.invoicePeriodTo}</span>
