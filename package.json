@@ -52,7 +52,8 @@
     "tailwindcss-animate": "^1.0.7",
     "uuid": "^9.0.1",
     "xlsx": "^0.18.5",
-    "zod": "^3.22.4"
+    "zod": "^3.22.4",
+    "zustand": "^4.5.1"
   },
   "devDependencies": {
     "prisma": "^5.3.1"

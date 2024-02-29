@@ -7,6 +7,7 @@ import LoadingButton from '@/components/Loading';
 import { z } from 'zod';
 import { nanoid } from 'nanoid';
 import Invoices from '@/components/invoicelist';
+import useStore from '@/app/zust/store';
 const currentYear = new Date().getFullYear();
 const years = Array.from({ length: currentYear - 2021 }, (_, i) => 2022 + i);
 const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -38,6 +39,7 @@ const [selectedInvoicePeriodFrom, setSelectedInvoicePeriodFrom] = useState('');
 const [usdExchangeRate, setUsdExchangeRate] = useState(null);
 const [eurExchangeRate, setEurExchangeRate] = useState(null);
 const [isLoading, setIsLoading] = useState(false);
+const setProcessedDataParam = useStore(state => state.setProcessedDataParam);
 const onSubmit = data => {
   setIsLoading(true);
    console.log('Submitting:', data);
@@ -200,7 +202,12 @@ useEffect(() => {
  
    console.log('Processed Data:', processedData);
    const processedDataParam = encodeURIComponent(JSON.stringify(processedData));
-   router.push(`/dash/invoice/print?data=${processedDataParam}`);
+   
+    // Set processedDataParam in Zustand store
+    setProcessedDataParam(processedDataParam);
+
+    // Navigate to the component/page where you want to use processedDataParam
+    router.push(`/dash/invoice/print`);
 
 
  };

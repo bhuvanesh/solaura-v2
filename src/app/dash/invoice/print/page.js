@@ -4,34 +4,33 @@ import { useSearchParams } from 'next/navigation';
 import ExcelModifier from '@/components/invoice';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
-import Select from 'react-select'; // import the react-select 
+import Select from 'react-select'; 
 import { useRouter } from 'next/navigation';
 import jsPDF from "jspdf";
 import "jspdf-autotable";
-
-
-
+import useStore from '@/app/zust/store';
 const Invoiceprint = () => {
-  const searchParams = useSearchParams();
-  const dataString = searchParams.get('data');
   const [downloadClicked, setDownloadClicked] = useState(false);
   const [saveClicked, setSaveClicked] = useState(false);
   const [data, setData] = useState({});
   const router = useRouter();
 
+  // Use Zustand store to get processedDataParam
+  const processedDataParam = useStore(state => state.processedDataParam);
 
-
- 
-
-  // Parse the data string into an object
   useEffect(() => {
-    try {
-      const parsedData = JSON.parse(dataString);
-      setData(parsedData);
-    } catch (error) {
-      console.error('Failed to parse data:', error);
+    if (processedDataParam) {
+      try {
+        // Assuming processedDataParam is already a JSON string, decode and parse it
+        const parsedData = JSON.parse(decodeURIComponent(processedDataParam));
+        setData(parsedData);
+      } catch (error) {
+        console.error('Failed to parse data:', error);
+      }
+    } else {
+      console.error('No data available from store');
     }
-  }, [dataString]);
+  }, [processedDataParam]); 
 
   const preprocess = (selectedDeviceIds) => {
     const selectedData = data.responseData.filter(device =>
@@ -151,66 +150,69 @@ const saveData = () => {
 const downloadWorksheetPdf = () => {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
-  const groupName = data.groupName || "N/A"; // Fallback to "N/A" if groupName is not defined in data
+
+  // Retrieve groupName and format it with invoicePeriodFrom and invoicePeriodTo
+  const groupName = data.groupName || "N/A";
+  const invoicePeriod = data.invoicePeriodFrom && data.invoicePeriodTo ? `(${data.invoicePeriodFrom} to ${data.invoicePeriodTo})` : "";
+  const fullName = `${groupName} ${invoicePeriod}`; // Combine the groupName with the invoice period
 
   doc.setFontSize(18);
-  // Calculate text width
-  const groupNameWidth = doc.getTextWidth(groupName);
+  const fullNameWidth = doc.getTextWidth(fullName);
+  const fullNameX = (pageWidth / 2) - (fullNameWidth / 2);
+  doc.text(fullName, fullNameX, 22);
 
-  // Calculate center position (divide page width by 2 and subtract half of the text width)
-  const groupNameX = (pageWidth / 2) - (groupNameWidth / 2);
-
-  // Set groupName as the title or heading of the PDF, positioned in the center
-  doc.text(groupName, groupNameX, 22);
-
-  // Adjust startY for the first table based on the heading's position
   const startYFirstTable = 30;
 
   const companyHeaderRow = [["Company Name", data.formData?.companyName || "N/A"]];
 
-  // Primary Table Rows for Key-Value pairs
   const tableRows = [];
   Object.entries(data).forEach(([key, value]) => {
-      if (!keysToIgnore.includes(key) && key !== 'formData' && key !== 'groupName') { // Exclude specific keys to avoid duplication
-          const displayKey = keyMapping[key] || key;
-          tableRows.push([displayKey, value]);
-      }
+    if (!keysToIgnore.includes(key) && key !== 'formData' && key !== 'groupName') {
+      const displayKey = keyMapping[key] || key;
+      tableRows.push([displayKey, value]);
+    }
   });
 
-  // Adding the first table to the PDF
   doc.autoTable({
-      body: [...companyHeaderRow, ...tableRows],
-      willDrawCell: function(data) {
-          if (data.column.index === 0) {
-              data.cell.styles.fontStyle = 'bold';
-          }
-      },
-      theme: 'grid',
-      startY: startYFirstTable,
-      styles: { font: "helvetica", fontSize: 10 },
+    body: [...companyHeaderRow, ...tableRows],
+    willDrawCell: function (data) {
+      if (data.column.index === 0) {
+        data.cell.styles.fontStyle = 'bold';
+      }
+    },
+    theme: 'grid',
+    startY: startYFirstTable,
+    styles: { font: "helvetica", fontSize: 10 },
   });
 
-  // Prepare a secondary table for selected device IDs and their TotalIssued values
-  const selectedDevicesRows = selectedDeviceIds.map(deviceId => {
-    const totalIssuedValue = data.responseData.find(device => device["Device ID"] === deviceId.value)?.TotalIssued || "N/A";
-    return [deviceId.value, totalIssuedValue.toString()];
-  });
-
-  // Determine the starting Y position for the second table based on the final Y position of the first table
   const startYSecondTable = doc.lastAutoTable.finalY + 10;
 
-  // Adding the secondary table to the PDF
-  doc.autoTable({
-      head: [["Device ID", "Total Issued"]],
-      body: selectedDevicesRows,
-      theme: 'grid',
-      startY: startYSecondTable,
-      styles: { font: "helvetica", fontSize: 10 },
+  // Updated months array to include October, November, and December
+  const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  const selectedDevicesRows = selectedDeviceIds.map(deviceId => {
+    const device = data.responseData.find(device => device["Device ID"] === deviceId.value);
+    if (device) {
+      // Maps each month to its corresponding 'Issued' value or "0" if not available
+      const monthValues = months.map(month => device[`${month}Issued`] || "0");
+      return [deviceId.value, ...monthValues, device.TotalIssued.toString()];
+    } else {
+      return [deviceId.value, ...Array(months.length).fill("N/A"), "N/A"];
+    }
   });
 
-  // Save the PDF with a dynamic filename that reflects the groupName
+  doc.autoTable({
+    head: [["Device ID", ...months, "Total Issued"]],
+    body: selectedDevicesRows,
+    theme: 'grid',
+    startY: startYSecondTable,
+    styles: { font: "helvetica", fontSize: 5 }, // Set a smaller font size here
+  });
+
   doc.save(`${groupName.replace(/ /g, '_')}_Invoice_data.pdf`);
 };
+
+
+
 
 
   

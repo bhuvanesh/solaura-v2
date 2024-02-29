@@ -1,4 +1,4 @@
-import getPSConnection from '@/lib/planetscaledb'; 
+import getPSConnection from '@/lib/planetscaledb';
 
 // Function to get all months between two months
 function getMonthsBetween(from, to) {
@@ -23,21 +23,22 @@ export async function POST(request) {
   // Get all months between invoicePeriodFrom and invoicePeriodTo
   const months = getMonthsBetween(invoicePeriodFrom, invoicePeriodTo);
 
-  // Generate placeholders for the IN clause
-  const placeholders = months.map(() => '?').join(',');
+  // Generate dynamic SQL for each month's issued sum
+  const monthSums = months.map(month => `SUM(CASE WHEN Month = '${month}' THEN Issued ELSE 0 END) AS \`${month}Issued\``).join(', ');
 
-  // SQL query to fetch sum of Issued and distinct Device IDs
+  // SQL query to fetch sum of Issued for each month and distinct Device IDs
   const query = `
     SELECT 
       \`Device ID\`,
       \`Project\`,
       MIN(\`Capacity (MW)\`) AS Capacity,
-      SUM(Issued) AS TotalIssued
+      SUM(Issued) AS TotalIssued,
+      ${monthSums}
     FROM ${process.env.MASTER_TABLE}
     WHERE 
       PAN = ? AND 
       Year = ? AND 
-      Month IN (${placeholders}) AND
+      Month IN (${months.map(() => '?').join(',')}) AND
       Issued = Actual_used AND
       invoice_status = 'False'
     GROUP BY \`Device ID\`, \`Project\`
