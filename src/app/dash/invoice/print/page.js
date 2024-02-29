@@ -52,7 +52,6 @@ const calculateData = (selectedDeviceIds, data) => {
   const selectedData = preprocess(selectedDeviceIds);
   const selectedDeviceIdsString = selectedDeviceIds.map(device => device.value).join();
 
-  // Calculate registration fee
   const noDevices = data.regdevice.split(',');
   const noDeviceCapacities = data.responseData
     .filter(device => noDevices.includes(device['Device ID']) && selectedDeviceIdsString.includes(device['Device ID']))
@@ -68,10 +67,9 @@ const calculateData = (selectedDeviceIds, data) => {
       return acc + 100;
     }
   }, 0);
+
   updatedData.registrationFee = registrationFee;
   updatedData.regFeeINR = parseFloat((registrationFee * data.EURExchange).toFixed(4));
-
-  // Calculate new values
   updatedData.deviceIds = selectedDeviceIdsString;
   updatedData.capacity = selectedData.reduce((acc, device) => acc + parseFloat(device.Capacity), 0).toFixed(2);
   updatedData.regNo = selectedData.length;
@@ -85,8 +83,22 @@ const calculateData = (selectedDeviceIds, data) => {
   updatedData.finalRevenue = parseFloat((updatedData.netRevenue - updatedData.successFee).toFixed(4));
   updatedData.netRate = parseFloat((updatedData.finalRevenue / updatedData.issued).toFixed(4));
 
+  // Calculate new values for project based on selectedDeviceIds
+  const formatProjectNames = (responseData) => {
+    const projects = new Set(responseData.map(item => item.Project));
+    return Array.from(projects).join(' and ');
+  };
+
+  updatedData.project = formatProjectNames(
+    data.responseData.filter(device => 
+      selectedDeviceIds.some(selectedDevice => 
+        selectedDevice.value === device["Device ID"])
+    )
+  );
+
   return updatedData;
 };
+
 
 // Updated saveData function
 const saveData = () => {
