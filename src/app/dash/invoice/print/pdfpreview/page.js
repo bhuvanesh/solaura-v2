@@ -77,12 +77,13 @@ export default function Invoicepdf(args) {
 
 
   return (
-    <div>
+    <div className="mx-auto">
              <Button
       variant="contained"
       color="primary"
       startIcon={<MdFileDownload />}
       onClick={handleDownload}
+      className="hidden"
     >
       Download
     </Button>
