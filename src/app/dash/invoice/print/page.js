@@ -325,7 +325,7 @@ const handleSelectChange = (selectedOptions) => {
 
   return (
     <div className="container mx-auto px-4">
-      <h1 className="text-2xl font-bold mb-4">Invoice Preview</h1>
+      <h1 className="text-2xl font-bold mb-4 mx-auto">Invoice Generation</h1>
       <button 
   className={`bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded mb-4 ${saveClicked || !isDeviceSelected ? 'opacity-50 cursor-not-allowed' : ''}`} 
   onClick={saveData} 
@@ -357,7 +357,7 @@ const handleSelectChange = (selectedOptions) => {
   className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded ml-4" 
   onClick={downloadAsPdf}
 >
-  Download as PDF
+  Invoice Preview
 </button>
 
 <button className="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded ml-4" onClick={downloadWorksheetPdf}>
@@ -384,7 +384,7 @@ const handleSelectChange = (selectedOptions) => {
   
             return (
               <tr key={index} className="hover:bg-slate-100 focus:bg-slate-200" tabIndex={index}>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-sky-800 bg-sky-800 text-white uppercase tracking-wider">
+                <td className="px-6 py-4 whitespace-nowrap text-sm bg-sky-800 text-white uppercase tracking-wider">
                   {displayKey}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-sky-800">
