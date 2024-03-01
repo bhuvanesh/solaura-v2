@@ -9,6 +9,8 @@ import {
   TableCell,
 } from '@/components/ui/table';
 import { useRouter } from 'next/navigation';
+// import { unstable_noStore as noStore } from 'next/cache';
+
 
 const Invoices = () => {
   const [invoices, setInvoices] = useState([]);
@@ -17,6 +19,7 @@ const Invoices = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        // noStore()
         const res = await fetch('/api/invoice');
         const data = await res.json();
         setInvoices(data);

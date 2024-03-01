@@ -1,6 +1,7 @@
 import getPSConnection from '@/lib/planetscaledb';
 import { revalidatePath } from 'next/cache';
 
+export const dynamic = 'force-dynamic'
 // Function to fetch all buyers from database
 async function getAllBuyers(connection) {
   const [rows] = await connection.query(`SELECT * FROM invoicedata`);
