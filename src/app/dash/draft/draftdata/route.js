@@ -1,4 +1,6 @@
 import getPSConnection from "@/lib/planetscaledb";
+export const dynamic = 'force-dynamic'
+
 
 export async function GET(req) {
     console.log(req.url);

@@ -1,5 +1,7 @@
 // Import the getPSConnection function from the PlanetscaleDB library
 import getPSConnection from '@/lib/planetscaledb';
+export const dynamic = 'force-dynamic'
+
 
 // Define an asynchronous function to handle GET requests
 export async function POST(req) {
