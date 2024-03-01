@@ -40,7 +40,7 @@ const [usdExchangeRate, setUsdExchangeRate] = useState(null);
 const [eurExchangeRate, setEurExchangeRate] = useState(null);
 const [isLoading, setIsLoading] = useState(false);
 const setProcessedDataParam = useStore(state => state.setProcessedDataParam);
-const onSubmit = data => {
+const onSubmit = (data) => {
   setIsLoading(true);
    console.log('Submitting:', data);
  

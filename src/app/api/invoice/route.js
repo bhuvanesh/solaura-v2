@@ -12,7 +12,8 @@ export async function GET(request) {
   try {
     const connection = await getPSConnection();
     const invoice = await getAllBuyers(connection);
-    const path = request.nextUrl.searchParams.get('path')
+    // const path = request.nextUrl.searchParams.get('path')
+    const path = request.nextUrl.pathname
     revalidatePath(path);
 
     // Return response with status 200 and data
