@@ -11,8 +11,8 @@ export async function GET(request) {
   try {
     const connection = await getPSConnection();
     const buyers = await getAllBuyers(connection);
-    const path = request.nextUrl.searchParams.get('path')
-    revalidatePath(path);
+    const path = request.nextUrl.pathname
+        revalidatePath(path);
 
     // Return response with status 200 and data
     return new Response(JSON.stringify(buyers), { status: 200 });
