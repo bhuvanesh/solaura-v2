@@ -1,5 +1,7 @@
 // Import the getPSConnection function from the PlanetscaleDB library
 import getPSConnection from '@/lib/planetscaledb';
+import { revalidateTag } from 'next/cache';
+
 
 // Define an asynchronous function to handle POST requests
 export async function POST(req) {
@@ -37,6 +39,7 @@ export async function POST(req) {
   try {
     // Execute the batch insert query using the prepared values
     await conn.query(insertQuery, values);
+    revalidateTag('invoice');
 
     // Close the database connection
     await conn.end();

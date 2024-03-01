@@ -17,7 +17,11 @@ const Invoices = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch('/api/invoice');
+        const res = await fetch('/api/invoice', {
+          next: {
+            tags: ['invoice'], 
+          },
+        });
         const data = await res.json();
         setInvoices(data);
       } catch (error) {
