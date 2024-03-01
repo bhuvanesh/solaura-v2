@@ -158,30 +158,43 @@ const saveData = () => {
 
   
 
-
+const formatNumber = (value) => {
+  if (typeof value === 'number') {
+    return new Intl.NumberFormat('en-IN').format(value);
+  }
+  return value;
+};
 const downloadWorksheetPdf = () => {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
 
   // Retrieve groupName and format it with invoicePeriodFrom and invoicePeriodTo
   const groupName = data.groupName || "N/A";
-  const invoicePeriod = data.invoicePeriodFrom && data.invoicePeriodTo ? `(${data.invoicePeriodFrom} to ${data.invoicePeriodTo})` : "";
-  const fullName = `${groupName} ${invoicePeriod}`; // Combine the groupName with the invoice period
-
+  const invoicePeriod = data.invoicePeriodFrom && data.invoicePeriodTo ? `${data.invoicePeriodFrom} to ${data.invoicePeriodTo}` : "N/A";
+  
   doc.setFontSize(18);
-  const fullNameWidth = doc.getTextWidth(fullName);
-  const fullNameX = (pageWidth / 2) - (fullNameWidth / 2);
-  doc.text(fullName, fullNameX, 22);
+  const groupNameWidth = doc.getTextWidth(groupName);
+  const groupNameX = (pageWidth / 2) - (groupNameWidth / 2);
+  doc.text(groupName, groupNameX, 22);
 
-  const startYFirstTable = 30;
+  // Add the logo at the top left
+  const imageUrl = 'https://i.imgur.com/1Tl8SjL.jpg';
+  doc.addImage(imageUrl, 'JPEG', 10, 10, 40, 20); // Adjust the x, y, width, and height as needed
 
-  const companyHeaderRow = [["Company Name", data.formData?.companyName || "N/A"]];
+  const startYFirstTable = 40; // Adjust the start position of the first table if necessary
+
+  // Add Volume Period to the companyHeaderRow
+  const companyHeaderRow = [
+    ["Company Name", data.formData?.companyName || "N/A"],
+    ["Volume Period", invoicePeriod] // Add the invoice period here
+  ];
 
   const tableRows = [];
   Object.entries(data).forEach(([key, value]) => {
-    if (!keysToIgnore.includes(key) && key !== 'formData' && key !== 'groupName') {
+    if (!keysToIgnore.includes(key) && key !== 'formData' && key !== 'groupName' && key !== 'invoiceid') {
       const displayKey = keyMapping[key] || key;
-      tableRows.push([displayKey, value]);
+      const formattedValue = formatNumber(value); // Format the number before adding to the table
+      tableRows.push([displayKey, formattedValue]);
     }
   });
 
@@ -199,21 +212,33 @@ const downloadWorksheetPdf = () => {
 
   const startYSecondTable = doc.lastAutoTable.finalY + 10;
 
-  // Updated months array to include October, November, and December
+  // Dynamically determine which months to include based on available 'Issued' values
   const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  let activeMonths = [];
+
+  selectedDeviceIds.forEach(deviceId => {
+    const device = data.responseData.find(device => device["Device ID"] === deviceId.value);
+    if (device) {
+      months.forEach(month => {
+        if (device[`${month}Issued`] && !activeMonths.includes(month)) {
+          activeMonths.push(month);
+        }
+      });
+    }
+  });
+
   const selectedDevicesRows = selectedDeviceIds.map(deviceId => {
     const device = data.responseData.find(device => device["Device ID"] === deviceId.value);
     if (device) {
-      // Maps each month to its corresponding 'Issued' value or "0" if not available
-      const monthValues = months.map(month => device[`${month}Issued`] || "0");
-      return [deviceId.value, ...monthValues, device.TotalIssued.toString()];
+      const monthValues = activeMonths.map(month => formatNumber(device[`${month}Issued`])); // Format the number before adding to the table
+      return [deviceId.value, ...monthValues, formatNumber(device.TotalIssued)];
     } else {
-      return [deviceId.value, ...Array(months.length).fill("N/A"), "N/A"];
+      return [deviceId.value, ...Array(activeMonths.length).fill("N/A"), "N/A"];
     }
   });
 
   doc.autoTable({
-    head: [["Device ID", ...months, "Total Issued"]],
+    head: [["Device ID", ...activeMonths, "Total Issued"]],
     body: selectedDevicesRows,
     theme: 'grid',
     startY: startYSecondTable,
@@ -231,7 +256,7 @@ const downloadWorksheetPdf = () => {
   const keyMapping = {
     invoiceid: 'Invoice ID',
     capacity: 'Capacity (MW)',
-    regNo: 'No of Registration',
+    regNo: 'No of Devices',
     issued:'Issued (MWh)',
     ISP:'Indicative Unit Sale Price (USD)',
     issuanceFee:'Issuance Fee (Euros)',
