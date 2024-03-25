@@ -8,7 +8,9 @@ export async function POST(req) {
     const connection = await getPSConnection();
 
     // Check if the device ID, month, and year exist in the table
-    const [deviceExistsResult] = await connection.query(`SELECT COUNT(*) as count FROM ${process.env.MASTER_TABLE} WHERE \`Device ID\` = ? AND \`Month\` = ? AND \`Year\` = ?`, [rows[0]['Device Id'], rows[0].month, rows[0].year]);    const deviceExists = deviceExistsResult[0].count > 0;
+    const trimmedUppercaseDeviceId = rows[0]['Device Id'].trim().toUpperCase();
+    const [deviceExistsResult] = await connection.query(`SELECT COUNT(*) as count FROM ${process.env.MASTER_TABLE} WHERE \`Device ID\` = ? AND \`Month\` = ? AND \`Year\` = ?`, [trimmedUppercaseDeviceId, rows[0].month, rows[0].year]);
+    const deviceExists = deviceExistsResult[0].count > 0;
 
     if (!deviceExists) {
       // Prepare the query and values for batch insert
@@ -21,8 +23,9 @@ export async function POST(req) {
 
       // Add rows to the values array
       for (const row of rows) {
+        const trimmedUppercaseDeviceId = row['Device Id'].trim().toUpperCase();
         const rowValues = [
-          row['Device Id'],
+          trimmedUppercaseDeviceId,
           row.groupName,
           row.companyName,
           row.projectName,

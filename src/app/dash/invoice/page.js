@@ -36,8 +36,6 @@ const [filteredCompanies, setFilteredCompanies] = useState([]);
 const [selectedGroup, setSelectedGroup] = useState('');
 const [selectedCompany, setSelectedCompany] = useState('');
 const [selectedInvoicePeriodFrom, setSelectedInvoicePeriodFrom] = useState('');
-const [usdExchangeRate, setUsdExchangeRate] = useState(null);
-const [eurExchangeRate, setEurExchangeRate] = useState(null);
 const [isLoading, setIsLoading] = useState(false);
 const setProcessedDataParam = useStore(state => state.setProcessedDataParam);
 const onSubmit = (data) => {
@@ -88,15 +86,7 @@ const formatProjectNames = (responseData) => {
    const projects = new Set(responseData.map(item => item.Project));
    return Array.from(projects).join(' and ');
 };
-useEffect(() => {
-  fetch(`https://api.freecurrencyapi.com/v1/latest?apikey=fca_live_KwIbDzv5cNwTsNscUp4Jan2Q5OkTcDOxvUW70qEB&currencies=INR&base_currency=EUR`)
-    .then(response => response.json())
-    .then(data => setValue('eurExchangeRate', parseFloat(data.data.INR).toFixed(4))); 
 
-  fetch(`https://api.freecurrencyapi.com/v1/latest?apikey=fca_live_KwIbDzv5cNwTsNscUp4Jan2Q5OkTcDOxvUW70qEB&currencies=INR`)
-    .then(response => response.json())
-    .then(data => setValue('usdExchangeRate', parseFloat(data.data.INR).toFixed(4))); 
-}, []);
  const preprocess = async (formData, responseData, pan, gst, address) => {
 
    console.log('PAN:', pan);
@@ -368,13 +358,13 @@ return (
    </div>
    <div>
   <label htmlFor="usdExchangeRate" className="block text-sm font-medium text-gray-700">USD Exchange Rate</label>
-  <input type="number" step="0.0001" {...register("usdExchangeRate", { setValueAs: value => value === "" ? null : parseFloat(value) })} value={usdExchangeRate} onChange={(e) => setUsdExchangeRate(e.target.value)} className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" />
+  <input type="number" step="0.0001" {...register("usdExchangeRate", { setValueAs: value => value === "" ? null : parseFloat(value) })} className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" />
   {errors.usdExchangeRate && <p className="text-red-500 text-xs mt-2">{errors.usdExchangeRate.message}</p>}
 </div>
 <div>
   <label htmlFor="eurExchangeRate" className="block text-sm font-medium text-gray-700">EUR Exchange Rate</label>
-  <input type="number" step="0.0001" {...register("eurExchangeRate", { setValueAs: value => value === "" ? null : parseFloat(value) })} value={eurExchangeRate} onChange={(e) => setEurExchangeRate(e.target.value)} className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" />
-{errors.eurExchangeRate && <p className="text-red-500 text-xs mt-2">{errors.eurExchangeRate.message}</p>}
+  <input type="number" step="0.0001" {...register("eurExchangeRate", { setValueAs: value => value === "" ? null : parseFloat(value) })} className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" />
+  {errors.eurExchangeRate && <p className="text-red-500 text-xs mt-2">{errors.eurExchangeRate.message}</p>}
 </div>
 <LoadingButton
   type="submit"
