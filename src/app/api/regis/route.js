@@ -13,10 +13,10 @@ export async function POST(req) {
     if (!deviceExists) {
       // Prepare the query and values for batch insert
       const query = `
-        INSERT INTO ${process.env.MASTER_TABLE} (
-          \`Device ID\`, \`Group\`, company, project, \`Type\`, \`CoD\`, \`Capacity (MW)\`, \`Month\`, Estimated, Registered, \`Year\`
-        ) VALUES ?;
-      `;
+      INSERT INTO ${process.env.MASTER_TABLE} (
+        \`Device ID\`, \`Group\`, company, project, \`Type\`, \`CoD\`, \`Capacity (MW)\`, \`Month\`, Estimated, Registered, \`Year\`, GST, PAN
+      ) VALUES ?;
+    `;
       const values = [];
 
       // Add rows to the values array
@@ -33,6 +33,8 @@ export async function POST(req) {
           row.Estimated,
           row.registered,
           row.year,
+          row.gst, 
+          row.pan, 
         ];
         values.push(rowValues);
       }
