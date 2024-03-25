@@ -150,21 +150,27 @@ const FormPage = () => {
     <FormItem>
       <FormLabel>Group Name</FormLabel>
       <FormControl>
-        <select
-          {...field}
-          onChange={(e) => {
-            setSelectedGroup(e.target.value);
-            form.setValue('groupName', e.target.value); // Update form value for groupName
-          }}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-        >
-          <option value="">Select group</option>
-          {Array.from(new Set(data.map(item => item.Group))).map(group => (
-            <option key={group} value={group}>
-              {group}
-            </option>
-          ))}
-        </select>
+        {selectedGroup === 'Others' ? (
+          <Input {...field} />
+        ) : (
+          <select
+            {...field}
+            onChange={(e) => {
+              const value = e.target.value;
+              setSelectedGroup(value);
+              form.setValue('groupName', value === 'Others' ? '' : value);
+            }}
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+          >
+            <option value="">Select group</option>
+            {Array.from(new Set(data.map(item => item.Group))).map(group => (
+              <option key={group} value={group}>
+                {group}
+              </option>
+            ))}
+            <option value="Others">Others</option>
+          </select>
+        )}
       </FormControl>
       <FormMessage />
     </FormItem>
@@ -173,32 +179,38 @@ const FormPage = () => {
       </div>
       <div className="w-1/2 px-2">
       <FormField
-  control={form.control}
-  name="companyName"
-  render={({ field }) => (
-    <FormItem>
-      <FormLabel>Company Name</FormLabel>
-      <FormControl>
-        <select
-          {...field}
-          onChange={(e) => {
-            setSelectedCompany(e.target.value);
-            form.setValue('companyName', e.target.value); // Update form value for companyName
-          }}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-        >
-          <option value="">Select company</option>
-          {data.filter(item => item.Group === selectedGroup).map(company => (
-            <option key={company.company} value={company.company}>
-              {company.company}
-            </option>
-          ))}
-        </select>
-      </FormControl>
-      <FormMessage />
-    </FormItem>
-  )}
-/>
+    control={form.control}
+    name="companyName"
+    render={({ field }) => (
+      <FormItem>
+        <FormLabel>Company Name</FormLabel>
+        <FormControl>
+          {selectedCompany === 'Others' ? (
+            <Input {...field} />
+          ) : (
+            <select
+              {...field}
+              onChange={(e) => {
+                const value = e.target.value;
+                setSelectedCompany(value);
+                form.setValue('companyName', value === 'Others' ? '' : value);
+              }}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+            >
+              <option value="">Select company</option>
+              {data.filter(item => item.Group === selectedGroup).map(company => (
+                <option key={company.company} value={company.company}>
+                  {company.company}
+                </option>
+              ))}
+              <option value="Others">Others</option>
+            </select>
+          )}
+        </FormControl>
+        <FormMessage />
+      </FormItem>
+    )}
+  />
                   </div>
                 </div>
   
