@@ -1,10 +1,11 @@
 import getPSConnection from '@/lib/planetscaledb';
 import { revalidatePath } from 'next/cache';
 
-export const dynamic = 'force-dynamic'
+export const dynamic = 'force-dynamic';
+
 // Function to fetch all buyers from database
-async function getAllBuyers(connection) {
-  const [rows] = await connection.query(`SELECT * FROM invoicedata`);
+async function getAllBuyers(connection, tableName) {
+  const [rows] = await connection.query(`SELECT * FROM ${tableName}`);
   return rows;
 }
 
@@ -12,9 +13,9 @@ async function getAllBuyers(connection) {
 export async function GET(request) {
   try {
     const connection = await getPSConnection();
-    const invoice = await getAllBuyers(connection);
-    // const path = request.nextUrl.searchParams.get('path')
-    const path = request.nextUrl.pathname
+    const tableName = process.env.INVOICE_DATA;
+    const invoice = await getAllBuyers(connection, tableName);
+    const path = request.nextUrl.pathname;
     revalidatePath(path);
 
     // Return response with status 200 and data
