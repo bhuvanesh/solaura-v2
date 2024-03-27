@@ -9,12 +9,31 @@ import { useRouter } from 'next/navigation';
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 import useStore from '@/app/zust/store';
+import { Dialog, DialogTitle, DialogContent, TextField, DialogActions, Button } from '@mui/material';
 const Invoiceprint = () => {
   const [downloadClicked, setDownloadClicked] = useState(false);
   const [saveClicked, setSaveClicked] = useState(false);
   const [data, setData] = useState({});
   const router = useRouter();
+  const [openPopup, setOpenPopup] = useState(false);
+const [selectedDevice, setSelectedDevice] = useState(null);
+const [initialIssuedValues, setInitialIssuedValues] = useState({});
+const [errorMessages, setErrorMessages] = useState({});
+const [initialSelectionDone, setInitialSelectionDone] = useState(false);
 
+const handleDeviceClick = (device) => {
+  setSelectedDevice(device);
+  setOpenPopup(true);
+
+  // Save the initial values of each month's issued value
+  const initialValues = {};
+  months.forEach((month) => {
+    if (device[`${month}Issued`]) {
+      initialValues[month] = parseFloat(device[`${month}Issued`]);
+    }
+  });
+  setInitialIssuedValues(initialValues);
+};
   // Use Zustand store to get processedDataParam
   const processedDataParam = useStore(state => state.processedDataParam);
 
@@ -75,7 +94,7 @@ const calculateData = (selectedDeviceIds, data) => {
   updatedData.deviceIds = selectedDeviceIdsString;
   updatedData.capacity = selectedData.reduce((acc, device) => acc + parseFloat(device.Capacity), 0).toFixed(2);
   updatedData.regNo = selectedData.length;
-  updatedData.issued = parseFloat((selectedData.reduce((acc, device) => acc + parseFloat(device.TotalIssued), 0)).toFixed(4));
+  updatedData.issued = parseFloat(selectedData.reduce((acc, device) => acc + parseFloat(device.TotalIssued), 0).toFixed(4));
   updatedData.ISP = data?.formData?.unitSalePrice;
   updatedData.issuanceFee = parseFloat((0.025 * updatedData.issued).toFixed(4));  
   updatedData.gross = parseFloat((updatedData.issued * updatedData.ISP * updatedData.USDExchange).toFixed(4));
@@ -277,10 +296,7 @@ const deviceOptions = useMemo(() => {
   }
   return options;
 }, [data.responseData]);
-  // Update selectedDeviceIds once deviceOptions is populated
-  useEffect(() => {
-    setSelectedDeviceIds(deviceOptions);
-  }, [deviceOptions]);
+
 
 // function to handle selected device ids
 const handleSelectChange = (selectedOptions) => {
@@ -317,13 +333,14 @@ const handleSelectChange = (selectedOptions) => {
 
   const isDeviceSelected = selectedDeviceIds.length > 0;
   useEffect(() => {
-    setSelectedDeviceIds(deviceOptions);
-    if(deviceOptions && deviceOptions.length > 0) {
-        const updatedData = calculateData(deviceOptions, data);
-        setData(updatedData);
+    // Only set the initial selection, but don't override user selection afterward.
+    if (!initialSelectionDone && deviceOptions.length > 0) {
+      setSelectedDeviceIds(deviceOptions);
+      setInitialSelectionDone(true); // Prevent further automatic selection.
     }
-}, [deviceOptions]);
+  }, [deviceOptions, initialSelectionDone]);
   
+const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
   return (
     <div className="container mx-auto px-4">
@@ -367,11 +384,43 @@ const handleSelectChange = (selectedOptions) => {
       </button>
 
     
-<Select
+      <Select
   isMulti
   options={deviceOptions}
   onChange={handleSelectChange}
   value={selectedDeviceIds}
+  formatOptionLabel={(option) => (
+    <div>
+      {option.label}
+      {!selectedDeviceIds.find(selectedOption => selectedOption.value === option.value) && (
+        <button
+          className="edit-button ml-2 px-2 py-1 bg-blue-500 text-white rounded"
+          onClick={(event) => {
+            event.stopPropagation();
+            const device = data.responseData.find((device) => device['Device ID'] === option.value);
+            handleDeviceClick(device);
+          }}
+        >
+          Edit
+        </button>
+      )}
+    </div>
+  )}
+  
+  onMenuOpen={() => {
+    const selectOptions = document.querySelectorAll('.react-select__option');
+    selectOptions.forEach((option) => {
+      const editButton = option.querySelector('.edit-button');
+      if (editButton) {
+        editButton.addEventListener('click', (event) => {
+          event.stopPropagation();
+          const deviceId = option.dataset.value;
+          const device = data.responseData.find((device) => device['Device ID'] === deviceId);
+          handleDeviceClick(device);
+        });
+      }
+    });
+  }}
 />
   
       {downloadClicked && <ExcelModifier data={data} />}
@@ -398,8 +447,97 @@ const handleSelectChange = (selectedOptions) => {
           </tbody>
         </table>
       </div>
+      <Dialog open={openPopup} onClose={() => setOpenPopup(false)} maxWidth="sm" fullWidth>
+  <DialogTitle>Update Issued Values</DialogTitle>
+  <DialogContent style={{ paddingTop: '24px' }}>
+    {selectedDevice && (
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '16px' }}>
+        {months
+          .filter((month) => selectedDevice[`${month}Issued`])
+          .map((month) => (
+<TextField
+  key={month}
+  label={month}
+  value={selectedDevice[`${month}Issued`] || '0'}
+  onChange={(event) => {
+    let newValue = event.target.value;
+    if (newValue === '') {
+      newValue = '0';
+    }
+    setSelectedDevice((prevDevice) => ({
+      ...prevDevice,
+      [`${month}Issued`]: newValue,
+    }));
+
+    // Validate the entered value
+    const enteredValue = parseFloat(newValue);
+    const initialValue = initialIssuedValues[month] || 0;
+    if (enteredValue > initialValue) {
+      setErrorMessages((prevErrors) => ({
+        ...prevErrors,
+        [month]: 'Value exceeds the actual value',
+      }));
+    } else {
+      setErrorMessages((prevErrors) => ({
+        ...prevErrors,
+        [month]: '',
+      }));
+    }
+  }}
+  error={Boolean(errorMessages[month])}
+  helperText={errorMessages[month]}
+/>
+          ))}
+      </div>
+    )}
+  </DialogContent>
+  <DialogActions>
+    <Button onClick={() => setOpenPopup(false)}>Cancel</Button>
+<Button
+onClick={() => {
+    // Check if there are any error messages
+    const hasErrors = Object.values(errorMessages).some((error) => error !== '');
+    if (hasErrors) {
+      return;
+    }  setData((prevData) => {
+    const updatedResponseData = prevData.responseData.map((device) => {
+      if (device['Device ID'] === selectedDevice['Device ID']) {
+        const updatedDevice = { ...device };
+        let totalIssued = 0;
+        months.forEach((month) => {
+          if (selectedDevice[`${month}Issued`] !== undefined) {
+            const newValue = selectedDevice[`${month}Issued`] === '' ? '0' : selectedDevice[`${month}Issued`];
+            updatedDevice[`${month}Issued`] = parseFloat(newValue).toFixed(4);
+            totalIssued += parseFloat(newValue);
+          }
+        });
+        updatedDevice.TotalIssued = totalIssued.toFixed(4);
+        return updatedDevice;
+      }
+      return device;
+    });
+
+    const updatedData = calculateData(selectedDeviceIds, {
+      ...prevData,
+      responseData: updatedResponseData,
+    });
+
+    return updatedData;
+  });
+  setOpenPopup(false);
+}}
+>
+  Update
+</Button>
+  </DialogActions>
+</Dialog>
     </div>
   );
 };
 
 export default Invoiceprint;
+
+
+
+
+
