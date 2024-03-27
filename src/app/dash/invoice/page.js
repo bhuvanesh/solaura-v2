@@ -135,7 +135,7 @@ const formatProjectNames = (responseData) => {
 
   const capacity = responseData.reduce((acc, device) => acc + parseFloat(device.Capacity), 0).toFixed(2); 
   const regNo = responseData.length;
-   const issued = responseData.reduce((acc, device) => acc + parseFloat(device.TotalIssued), 0);
+  const issued = responseData.reduce((acc, device) => acc + parseFloat(device.TotalIssued), 0).toFixed(4);
    const ISP = formData.unitSalePrice;
    const issuanceFee = parseFloat((0.025 * issued).toFixed(4));
    const USDExchange = formData.usdExchangeRate;

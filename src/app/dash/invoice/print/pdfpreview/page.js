@@ -13,12 +13,15 @@ import { MdFileDownload } from 'react-icons/md';
 import { useSearchParams } from "next/navigation";
 import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
+import { useRouter } from 'next/navigation';
+
 
 export default function Invoicepdf(args) {
   
   const data = args.searchParams;
   const formDataObj = JSON.parse(data.formData);
   console.log(args);
+  const router = useRouter();
 
 
 
@@ -79,7 +82,13 @@ export default function Invoicepdf(args) {
 
   return (
     <div className="mx-auto">
-             <Button
+        <button
+      className="mb-4 px-4 py-2 bg-blue-500 text-white rounded"
+      onClick={() => router.back()}
+    >
+      Back
+    </button>
+             {/* <Button
       variant="contained"
       color="primary"
       startIcon={<MdFileDownload />}
@@ -87,7 +96,7 @@ export default function Invoicepdf(args) {
       className="hidden"
     >
       Download
-    </Button>
+    </Button> */}
     <div className="m-auto max-w-screen-lg border-2 border-black">
       <div className="grid p-1 sm: grid-cols-12 gap-2 w-full">
         <div className="min-h-[50px] flex flex-col sm: col-span-3">
