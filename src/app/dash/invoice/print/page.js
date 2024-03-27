@@ -1,11 +1,12 @@
 "use client"
-import React, { useState ,useEffect, useMemo} from 'react';
+import React, { useState ,useEffect, useMemo,useRef} from 'react';
 import { useSearchParams } from 'next/navigation';
 import ExcelModifier from '@/components/invoice';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import Select from 'react-select'; 
 import { useRouter } from 'next/navigation';
+import { PencilSquareIcon } from '@heroicons/react/24/solid';
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 import useStore from '@/app/zust/store';
@@ -20,19 +21,14 @@ const [selectedDevice, setSelectedDevice] = useState(null);
 const [initialIssuedValues, setInitialIssuedValues] = useState({});
 const [errorMessages, setErrorMessages] = useState({});
 const [initialSelectionDone, setInitialSelectionDone] = useState(false);
+const parsedDataRef = useRef({});
+
 
 const handleDeviceClick = (device) => {
   setSelectedDevice(device);
   setOpenPopup(true);
 
-  // Save the initial values of each month's issued value
-  const initialValues = {};
-  months.forEach((month) => {
-    if (device[`${month}Issued`]) {
-      initialValues[month] = parseFloat(device[`${month}Issued`]);
-    }
-  });
-  setInitialIssuedValues(initialValues);
+
 };
   // Use Zustand store to get processedDataParam
   const processedDataParam = useStore(state => state.processedDataParam);
@@ -40,17 +36,15 @@ const handleDeviceClick = (device) => {
   useEffect(() => {
     if (processedDataParam) {
       try {
-        // Assuming processedDataParam is already a JSON string, decode and parse it
-        const parsedData = JSON.parse(decodeURIComponent(processedDataParam));
-        setData(parsedData);
+        parsedDataRef.current = JSON.parse(decodeURIComponent(processedDataParam));
+        setData(parsedDataRef.current); 
       } catch (error) {
         console.error('Failed to parse data:', error);
       }
     } else {
       console.error('No data available from store');
     }
-  }, [processedDataParam]); 
-
+  }, [processedDataParam]);
   const preprocess = (selectedDeviceIds) => {
     const selectedData = data.responseData.filter(device =>
       selectedDeviceIds.some(selectedDevice => selectedDevice.value === device["Device ID"])
@@ -164,6 +158,31 @@ const saveData = () => {
 };
 
   
+const updateIssuedValue = (month, newValue) => {
+  // Convert newValue to a number or default to 0 if blank
+  let newEnteredValue = newValue === '' ? 0 : parseFloat(newValue);
+
+  // Access the initial value for the month from parsedDataRef
+  const initialMonthValue = parsedDataRef.current.responseData?.find(device => device['Device ID'] === selectedDevice['Device ID'])[`${month}Issued`] || 0;
+
+  if (newEnteredValue > parseFloat(initialMonthValue)) {
+    // Handle validation error -- e.g., updating errorMessages state
+    setErrorMessages(prevErrors => ({
+      ...prevErrors,
+      [month]: 'Value exceeds the actual value',
+    }));
+  } else {
+    // Update the device's value for the month and clear any error
+    setSelectedDevice(prevDevice => ({
+      ...prevDevice,
+      [`${month}Issued`]: newValue,
+    }));
+    setErrorMessages(prevErrors => ({
+      ...prevErrors,
+      [month]: '',
+    }));
+  }
+};
 
 
 const downloadWorksheetPdf = () => {
@@ -361,7 +380,7 @@ const months = ["January", "February", "March", "April", "May", "June", "July", 
   Download Invoice 
 </button>
 
-<button 
+{/* <button 
   className={`bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded ml-4 ${!isDeviceSelected ? 'opacity-50 cursor-not-allowed' : ''}`} 
   onClick={downloadAsWorksheet} 
   disabled={!isDeviceSelected} 
@@ -371,7 +390,7 @@ const months = ["January", "February", "March", "April", "May", "June", "July", 
 
     <button className="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded ml-4" onClick={refreshStatus}>
   Refresh Status
-</button>
+</button> */}
 <button 
   className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded ml-4" 
   onClick={downloadAsPdf}
@@ -390,19 +409,17 @@ const months = ["January", "February", "March", "April", "May", "June", "July", 
   onChange={handleSelectChange}
   value={selectedDeviceIds}
   formatOptionLabel={(option) => (
-    <div>
-      {option.label}
+    <div className="flex items-center">
+      <span>{option.label}</span>
       {!selectedDeviceIds.find(selectedOption => selectedOption.value === option.value) && (
-        <button
-          className="edit-button ml-2 px-2 py-1 bg-blue-500 text-white rounded"
+        <PencilSquareIcon
+          className="h-5 w-5 text-blue-500 hover:text-blue-700 cursor-pointer ml-2"
           onClick={(event) => {
             event.stopPropagation();
             const device = data.responseData.find((device) => device['Device ID'] === option.value);
             handleDeviceClick(device);
           }}
-        >
-          Edit
-        </button>
+        />
       )}
     </div>
   )}
@@ -410,9 +427,9 @@ const months = ["January", "February", "March", "April", "May", "June", "July", 
   onMenuOpen={() => {
     const selectOptions = document.querySelectorAll('.react-select__option');
     selectOptions.forEach((option) => {
-      const editButton = option.querySelector('.edit-button');
-      if (editButton) {
-        editButton.addEventListener('click', (event) => {
+      const editIcon = option.querySelector('.w-5');
+      if (editIcon) {
+        editIcon.addEventListener('click', (event) => {
           event.stopPropagation();
           const deviceId = option.dataset.value;
           const device = data.responseData.find((device) => device['Device ID'] === deviceId);
@@ -424,74 +441,78 @@ const months = ["January", "February", "March", "April", "May", "June", "July", 
 />
   
       {downloadClicked && <ExcelModifier data={data} />}
-      <div style={{ overflowX: 'auto'}} className="border-2 rounded-lg mx-auto w-3/4 h-2/3 mt-4">
-        <table className="min-w-full divide-y divide-gray-200 border rounded-md ">
-          <tbody className="bg-white divide-y divide-gray-200 cursor-pointer overflow-auto">
-          {data && Object.entries(data).map(([key, value], index) => {
-            if (keysToIgnore.includes(key)) {
-              return null;
-            }
-            const displayKey = keyMapping[key] || key;
-  
-            return (
-              <tr key={index} className="hover:bg-slate-100 focus:bg-slate-200" tabIndex={index}>
-                <td className="px-6 py-4 whitespace-nowrap text-sm bg-sky-800 text-white uppercase tracking-wider">
-                  {displayKey}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-sky-800">
-                  {value}
-                </td>
-              </tr>
-            );
-          })}
-          </tbody>
-        </table>
-      </div>
+      <div className="border-2 rounded-lg mx-auto w-4/5 h-2/3 mt-4">
+  <div className="text-xl font-bold mb-4 text-center">Worksheet Data</div>
+  <div style={{ overflowX: 'auto', maxHeight: 'calc(100% - 48px)' }}>
+    <table className="min-w-full divide-y divide-gray-200 border rounded-md">
+      <thead className="bg-white sticky top-0">
+        <tr>
+          <th className="px-6 py-4 whitespace-nowrap text-xs font-bold uppercase tracking-wider bg-sky-800 text-white w-1/3">Item</th>
+          <th className="px-6 py-4 whitespace-nowrap text-xs font-bold uppercase tracking-wider w-2/3">Value</th>
+        </tr>
+      </thead>
+      <tbody className="bg-white divide-y divide-gray-200 cursor-pointer overflow-auto">
+      {data && Object.entries(data).map(([key, value], index) => {
+        if (keysToIgnore.includes(key)) {
+          return null;
+        }
+        const displayKey = keyMapping[key] || key;
+
+        return (
+          <tr key={index} className="hover:bg-slate-100 focus:bg-slate-200" tabIndex={index}>
+            <td className="px-6 py-4 whitespace-nowrap text-xs bg-sky-800 text-white uppercase tracking-wider w-1/3">
+              {displayKey}
+            </td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-sky-800 w-2/3">
+              {value}
+            </td>
+          </tr>
+        );
+      })}
+      </tbody>
+    </table>
+  </div>
+</div>
       <Dialog open={openPopup} onClose={() => setOpenPopup(false)} maxWidth="sm" fullWidth>
   <DialogTitle>Update Issued Values</DialogTitle>
   <DialogContent style={{ paddingTop: '24px' }}>
     {selectedDevice && (
       <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '16px' }}>
-        {months
-          .filter((month) => selectedDevice[`${month}Issued`])
-          .map((month) => (
-<TextField
-  key={month}
-  label={month}
-  value={selectedDevice[`${month}Issued`] || '0'}
-  onChange={(event) => {
-    let newValue = event.target.value;
-    if (newValue === '') {
-      newValue = '0';
-    }
-    setSelectedDevice((prevDevice) => ({
-      ...prevDevice,
-      [`${month}Issued`]: newValue,
-    }));
+{
+  months
+    .filter(month => selectedDevice[`${month}Issued`] !== undefined) 
+    .map(month => (
+      <TextField
+        key={month}
+        label={month}
+        value={selectedDevice[`${month}Issued`] || ''} 
+        onChange={(event) => {
+          const newValue = event.target.value;
+          updateIssuedValue(month, newValue); 
+        }}
+        error={Boolean(errorMessages[month])}
+        helperText={errorMessages[month]}
+      />
+    ))
+}
 
-    // Validate the entered value
-    const enteredValue = parseFloat(newValue);
-    const initialValue = initialIssuedValues[month] || 0;
-    if (enteredValue > initialValue) {
-      setErrorMessages((prevErrors) => ({
-        ...prevErrors,
-        [month]: 'Value exceeds the actual value',
-      }));
-    } else {
-      setErrorMessages((prevErrors) => ({
-        ...prevErrors,
-        [month]: '',
-      }));
-    }
-  }}
-  error={Boolean(errorMessages[month])}
-  helperText={errorMessages[month]}
-/>
-          ))}
+
       </div>
     )}
   </DialogContent>
   <DialogActions>
+  <Button
+  onClick={() => {
+    const originalDeviceData = parsedDataRef.current.responseData.find(device => device['Device ID'] === selectedDevice['Device ID']);
+    if (originalDeviceData) {
+      setSelectedDevice(originalDeviceData);
+      setErrorMessages({});
+    }
+  }}
+>
+  Reset
+</Button>
+
     <Button onClick={() => setOpenPopup(false)}>Cancel</Button>
 <Button
 onClick={() => {
