@@ -13,7 +13,7 @@ export async function POST(req) {
       Month, 
       SUM(Actual) as actual, 
       SUM(Estimated) as estimate,
-      SUM(COALESCE(Actual_used, 0) + COALESCE(Estimated_used, 0)) as usage,
+      SUM(COALESCE(Actual_used, 0) + COALESCE(Estimated_used, 0)) as \`usage\`,
       SUM(CASE WHEN Type = 'Solar' THEN Estimated ELSE 0 END) as solarEstimate,
       SUM(CASE WHEN Type = 'Wind' THEN Estimated ELSE 0 END) as windEstimate,
       SUM(CASE WHEN Type = 'Solar' THEN COALESCE(Actual_used, 0) + COALESCE(Estimated_used, 0) ELSE 0 END) as solarUsage,
@@ -24,7 +24,7 @@ export async function POST(req) {
       Year = ${year}
     GROUP BY
       Month
-    `;
+  `;
 
     const rows = await conn.query(sql);
 
