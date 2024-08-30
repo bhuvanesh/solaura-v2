@@ -1,6 +1,7 @@
 "use client"
 import { useState, useEffect } from 'react';
 import ExcelJS from 'exceljs';
+import convertToWords from "@/components/convertToWords";
 
 const ExcelModifier = ({ data }) => {
   const [workbook, setWorkbook] = useState(null);
@@ -63,16 +64,13 @@ const ExcelModifier = ({ data }) => {
   
     modifyCell('C4', data.formData.companyName, 17, true);
     modifyCell('H20', `${data.invoicePeriodFrom} to ${data.invoicePeriodTo}`, 12);
-    const projectIndex = data.project.indexOf(' and ');
-    if (projectIndex !== -1) {
-      const firstPart = data.project.substring(0, projectIndex);
-      const secondPart = data.project.substring(projectIndex + 5); 
-      modifyCell('C20', firstPart, 12); 
-      modifyCell('C21', secondPart, 12);
-    } else {
-      // No 'and' in the string, just set the whole project in C20
-      modifyCell('C20', data.project, 12);
-    }
+    const projects = data.project.split(' and ').map(p => p.trim());
+    const projectText = projects.join('\n');
+    modifyCell('C20', projectText, 12);
+  
+    // Remove the C21 cell modification
+    worksheet.getCell('C21').value = null;
+
     modifyCell('C6', 'GST: ' + data.gst, 14, true);
     modifyCell('C5', 'PAN: ' + data.pan, 14, true);
     modifyCell('K13', addressLine1, 13);
@@ -80,7 +78,7 @@ const ExcelModifier = ({ data }) => {
     modifyCell('K15', addressLine3, 13);  
     const calcValue = parseFloat((data.issued * data.netRate).toFixed(4));
     const calcValueWithRate = parseFloat((calcValue * 0.09).toFixed(4));
-    const o38Value = calcValue + 2 * calcValueWithRate;
+    const totalInvoiceValue = parseFloat((calcValue + 2 * calcValueWithRate).toFixed(2));
     modifyCell('G31', calcValue, 14);
     modifyCell('I31', calcValueWithRate, 14);
     modifyCell('K31', calcValueWithRate, 14);
@@ -88,9 +86,9 @@ const ExcelModifier = ({ data }) => {
     modifyCell('I37', calcValueWithRate, 14, true);
     modifyCell('K37', calcValueWithRate, 14, true);
     modifyCell('O38', parseFloat((calcValue + 2 * calcValueWithRate).toFixed(4)), 14, true);
+    modifyCell('H40', convertToWords(totalInvoiceValue), 14);
     modifyCell('C31', `Purchase of renewable attributes for I-REC (${data.issued} units at INR ${data.netRate} per unit)`, 14);
     modifyCell('K9', `Date of Invoice: ${data.date}`, 14, true);
-    modifyCell('K10', `Serial No. of Invoice: ${data.invoiceid}`, 14, true);
 
 
    

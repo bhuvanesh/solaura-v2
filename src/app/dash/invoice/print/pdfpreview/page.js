@@ -14,7 +14,7 @@ import { useSearchParams } from "next/navigation";
 import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
 import { useRouter } from 'next/navigation';
-
+import convertToWords from "@/components/convertToWords";
 
 export default function Invoicepdf(args) {
   
@@ -42,9 +42,10 @@ export default function Invoicepdf(args) {
   // Format the calculated values
   const formattedCalcValue = formatNumber(calcValue);
   const formattedCalcValueWithRate = formatNumber(calcValueWithRate);
-  const totalInvoiceValue = parseFloat((calcValue + 2 * calcValueWithRate).toFixed(4));
+  const totalInvoiceValue = parseFloat((calcValue + 2 * calcValueWithRate).toFixed(2));
 
   const formattedTotalInvoiceValue = formatNumber(totalInvoiceValue);
+  const totalInvoiceValueInWords = convertToWords(totalInvoiceValue);
 
   const handleDownload = async () => {
     const inputArea = document.body; 
@@ -128,16 +129,15 @@ export default function Invoicepdf(args) {
         <div className="min-h-[50px] flex flex-col sm: col-span-4">
           <span className="text-sm font-medium">Billing Address</span>
           <span className="text-xs">
-            Plot No 104, 2nd Cross Street, VGP Sea View Part - 1, Palavakkam,
-            Chennai - 600 041
+          F1 Plot, 3rd Street, Kuberan Nagar, Extension, Madipakkam, 
+          Chennai, Tamil Nadu - 600091
           </span>
         </div>
         <div className="min-h-[50px] flex   sm: col-span-4"></div>
         <div className="min-h-[50px] flex flex-col sm: col-span-4">
           <span className="text-sm font-medium">Beneficiary Address</span>
           <span className="text-xs">
-            636, VIVAAGA BUILDING, OPPANAKARA STREET, COIMBATORE, Coimbatore,
-            Tamil Nadu, 641001
+            {data.address}
           </span>
         </div>
       </div>
@@ -288,22 +288,21 @@ export default function Invoicepdf(args) {
         </Table>
       </div>
       <div className="mt-2 grid p-1 sm: grid-cols-12 gap-2 w-full">
-        <div className="min-h-[50px] flex flex-col sm: col-span-4">
-          <span className="text-sm font-medium py-1">
-            Total Invoice Value (In Figure):{formattedTotalInvoiceValue}
+        <div className="min-h-[50px] flex flex-col sm: col-span-12">
+          <span className="text-sm py-1">
+            <span className="font-medium">Total Invoice Value (In Figure):</span> {formattedTotalInvoiceValue}
           </span>
-          <span className="text-sm font-medium py-1">
-            Total Invoice Value (In Words):
+          <span className="text-sm py-1">
+            <span className="font-medium">Total Invoice Value (In Words):</span> {totalInvoiceValueInWords}
           </span>
           <span className="text-sm font-medium py-1">
             Amount of Tax Subject to Reverse Charge:
           </span>
-        </div>
-        {/* <div className="min-h-[50px] flex   sm: col-span-4"></div> */}
-        <div className="min-h-[50px] flex flex-row items-end justify-evenly sm: col-span-8">
-          <span className="text-sm font-normal">CGST: </span>
-          <span className="text-sm font-normal">SGST: </span>
-          <span className="text-sm font-normal">IGST: </span>
+          <div className="flex flex-row items-end justify-evenly">
+            <span className="text-sm font-normal">CGST: </span>
+            <span className="text-sm font-normal">SGST: </span>
+            <span className="text-sm font-normal">IGST: </span>
+          </div>
         </div>
       </div>
       <div className="mt-2 grid p-1 sm: grid-cols-12 gap-2 w-full">
@@ -348,8 +347,6 @@ export default function Invoicepdf(args) {
           </span>
 
         </div>
-        {/* <div className="min-h-[50px] flex   sm: col-span-4"></div> */}
-        {/* <div className="min-h-[50px] flex  sm: col-span-4"></div> */}
       </div>
       <div className="p-1 w-full"></div>
     </div>
