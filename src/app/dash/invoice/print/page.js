@@ -274,7 +274,7 @@ const downloadWorksheetPdf = () => {
 
   };
   const downloadAsPdf = () => {
-    const queryParams = serializeData(data); // Utilize the serializeData function
+    const queryParams = serializeData({ ...data, action: 'preview' }); // Add action=preview to the data
     router.push(`/dash/invoice/print/pdfpreview?${queryParams}`);
   };
 

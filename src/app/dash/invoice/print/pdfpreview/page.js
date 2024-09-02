@@ -12,9 +12,12 @@ import Button from '@mui/material/Button';
 import { MdFileDownload } from 'react-icons/md';
 import { useSearchParams } from "next/navigation";
 import { jsPDF } from "jspdf";
+import autoTable from 'jspdf-autotable';
 import html2canvas from "html2canvas";
 import { useRouter } from 'next/navigation';
 import convertToWords from "@/components/convertToWords";
+import ExcelModifier from "@/components/invoice";
+import { useState } from "react";
 
 export default function Invoicepdf(args) {
   
@@ -22,15 +25,8 @@ export default function Invoicepdf(args) {
   const formDataObj = JSON.parse(data.formData);
   console.log(args);
   const router = useRouter();
-
-
-
+  const [showExcelModifier, setShowExcelModifier] = useState(false);
   
-
-
-
-
-
   const calcValue = parseFloat((data.issued * data.netRate).toFixed(4));
   const calcValueWithRate = parseFloat((calcValue * 0.09).toFixed(4));
 
@@ -39,6 +35,83 @@ export default function Invoicepdf(args) {
     return new Intl.NumberFormat('en-IN').format(value);
   }
 
+const IssuanceData = async () => {
+  const response = await fetch('/api/invoiceworksheet', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ deviceIds: data.deviceIds ,invoicePeriodFrom:data.invoicePeriodFrom,invoicePeriodTo:data.invoicePeriodTo}),
+  });
+  const IssuanceData = await response.json();
+  console.log(IssuanceData);
+  
+  const doc = new jsPDF();
+  const pageWidth = doc.internal.pageSize.getWidth();
+
+  // Add title
+  const title = `${data.groupName || "N/A"} (${data.invoicePeriodFrom || ""} to ${data.invoicePeriodTo || ""})`;
+  doc.setFontSize(18);
+  const titleWidth = doc.getTextWidth(title);
+  const titleX = (pageWidth / 2) - (titleWidth / 2);
+  doc.text(title, titleX, 22);
+
+  // Add first table
+  const firstTableData = [
+    ["Company Name", data.companyName],
+    ["Invoice ID", data.invoiceid],
+    ["Capacity (MW)", parseFloat(data.capacity).toFixed(2)],
+    ["No of Registration", data.regNo],
+    ["Issued (MWh)", parseFloat(data.issued).toFixed(2)],
+    ["Indicative Unit Sale Price (USD)", parseFloat(data.ISP).toFixed(2)],
+    ["Registration Fee(Euros)", parseFloat(data.registrationFee).toFixed(2)],
+    ["Issuance Fee (Euros)", parseFloat(data.issuanceFee).toFixed(2)],
+    ["USD to INR Exchange rate", parseFloat(data.USDExchange).toFixed(2)],
+    ["EUR to INR Exchange rate", parseFloat(data.EURExchange).toFixed(2)],
+    ["Gross Revenue (INR)", parseFloat(data.gross).toFixed(2)],
+    ["Registration Fee (INR)", parseFloat(data.regFeeINR).toFixed(2)],
+    ["Issuannce Fee (INR)", parseFloat(data.issuanceINR).toFixed(2)],
+    ["Net Revenue off Registration and Issuance Fee (INR)", parseFloat(data.netRevenue).toFixed(2)],
+    ["Success Fee for Solaura(INR)", parseFloat(data.successFee).toFixed(2)],
+    ["Net Revenue Generator(INR)", parseFloat(data.finalRevenue).toFixed(2)],
+    ["Net Trade Rate (INR/MWh)", parseFloat(data.netRate).toFixed(2)]
+  ];
+
+  doc.autoTable({
+    startY: 30,
+    body: firstTableData,
+    theme: 'grid',
+    styles: { fontSize: 10 ,font: "helvetica"},
+  });
+
+  // Add second table
+  const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  
+  const deviceData = {};
+  IssuanceData[0].forEach(item => {
+    if (!deviceData[item["Device ID"]]) {
+      deviceData[item["Device ID"]] = Array(12).fill(0);
+    }
+    const monthIndex = months.findIndex(m => m.toLowerCase() === item.Month.toLowerCase());
+    deviceData[item["Device ID"]][monthIndex] = parseFloat(item.Issued).toFixed(2);
+  });
+
+  const secondTableData = Object.entries(deviceData).map(([deviceId, monthlyData]) => {
+    const total = monthlyData.reduce((sum, value) => sum + parseFloat(value || 0), 0);
+    return [deviceId, ...monthlyData.map(value => parseFloat(value).toFixed(2)), total.toFixed(2)];
+  });
+
+  doc.autoTable({
+    startY: doc.lastAutoTable.finalY + 10,
+    head: [["Device ID", ...months, "Total Issued"]],
+    body: secondTableData,
+    theme: 'grid',
+    styles: { fontSize: 5 ,font: "helvetica"},
+  });
+
+  doc.save(`${data.groupName || "Invoice"}_data.pdf`);
+}
+  
   // Format the calculated values
   const formattedCalcValue = formatNumber(calcValue);
   const formattedCalcValueWithRate = formatNumber(calcValueWithRate);
@@ -47,57 +120,31 @@ export default function Invoicepdf(args) {
   const formattedTotalInvoiceValue = formatNumber(totalInvoiceValue);
   const totalInvoiceValueInWords = convertToWords(totalInvoiceValue);
 
-  const handleDownload = async () => {
-    const inputArea = document.body; 
-  
-    html2canvas(inputArea, { scale: 2, scrollY: -window.scrollY }).then((canvas) => {
-      const imgData = canvas.toDataURL('image/png');
-  
-      const pdf = new jsPDF('p', 'pt', 'a4'); // Set PDF to A4 size
-  
-      // Define Crop from the Left Side - adjust 'cropLeft' as necessary
-      const cropLeft = 510; // how much to crop from the left side
-      const contentWidth = canvas.width - cropLeft; // adjusted content width after cropping
-  
-      // Calculate the scale to fit the content in A4 size
-      const imgProps = pdf.getImageProperties(imgData);
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-      const scaleX = pdfWidth / contentWidth;
-      const scaleY = pdfHeight / (canvas.height * scaleX / (scaleX * imgProps.width / imgProps.height));
-      const scale = Math.min(scaleX, scaleY);
-  
-      // Calculate dimensions to maintain aspect ratio
-      const scaledWidth = imgProps.width * scale;
-      const scaledHeight = imgProps.height * scale;
-  
-      // Adjust canvas dimensions to fit A4, keeping the aspect ratio
-      // and adjust x position to crop from the left
-      pdf.addImage(imgData, 'PNG', -cropLeft * scale, 0, scaledWidth, scaledHeight);
-  
-      pdf.save("download-a4.pdf");
-    });
-  }
-
-
-
   return (
     <div className="mx-auto">
         <button
-      className="mb-4 px-4 py-2 bg-blue-500 text-white rounded"
+      className="mb-4 mr-4 px-4 py-2 bg-blue-500 text-white rounded"
       onClick={() => router.back()}
     >
       Back
     </button>
-             {/* <Button
-      variant="contained"
-      color="primary"
-      startIcon={<MdFileDownload />}
-      onClick={handleDownload}
-      className="hidden"
-    >
-      Download
-    </Button> */}
+    {data.action !== 'preview' && (
+      <>
+        <button
+          className="mb-4 mr-4 px-4 py-2 bg-blue-500 text-white rounded"
+          onClick={() => IssuanceData()}
+        >
+          Download Worksheet
+        </button>
+        <button
+          className="mb-4 px-4 py-2 bg-blue-500 text-white rounded"
+          onClick={() => setShowExcelModifier(true)}
+        >
+          Download Invoice
+        </button>
+      </>
+    )}
+    {showExcelModifier && <ExcelModifier data={data} />}
     <div className="m-auto max-w-screen-lg border-2 border-black">
       <div className="grid p-1 sm: grid-cols-12 gap-2 w-full">
         <div className="min-h-[50px] flex flex-col sm: col-span-3">
