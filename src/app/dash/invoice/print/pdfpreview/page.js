@@ -59,7 +59,6 @@ const IssuanceData = async () => {
   // Add first table
   const firstTableData = [
     ["Company Name", data.companyName],
-    ["Invoice ID", data.invoiceid],
     ["Capacity (MW)", parseFloat(data.capacity).toFixed(2)],
     ["No of Registration", data.regNo],
     ["Issued (MWh)", parseFloat(data.issued).toFixed(2)],
@@ -70,7 +69,7 @@ const IssuanceData = async () => {
     ["EUR to INR Exchange rate", parseFloat(data.EURExchange).toFixed(2)],
     ["Gross Revenue (INR)", parseFloat(data.gross).toFixed(2)],
     ["Registration Fee (INR)", parseFloat(data.regFeeINR).toFixed(2)],
-    ["Issuannce Fee (INR)", parseFloat(data.issuanceINR).toFixed(2)],
+    ["Isuannce Fee (INR)", parseFloat(data.issuanceINR).toFixed(2)],
     ["Net Revenue off Registration and Issuance Fee (INR)", parseFloat(data.netRevenue).toFixed(2)],
     ["Success Fee for Solaura(INR)", parseFloat(data.successFee).toFixed(2)],
     ["Net Revenue Generator(INR)", parseFloat(data.finalRevenue).toFixed(2)],

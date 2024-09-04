@@ -255,7 +255,6 @@ const downloadWorksheetPdf = () => {
 
   
   const keyMapping = {
-    invoiceid: 'Invoice ID',
     capacity: 'Capacity (MW)',
     regNo: 'No of Registration',
     issued:'Issued (MWh)',
@@ -266,7 +265,7 @@ const downloadWorksheetPdf = () => {
     EURExchange:'EUR to INR Exchange rate',
     gross:'Gross Revenue (INR)',
     regFeeINR:'Registration Fee (INR)',
-    issuanceINR:'Issuannce Fee (INR)',
+    issuanceINR:'Issuance Fee (INR)',
     netRevenue:'Net Revenue off Registration and Issuance Fee (INR)',
     successFee:'Success Fee for Solaura(INR)',
     finalRevenue:'Net Revenue Generator(INR)',
@@ -296,7 +295,7 @@ const downloadWorksheetPdf = () => {
     const updatedData = calculateData(selectedDeviceIds, data);
     setData(updatedData);
   };
-  const keysToIgnore = ['regdevice', 'groupName','invoicePeriodFrom','invoicePeriodTo','pan','gst','address','project','date','deviceIds','responseData','formData'];
+  const keysToIgnore = ['regdevice', 'groupName','invoicePeriodFrom','invoicePeriodTo','pan','gst','address','project','date','deviceIds','responseData','formData','invoiceid'];
   // Holds selected device ids
   const [selectedDeviceIds, setSelectedDeviceIds] = useState([]);
 
