@@ -62,7 +62,7 @@ const IssuanceData = async () => {
     ["Capacity (MW)", parseFloat(data.capacity).toFixed(2)],
     ["No of Registration", data.regNo],
     ["Issued (MWh)", parseFloat(data.issued).toFixed(2)],
-    ["Indicative Unit Sale Price (USD)", parseFloat(data.ISP).toFixed(2)],
+    ["Unit Sale Price (USD)", parseFloat(data.ISP).toFixed(2)],
     ["Registration Fee(Euros)", parseFloat(data.registrationFee).toFixed(2)],
     ["Issuance Fee (Euros)", parseFloat(data.issuanceFee).toFixed(2)],
     ["USD to INR Exchange rate", parseFloat(data.USDExchange).toFixed(2)],

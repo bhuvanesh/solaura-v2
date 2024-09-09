@@ -258,7 +258,7 @@ const downloadWorksheetPdf = () => {
     capacity: 'Capacity (MW)',
     regNo: 'No of Registration',
     issued:'Issued (MWh)',
-    ISP:'Indicative Unit Sale Price (USD)',
+    ISP:'Unit Sale Price (USD)',
     issuanceFee:'Issuance Fee (Euros)',
     registrationFee:'Registration Fee(Euros)',
     USDExchange:'USD to INR Exchange rate',
