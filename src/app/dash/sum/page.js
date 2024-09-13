@@ -1,8 +1,8 @@
 "use client";
 import { useState, useEffect } from "react";
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 import DataTable from "@/components/DataTable";
-
+import React from 'react';
 
 const DownloadPage = () => {
   const [groups, setGroups] = useState([]);
@@ -11,35 +11,34 @@ const DownloadPage = () => {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [unfilteredGroups, setUnfilteredGroups] = useState([]);
 
+  // Fetch the groups when the component mounts
+  useEffect(() => {
+    const fetchGroups = async () => {
+      const response = await fetch("/api/sum", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({}),
+      });
 
-// Fetch the groups when the component mounts
-useEffect(() => {
-  const fetchGroups = async () => {
-    const response = await fetch("/api/sum", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({}),
-    });
+      const data = await response.json();
+      const allGroupsOption = {Group: "All groups", Year: "All years"};
+      data.unshift(allGroupsOption);
+      setUnfilteredGroups(data);
+      if (data[1]) {   
+        setSelectedGroup(data[1].Group);
+        setSelectedYear(data[1].Year);
+      }
+    };
+    fetchGroups();
+  }, []);
 
-    const data = await response.json();
-    const allGroupsOption = {Group: "All groups", Year: "All years"};
-    data.unshift(allGroupsOption);
-    setUnfilteredGroups(data);
-    if (data[1]) {   
-      setSelectedGroup(data[1].Group);
-      setSelectedYear(data[1].Year);
-    }
-  };
-  fetchGroups();
-}, []);
-
-useEffect(() => {
-  // Filter the unfilteredGroups based on the selected year
-  const filteredGroups = unfilteredGroups.filter(group => group.Year === selectedYear || group.Group === "All groups");
-  setGroups(filteredGroups);
-}, [selectedYear]);
+  useEffect(() => {
+    // Filter the unfilteredGroups based on the selected year
+    const filteredGroups = unfilteredGroups.filter(group => group.Year === selectedYear || group.Group === "All groups");
+    setGroups(filteredGroups);
+  }, [selectedYear]);
 
   // Fetch the data when the selected group changes
   useEffect(() => {
@@ -63,30 +62,71 @@ useEffect(() => {
       fetchGroupDetails();
     }
   }, [selectedGroup]);
-  const downloadAsExcel = () => {
+
+  const downloadAsExcel = async () => {
     // Filter data for the selected year
     const filteredData = data.filter(item => item["Year"] === selectedYear);
-  
-    // Replace 'Reserved' or 'Sold' with 0
-    const modifiedData = filteredData.map(item => {
-      const newItem = {};
-      for (const key in item) {
-        if (item[key] === "Reserved" || item[key] === "Sold") {
-          newItem[key] = 0;
-        } else {
-          newItem[key] = isNaN(Number(item[key])) ? item[key] : Number(item[key]);
+
+    // Create a new workbook and worksheet
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Sheet1');
+
+    // Add headers
+    const headers = Object.keys(filteredData[0]);
+    worksheet.addRow(headers);
+
+    // Add data
+    filteredData.forEach(row => {
+      const newRow = worksheet.addRow(Object.values(row));
+      newRow.eachCell((cell, colNumber) => {
+        if (cell.value === "Sold") {
+          cell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFD0F0D0' } // Light green
+          };
+        } else if (cell.value === "Reserved") {
+          cell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: '68a617' } // Dark green
+          };
+        } else if (typeof cell.value === 'string' && cell.value.includes('(Est.)')) {
+          cell.value = parseFloat(cell.value.replace(' (Est.)', ''));
+          cell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'f7cd83' } // Orange
+          };
+        } else if (cell.value !== "Sold" && cell.value !== "Reserved") {
+          cell.value = parseFloat(cell.value) || 0;
+        }
+      });
+    });
+
+    // Generate Excel file
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'data.xlsx';
+    link.click();
+    URL.revokeObjectURL(link.href);
+  };
+
+  const formatData = (data) => {
+    return data.map(item => {
+      const newItem = {...item};
+      for (const key in newItem) {
+        if (newItem[key] === "Sold") {
+          newItem[key] = React.createElement('span', {style: {fontWeight: 'bold', color: 'navy'}}, 'Sold');
+        } else if (newItem[key] === "Reserved") {
+          newItem[key] = React.createElement('span', {style: {textDecoration: 'underline',color: 'green',fontWeight: 'bold'}}, 'Reserved');
         }
       }
       return newItem;
     });
-  
-    // Convert the modified data to an Excel file
-    const ws = XLSX.utils.json_to_sheet(modifiedData);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
-    XLSX.writeFile(wb, "data.xlsx");
   };
-  
 
   const handleGroupChange = (e) => {
     setSelectedGroup(e.target.value);
@@ -100,7 +140,11 @@ useEffect(() => {
   const uniqueYears = Array.from(new Set(data.map((item) => item["Year"])));
   const years = uniqueYears.sort((a, b) => b - a);
 
-  const filteredData = selectedGroup.toLowerCase() === "all groups" ? data.filter(item => item["Year"] === selectedYear) : data.filter( (item) => item["Group"].toLowerCase() === selectedGroup.toLowerCase() && item["Year"] === selectedYear );
+  const filteredData = selectedGroup.toLowerCase() === "all groups" 
+    ? data.filter(item => item["Year"] === selectedYear) 
+    : data.filter((item) => item["Group"].toLowerCase() === selectedGroup.toLowerCase() && item["Year"] === selectedYear);
+
+  const formattedData = formatData(filteredData);
 
   return (
     <div className="DownloadPage">
@@ -150,7 +194,7 @@ useEffect(() => {
           </select>
         )}
         <div className="pt-4">
-          <DataTable data={filteredData} />
+          <DataTable data={formattedData} />
         </div>
       </div>
     </div>

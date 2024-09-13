@@ -25,8 +25,8 @@ async function getGroupsData(connection, groupName) {
           WHEN COALESCE(\`Actual_used\`, 0) = COALESCE(\`Issued\`, 0) AND COALESCE(\`Actual_used\`, 0) != 0 THEN 'Sold'
           WHEN COALESCE(\`Actual\`, 0) != 0 AND COALESCE(\`Actual\`, 0) = COALESCE(\`Actual_used\`, 0 ) THEN 'Reserved'
           WHEN COALESCE(\`Actual\`, 0) = 0 AND \`Estimated\` = \`Estimated_used\` THEN 'Reserved'
-          WHEN COALESCE(\`Actual\`, 0) != 0 THEN COALESCE(\`Actual\`, 0) - COALESCE(\`Actual_used\`, 0)
-          ELSE COALESCE(\`Estimated\`, 0) - COALESCE(\`Estimated_used\`, 0)
+          WHEN COALESCE(\`Actual\`, 0) != 0 THEN CAST(COALESCE(\`Actual\`, 0) - COALESCE(\`Actual_used\`, 0) AS CHAR)
+          ELSE CONCAT(CAST(COALESCE(\`Estimated\`, 0) - COALESCE(\`Estimated_used\`, 0) AS CHAR), ' (Est.)')
         END AS Sold
       FROM \`${process.env.MASTER_TABLE}\`
     ) AS subquery
@@ -54,8 +54,8 @@ async function getGroupsData(connection, groupName) {
           WHEN COALESCE(\`Actual_used\`, 0) = COALESCE(\`Issued\`, 0) AND COALESCE(\`Actual_used\`, 0) != 0 THEN 'Sold'
           WHEN COALESCE(\`Actual\`, 0) != 0 AND COALESCE(\`Actual\`, 0) = COALESCE(\`Actual_used\`, 0 ) THEN 'Reserved'
           WHEN COALESCE(\`Actual\`, 0) = 0 AND \`Estimated\` = \`Estimated_used\` THEN 'Reserved'
-          WHEN COALESCE(\`Actual\`, 0) != 0 THEN COALESCE(\`Actual\`, 0) - COALESCE(\`Actual_used\`, 0)
-          ELSE COALESCE(\`Estimated\`, 0) - COALESCE(\`Estimated_used\`, 0)
+          WHEN COALESCE(\`Actual\`, 0) != 0 THEN CAST(COALESCE(\`Actual\`, 0) - COALESCE(\`Actual_used\`, 0) AS CHAR)
+          ELSE CONCAT(CAST(COALESCE(\`Estimated\`, 0) - COALESCE(\`Estimated_used\`, 0) AS CHAR), ' (Est.)')
         END AS Sold
       FROM \`${process.env.MASTER_TABLE}\`
       WHERE \`Group\` = ?
