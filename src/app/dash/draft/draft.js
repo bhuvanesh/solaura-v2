@@ -39,7 +39,9 @@ const DraftButton = ({ onApply }) => {
             type: draft.type,
             CoDYear: draft.CoDYear,
             Year: draft.Draft_Data.Year, 
-            draft_id: draft.Transaction_ID, 
+            draft_id: draft.Transaction_ID,
+            transferType: draft.txn_type,  
+            finalBuyer: draft.final_buyer, 
         };
 
         onApply(draftToApply);
@@ -73,6 +75,7 @@ const DraftButton = ({ onApply }) => {
                         <TableRow>
                             <TableHead>Requirement</TableHead>
                             <TableHead>Organisation</TableHead>
+                            <TableHead>Final Buyer</TableHead>
                             <TableHead>Date Saved</TableHead>
                             <TableHead>Select Draft</TableHead>
                             <TableHead>Delete Draft</TableHead> 
@@ -83,6 +86,7 @@ const DraftButton = ({ onApply }) => {
                             <TableRow key={index}>
                                 <TableCell>{item.requirement}</TableCell>
                                 <TableCell>{item.Organisation}</TableCell>
+                                <TableCell>{item.final_buyer}</TableCell>
                                 <TableCell>{formatDateToLocalTime(item.createdAt)}</TableCell>
                                 <TableCell>
                                     <button 

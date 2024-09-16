@@ -8,7 +8,7 @@ const PaymentSuccess = () => {
   const uniqueId = searchParams.get('uniqueId');
   useEffect(() => {
     const timer = setTimeout(() => {
-      router.push('/dash/txn');
+      router.push('/dash/txnedit');
     }, 5000);
 
     return () => clearTimeout(timer);

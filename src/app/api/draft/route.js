@@ -6,11 +6,11 @@ export async function POST(req) {
   try {
     const conn = await getPSConnection();
 
-    const { organisation, selectedMonths, uniqueId: transactionId, requirement, productionPeriodFrom, productionPeriodTo, CoDYear, type } = requestBody;
+    const { organisation, selectedMonths, uniqueId: transactionId, requirement, productionPeriodFrom, productionPeriodTo, CoDYear, type, transferType, finalBuyer } = requestBody;
     const tableName = process.env.DRAFT;
     const insertQuery = `
-      INSERT INTO ${tableName} (Transaction_ID, Draft_Data, Organisation, requirement, productionPeriodFrom, productionPeriodTo, CoDYear, type)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO ${tableName} (Transaction_ID, Draft_Data, Organisation, requirement, productionPeriodFrom, productionPeriodTo, CoDYear, type, txn_type, final_buyer)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON DUPLICATE KEY UPDATE
       Draft_Data = VALUES(Draft_Data),
       Organisation = VALUES(Organisation),
@@ -18,10 +18,12 @@ export async function POST(req) {
       productionPeriodFrom = VALUES(productionPeriodFrom),
       productionPeriodTo = VALUES(productionPeriodTo),
       CoDYear = VALUES(CoDYear),
-      type = VALUES(type);
+      type = VALUES(type),
+      txn_type = VALUES(txn_type),
+      final_buyer = VALUES(final_buyer);
     `;
 
-    await conn.query(insertQuery, [transactionId, JSON.stringify(selectedMonths), organisation, requirement, productionPeriodFrom, productionPeriodTo, CoDYear, type]);
+    await conn.query(insertQuery, [transactionId, JSON.stringify(selectedMonths), organisation, requirement, productionPeriodFrom, productionPeriodTo, CoDYear, type, transferType, finalBuyer]);
 
     await conn.end();
 

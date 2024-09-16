@@ -11,6 +11,8 @@ const ResultsContext = React.createContext({
   type: '',
   draftData: {}, 
   draftid: '', 
+  transferType: '',
+  finalBuyer: '',
   setResults: () => {},
   setRequirement: () => {},
   setGroupName: () => {},
@@ -21,6 +23,8 @@ const ResultsContext = React.createContext({
   setType: () => {},
   setDraftData: () => {}, 
   setdraftid: () => {}, 
+  setTransferType: () => {},
+  setFinalBuyer: () => {},
 });
 
 export default ResultsContext;

@@ -1,10 +1,11 @@
 "use client"
-import React, { useState, useContext,useEffect } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import ResultsContext from '@/app/SearchContext/store';
 import LoadingButton from '@/components/Loading';
 import DraftButton from '../draft/draft';
-
+import { toast,ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const FormComponent = () => {
   const {
@@ -17,6 +18,8 @@ const FormComponent = () => {
     setType,
     setDraftData,
     setdraftid,
+    setTransferType,
+    setFinalBuyer,
   } = useContext(ResultsContext);
   const [requirement, _setRequirement] = useState("");
   const [CoDYear, _setCoDYear] = useState("");
@@ -30,6 +33,34 @@ const FormComponent = () => {
 
   const [searchTrigger, setSearchTrigger] = useState(false); 
   const isDraftToggleOn = process.env.NEXT_PUBLIC_DRAFT_TOGGLE === 'on';
+
+  const [transferTypes, setTransferTypes] = useState([]);
+  const [organisations, setOrganisations] = useState([]);
+  const [selectedTransferType, _setSelectedTransferType] = useState('');
+  const [finalBuyer, _setFinalBuyer] = useState('');
+  const [showOrgTextBox, setShowOrgTextBox] = useState(false);
+  const [showFinalBuyerTextBox, setShowFinalBuyerTextBox] = useState(false);
+  const [newOrg, setNewOrg] = useState('');
+  const [newFinalBuyer, setNewFinalBuyer] = useState('');
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch('/api/transfer/fetch');
+        const data = await response.json();
+        if (data.TransferTypes) {
+          setTransferTypes(data.TransferTypes);
+        }
+        if (data.Organisations) {
+          setOrganisations(data.Organisations);
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   useEffect(() => {
     // This effect runs whenever searchTrigger is changed and is true.
@@ -50,6 +81,9 @@ const FormComponent = () => {
     _setCoDYear(data.CoDYear || "");
     setYear(data.Year || ""); 
     setdraftid(data.draft_id || "");
+    _setSelectedTransferType(data.transferType || "");  
+    _setFinalBuyer(data.finalBuyer || "");  
+    
   
     
     setDraftData(data.devicedata || "");    
@@ -93,6 +127,8 @@ const FormComponent = () => {
     return;
   }
   setResults(results);
+  setTransferType(selectedTransferType);
+  setFinalBuyer(finalBuyer);
   setRequirement(requirement);
   setOrganisation(organisation);
   setCoDYear(CoDYear);
@@ -103,9 +139,6 @@ const FormComponent = () => {
   setLoadingState(false);
   
 };
-
-
-
 
   const months = [
     "January",
@@ -125,6 +158,264 @@ const FormComponent = () => {
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: currentYear - 2021 }, (_, i) => 2022 + i);
 
+  const handleAddOrg = async (type) => {
+    let newOrgData = {};
+    if (type === 'organisation') {
+      newOrgData = { name: newOrg, type: '0' };
+    } else if (type === 'finalBuyer') {
+      newOrgData = { name: newFinalBuyer, type: '1' };
+    }
+
+    try {
+      const response = await fetch('/api/transfer/AddOrg', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newOrgData),
+      });
+
+      if (response.ok) {
+        toast.success('Organisation added successfully');
+      }
+      else{
+        toast.error('Failed to add organisation');
+      }
+
+    } catch (error) {
+      console.error('Error adding organisation:', error);
+    }
+  };
+
+  const renderOrganisationInputs = () => {
+    const transferTypeId = parseInt(selectedTransferType);
+    const buyerOrgs = organisations.filter(org => org.TYPE === '0');
+    const finalBuyerOrgs = organisations.filter(org => org.TYPE === '1');
+
+    if (transferTypeId === 1) {
+      return (
+        <div>
+          <ToastContainer />
+          <label htmlFor="organisation" className="block text-sm font-medium">
+            Organisation
+          </label>
+          <select
+            id="organisation"
+            value={organisation}
+            onChange={(e) => {
+              if (e.target.value === 'others') {
+                setShowOrgTextBox(true);
+              } else {
+                _setOrganisation(e.target.value);
+                setShowOrgTextBox(false);
+              }
+            }}
+            className="p-2 block w-full mt-1 border-sky-800 border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          >
+            <option value="">Select organisation</option>
+            {buyerOrgs.map((org) => (
+              <option key={org.id} value={org.CODE}>{org.CODE}</option>
+            ))}
+            <option value="others">Others</option>
+          </select>
+          {showOrgTextBox && (
+            <div className="mt-2">
+              <input
+                type="text"
+                value={newOrg}
+                onChange={(e) => setNewOrg(e.target.value)}
+                className="p-2 block w-full mt-1 border-sky-800 border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                placeholder="Enter new organisation"
+              />
+              <div className="mt-2 flex justify-end space-x-2">
+                <button
+                  onClick={() => handleAddOrg('organisation')}
+                  className="px-3 py-1 bg-sky-800 text-white rounded-md hover:bg-sky-700"
+                >
+                  Save
+                </button>
+                <button
+                  onClick={() => {
+                    setShowOrgTextBox(false);
+                    setNewOrg('');
+                  }}
+                  className="px-3 py-1 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    } else if (transferTypeId === 2) {
+      return (
+        <>
+          <div>
+            <label htmlFor="organisation" className="block text-sm font-medium">
+              Organisation
+            </label>
+            <select
+              id="organisation"
+              value={organisation}
+              onChange={(e) => {
+                if (e.target.value === 'others') {
+                  setShowOrgTextBox(true);
+                } else {
+                  _setOrganisation(e.target.value);
+                  setShowOrgTextBox(false);
+                }
+              }}
+              className="p-2 block w-full mt-1 border-sky-800 border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            >
+              <option value="">Select organisation</option>
+              {buyerOrgs.map((org) => (
+                <option key={org.id} value={org.CODE}>{org.CODE}</option>
+              ))}
+              <option value="others">Others</option>
+            </select>
+            {showOrgTextBox && (
+              <div className="mt-2">
+                <input
+                  type="text"
+                  value={newOrg}
+                  onChange={(e) => setNewOrg(e.target.value)}
+                  className="p-2 block w-full mt-1 border-sky-800 border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  placeholder="Enter new organisation"
+                />
+                <div className="mt-2 flex justify-end space-x-2">
+                  <button
+                    onClick={() => handleAddOrg('organisation')}
+                    className="px-3 py-1 bg-sky-800 text-white rounded-md hover:bg-sky-700"
+                  >
+                    Save
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowOrgTextBox(false);
+                      setNewOrg('');
+                    }}
+                    className="px-3 py-1 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+          <div>
+            <label htmlFor="finalBuyer" className="block text-sm font-medium">
+              Final Buyer
+            </label>
+            <select
+              id="finalBuyer"
+              value={finalBuyer}
+              onChange={(e) => {
+                if (e.target.value === 'others') {
+                  setShowFinalBuyerTextBox(true);
+                } else {
+                  _setFinalBuyer(e.target.value);
+                  setShowFinalBuyerTextBox(false);
+                }
+              }}
+              className="p-2 block w-full mt-1 border-sky-800 border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            >
+              <option value="">Select final buyer</option>
+              {finalBuyerOrgs.map((org) => (
+                <option key={org.id} value={org.CODE}>{org.CODE}</option>
+              ))}
+              <option value="others">Others</option>
+            </select>
+            {showFinalBuyerTextBox && (
+              <div className="mt-2">
+                <input
+                  type="text"
+                  value={newFinalBuyer}
+                  onChange={(e) => setNewFinalBuyer(e.target.value)}
+                  className="p-2 block w-full mt-1 border-sky-800 border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  placeholder="Enter new final buyer"
+                />
+                <div className="mt-2 flex justify-end space-x-2">
+                  <button
+                    onClick={() => handleAddOrg('finalBuyer')}
+                    className="px-3 py-1 bg-sky-800 text-white rounded-md hover:bg-sky-700"
+                  >
+                    Save
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowFinalBuyerTextBox(false);
+                      setNewFinalBuyer('');
+                    }}
+                    className="px-3 py-1 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </>
+      );
+    } else if (transferTypeId === 3) {
+      return (
+        <div>
+          <label htmlFor="finalBuyer" className="block text-sm font-medium">
+            Final Buyer
+          </label>
+          <select
+            id="finalBuyer"
+            value={finalBuyer}
+            onChange={(e) => {
+              if (e.target.value === 'others') {
+                setShowFinalBuyerTextBox(true);
+              } else {
+                _setFinalBuyer(e.target.value);
+                setShowFinalBuyerTextBox(false);
+              }
+            }}
+            className="p-2 block w-full mt-1 border-sky-800 border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          >
+            <option value="">Select final buyer</option>
+            {finalBuyerOrgs.map((org) => (
+              <option key={org.id} value={org.CODE}>{org.CODE}</option>
+            ))}
+            <option value="others">Others</option>
+          </select>
+          {showFinalBuyerTextBox && (
+            <div className="mt-2">
+              <input
+                type="text"
+                value={newFinalBuyer}
+                onChange={(e) => setNewFinalBuyer(e.target.value)}
+                className="p-2 block w-full mt-1 border-sky-800 border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                placeholder="Enter new final buyer"
+              />
+              <div className="mt-2 flex justify-end space-x-2">
+                <button
+                  onClick={() => handleAddOrg('finalBuyer')}
+                  className="px-3 py-1 bg-sky-800 text-white rounded-md hover:bg-sky-700"
+                >
+                  Save
+                </button>
+                <button
+                  onClick={() => {
+                    setShowFinalBuyerTextBox(false);
+                    setNewFinalBuyer('');
+                  }}
+                  className="px-3 py-1 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+    return null;
+  };
+
   return (
   
     <div className='p-8'>
@@ -133,17 +424,24 @@ const FormComponent = () => {
       {/* Form section */}
       <div className="space-y-4 col-span-1">
         <div>
-          <label htmlFor="organisation" className="block text-sm font-medium">
-            Enter your organisation name
-          </label>
-          <input
-            type="text"
-            id="organisation"
-            value={organisation}
-            onChange={(e) => _setOrganisation(e.target.value)}
-            className="p-1 block w-full mt-1 border-sky-800 border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-          />
+          <label htmlFor="transferType" className="block text-sm font-medium">Transfer Type</label>
+          <select
+            id="transferType"
+            value={selectedTransferType}
+            onChange={(e) => _setSelectedTransferType(e.target.value)}
+            className="p-2 block w-full mt-1 border-sky-800 border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          >
+            <option value="">Select Transfer Type</option>
+            {transferTypes && transferTypes.length > 0 ? (
+              transferTypes.map((type) => (
+                <option key={type.id} value={type.id}>{type.status}</option>
+              ))
+            ) : (
+              <option value="" disabled>Loading transfer types...</option>
+            )}
+          </select>
         </div>
+        {renderOrganisationInputs()}
         <div>
           <label htmlFor="requirement" className="block text-sm font-medium">
             Requirement (MWh)

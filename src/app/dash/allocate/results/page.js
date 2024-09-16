@@ -26,8 +26,15 @@ const {
   type,
   draftData, 
   draftid,
+  transferType,
+  finalBuyer,
 } = useContext(ResultsContext);
- 
+
+console.log("transferType",transferType);
+console.log("finalBuyer",finalBuyer);
+console.log("Organisation",organisation);
+
+
   const [selectedMonths, setSelectedMonths] = useState(new Map());
   const router = useRouter();
   const [remainingRequirement, setRemainingRequirement] = useState(parseFloat(requirement));
@@ -211,7 +218,7 @@ const handleUnselect = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ organisation, selectedMonths: selectedMonthsObject, uniqueId, year }),
+        body: JSON.stringify({ organisation,transferType,finalBuyer, selectedMonths: selectedMonthsObject, uniqueId, year }),
       });
   
       const buyerResponse = await response.json();
@@ -260,7 +267,7 @@ const handleUnselect = () => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       // Include the conditionally determined id
-      body: JSON.stringify({ uniqueId, organisation, selectedMonths: selectedMonthsObject, year, requirement, productionPeriodFrom, productionPeriodTo, CoDYear, type }),
+      body: JSON.stringify({ uniqueId, organisation,transferType,finalBuyer, selectedMonths: selectedMonthsObject, year, requirement, productionPeriodFrom, productionPeriodTo, CoDYear, type }),
     });
     const updatedResults = await response.json();
     console.log(updatedResults);
@@ -323,6 +330,8 @@ return (
   <div className="container mx-auto px-4">
     <ToastContainer />
       <h1 className="text-2xl font-bold mb-4">Search Results</h1>
+      {organisation && <h2 className="text-xl font-bold mb-4">Organisation: {organisation}</h2>}
+      {finalBuyer && <h2 className="text-xl font-bold mb-4">Final Buyer: {finalBuyer}</h2>}
       <p>Requirement: {remainingRequirement}</p>
       <div>
         <button

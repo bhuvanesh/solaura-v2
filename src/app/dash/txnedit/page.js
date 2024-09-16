@@ -289,6 +289,8 @@ const [currentPage, setCurrentPage] = useState(1);
         { header: "Organisation", dataKey: "Organisation" },
         { header: "Status", dataKey: "Status" },
         { header: "Total", dataKey: "total" },
+        { header: "Final Buyer", dataKey: "final_buyer" },
+        { header: "Txn Date", dataKey: "createdAt" },
       ];
 
       const transactionData = [
@@ -297,6 +299,8 @@ const [currentPage, setCurrentPage] = useState(1);
           Organisation: row["Organisation"],
           Status: row["Status"],
           total: formatNumber(row["total"]),
+          final_buyer: row["final_buyer"],
+          createdAt: new Date(row["createdAt"]).toLocaleDateString(),
         },
       ];
 
@@ -409,7 +413,7 @@ const [currentPage, setCurrentPage] = useState(1);
                     <thead className="bg-sky-800 text-white rounded-md">
                       <tr>
                         <th className="px-4 py-2 text-xs font-medium  uppercase tracking-wider">
-                          Transaction ID
+                          S.No
                         </th>
                         <th className="px-4 py-2 text-xs font-medium  uppercase tracking-wider">
                           Organisation
@@ -419,6 +423,12 @@ const [currentPage, setCurrentPage] = useState(1);
                         </th>
                         <th className="px-4 py-2 text-xs font-medium  uppercase tracking-wider">
                           Requirement
+                        </th>
+                        <th className="px-4 py-2 text-xs font-medium  uppercase tracking-wider">
+                          Final Buyer
+                        </th>
+                        <th className="px-4 py-2 text-xs font-medium  uppercase tracking-wider">
+                          Txn Date
                         </th>
                         <th className="px-4 py-2 text-xs font-medium  uppercase tracking-wider">
                           revoke order
@@ -437,7 +447,7 @@ const [currentPage, setCurrentPage] = useState(1);
                             className="hover:bg-gray-100 cursor-pointer"
                           >
                             <td className="px-4 py-2 whitespace-normal text-sm text-gray-500">
-                              {row["Transaction ID"]}
+                              {(currentPage - 1) * rowsPerPage + i + 1}
                             </td>
                             <td className="px-4 py-2 whitespace-normal text-sm text-gray-500">
                               {row["Organisation"]}
@@ -447,6 +457,12 @@ const [currentPage, setCurrentPage] = useState(1);
                             </td>
                             <td className="px-4 py-2 whitespace-normal text-sm text-gray-500">
                             {formatNumber(row["total"])}
+                            </td>
+                            <td className="px-4 py-2 whitespace-normal text-sm text-gray-500">
+                              {row["final_buyer"]}
+                            </td>
+                            <td className="px-4 py-2 whitespace-normal text-sm text-gray-500">
+                              {new Date(row["createdAt"]).toLocaleDateString()}
                             </td>
                             <td className="px-4 py-2 whitespace-normal text-sm text-gray-500">
   {row["Status"] !== "Revoked" ? (
@@ -468,7 +484,7 @@ const [currentPage, setCurrentPage] = useState(1);
                           </tr>
                           {activeRow === i && (
                             <tr>
-                              <td colSpan="5" className="px-4 py-4">
+                              <td colSpan="7" className="px-4 py-4">
                                 <div className="mx-auto w-full">
                                   <table className="w-full max-w-3/4 mx-auto text-sm border border-gray-400">
                                     <thead>

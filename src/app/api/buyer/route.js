@@ -1,18 +1,31 @@
 import getPSConnection from '@/lib/planetscaledb';
 
 export async function POST(request) {
-  const {selectedMonths, organisation, uniqueId, year} = await request.json();
+  const {selectedMonths, organisation, uniqueId, year, transferType, finalBuyer} = await request.json();
 
   try {
     const connection = await getPSConnection();
     let rows = [];
+
+    // Determine the organisation value based on transferType
+    let organisationValue = '';
+    if (transferType === 1 || transferType === 2) {
+      organisationValue = organisation;
+    } else if (transferType === 3) {
+      organisationValue = ''; // Leave it empty for type 3
+    }
 
     // Loop through the selectedMonths object and prepare the row data
     for (const deviceId in selectedMonths) {
       if (deviceId === 'Year') continue; // Skip if the key is 'Year'
 
       const deviceMonths = selectedMonths[deviceId];
-      const row = [`'${uniqueId}'`, `'${deviceId}'`, `'${organisation}'`, `${year}`];
+      const row = [
+        `'${uniqueId}'`,
+        `'${deviceId}'`,
+        `'${organisationValue}'`,
+        `${year}`,
+      ];
 
       // Columns from January to December
       const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -21,12 +34,18 @@ export async function POST(request) {
       }
 
       row.push("'succeeded'");
+      row.push(`${transferType}`); // Add transferType as txn_type
+      row.push(`'${finalBuyer}'`); // Add finalBuyer
 
       rows.push(`(${row.join(', ')})`);
     }
 
     const query = `
-      INSERT INTO ${process.env.BUYERS_TABLE} (\`Transaction ID\`, \`Device ID\`, organisation, year, January, February, March, April, May, June, July, August, September, October, November, December, Status)
+      INSERT INTO ${process.env.BUYERS_TABLE} (
+        \`Transaction ID\`, \`Device ID\`, Organisation, year, 
+        January, February, March, April, May, June, July, August, September, October, November, December, 
+        Status, txn_type, final_buyer
+      )
       VALUES ${rows.join(', ')}
     `;
 
