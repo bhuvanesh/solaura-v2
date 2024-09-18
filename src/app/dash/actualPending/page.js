@@ -2,9 +2,9 @@
 import React, { useState, useEffect } from 'react'
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
-import { ChevronDown } from "lucide-react"
+import { ChevronDown, Printer } from "lucide-react"
 import ReactLoading from 'react-loading';
-
+import * as XLSX from 'xlsx';
 
 const ActualPending = () => {
   const [year, setYear] = useState(new Date().getFullYear());
@@ -43,6 +43,21 @@ const ActualPending = () => {
     fetchData();
   }, [year, month]);
 
+  const handleDownloadExcel = () => {
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(pendingDevices.map(device => ({
+      'Device ID': device['Device ID'],
+      'Year': year,
+      'Month': month,
+      'Group': device['Group'],
+      'Company': device['company'],
+      'Actual': device['Actual']
+    })));
+
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Pending Devices');
+    XLSX.writeFile(workbook, `pending_devices_${year}_${month}.xlsx`);
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-6">Pending Actual Credits</h1>
@@ -73,6 +88,10 @@ const ActualPending = () => {
               ))}
           </DropdownMenuContent>
         </DropdownMenu>
+        <Button variant="outline" onClick={handleDownloadExcel}>
+          <Printer className="mr-2 h-4 w-4" />
+          Download Excel
+        </Button>
       </div>
       {loading ? (
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '400px' }}>

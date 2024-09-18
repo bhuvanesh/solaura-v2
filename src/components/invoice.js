@@ -87,7 +87,7 @@ const ExcelModifier = ({ data }) => {
     modifyCell('K37', calcValueWithRate, 14, true);
     modifyCell('O38', parseFloat((calcValue + 2 * calcValueWithRate).toFixed(4)), 14, true);
     modifyCell('H40', convertToWords(totalInvoiceValue), 14);
-    modifyCell('C31', `Purchase of renewable attributes for I-REC (${data.issued} units at INR ${data.netRate} per unit)`, 14);
+    modifyCell('C31', `Sale of renewable attributes for I-REC (${data.issued} units at INR ${data.netRate} per unit)`, 14);
     modifyCell('K9', `Date of Invoice: ${data.date}`, 14, true);
 
 
