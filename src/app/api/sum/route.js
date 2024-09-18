@@ -25,6 +25,7 @@ async function getGroupsData(connection, groupName) {
           WHEN COALESCE(\`Actual_used\`, 0) = COALESCE(\`Issued\`, 0) AND COALESCE(\`Actual_used\`, 0) != 0 THEN 'Sold'
           WHEN COALESCE(\`Actual\`, 0) != 0 AND COALESCE(\`Actual\`, 0) = COALESCE(\`Actual_used\`, 0 ) THEN 'Reserved'
           WHEN COALESCE(\`Actual\`, 0) = 0 AND \`Estimated\` = \`Estimated_used\` THEN 'Reserved'
+          WHEN COALESCE(\`Issued\`, 0) != 0  THEN CONCAT(CAST(COALESCE(\`Issued\`, 0) - COALESCE(\`Actual_used\`, 0) AS CHAR), ' (Isd.)')
           WHEN COALESCE(\`Actual\`, 0) != 0 THEN CAST(COALESCE(\`Actual\`, 0) - COALESCE(\`Actual_used\`, 0) AS CHAR)
           ELSE CONCAT(CAST(COALESCE(\`Estimated\`, 0) - COALESCE(\`Estimated_used\`, 0) AS CHAR), ' (Est.)')
         END AS Sold
@@ -54,6 +55,7 @@ async function getGroupsData(connection, groupName) {
           WHEN COALESCE(\`Actual_used\`, 0) = COALESCE(\`Issued\`, 0) AND COALESCE(\`Actual_used\`, 0) != 0 THEN 'Sold'
           WHEN COALESCE(\`Actual\`, 0) != 0 AND COALESCE(\`Actual\`, 0) = COALESCE(\`Actual_used\`, 0 ) THEN 'Reserved'
           WHEN COALESCE(\`Actual\`, 0) = 0 AND \`Estimated\` = \`Estimated_used\` THEN 'Reserved'
+          WHEN COALESCE(\`Issued\`, 0) != 0  THEN CONCAT(CAST(COALESCE(\`Issued\`, 0) - COALESCE(\`Actual_used\`, 0) AS CHAR), ' (Isd.)')
           WHEN COALESCE(\`Actual\`, 0) != 0 THEN CAST(COALESCE(\`Actual\`, 0) - COALESCE(\`Actual_used\`, 0) AS CHAR)
           ELSE CONCAT(CAST(COALESCE(\`Estimated\`, 0) - COALESCE(\`Estimated_used\`, 0) AS CHAR), ' (Est.)')
         END AS Sold

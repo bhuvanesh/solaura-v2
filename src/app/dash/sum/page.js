@@ -98,6 +98,13 @@ const DownloadPage = () => {
             pattern: 'solid',
             fgColor: { argb: 'f7cd83' } // Orange
           };
+        } else if (typeof cell.value === 'string' && cell.value.includes('(Isd.)')) {
+          cell.value = parseFloat(cell.value.replace(' (Isd.)', ''));
+          cell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'f24b83' } // Light green
+          };
         } else if (cell.value !== "Sold" && cell.value !== "Reserved") {
           cell.value = parseFloat(cell.value) || 0;
         }
