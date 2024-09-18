@@ -75,38 +75,43 @@ const DownloadPage = () => {
     const headers = Object.keys(filteredData[0]);
     worksheet.addRow(headers);
 
+    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
     // Add data
     filteredData.forEach(row => {
       const newRow = worksheet.addRow(Object.values(row));
       newRow.eachCell((cell, colNumber) => {
-        if (cell.value === "Sold") {
-          cell.fill = {
-            type: 'pattern',
-            pattern: 'solid',
-            fgColor: { argb: 'FFD0F0D0' } // Light green
-          };
-        } else if (cell.value === "Reserved") {
-          cell.fill = {
-            type: 'pattern',
-            pattern: 'solid',
-            fgColor: { argb: '68a617' } // Dark green
-          };
-        } else if (typeof cell.value === 'string' && cell.value.includes('(Est.)')) {
-          cell.value = parseFloat(cell.value.replace(' (Est.)', ''));
-          cell.fill = {
-            type: 'pattern',
-            pattern: 'solid',
-            fgColor: { argb: 'f7cd83' } // Orange
-          };
-        } else if (typeof cell.value === 'string' && cell.value.includes('(Isd.)')) {
-          cell.value = parseFloat(cell.value.replace(' (Isd.)', ''));
-          cell.fill = {
-            type: 'pattern',
-            pattern: 'solid',
-            fgColor: { argb: 'f24b83' } // Light green
-          };
-        } else if (cell.value !== "Sold" && cell.value !== "Reserved") {
-          cell.value = parseFloat(cell.value) || 0;
+        const columnName = headers[colNumber - 1];
+        if (months.includes(columnName)) {
+          if (cell.value === "Sold") {
+            cell.fill = {
+              type: 'pattern',
+              pattern: 'solid',
+              fgColor: { argb: 'FFD0F0D0' } // Light green
+            };
+          } else if (cell.value === "Reserved") {
+            cell.fill = {
+              type: 'pattern',
+              pattern: 'solid',
+              fgColor: { argb: '68a617' } // Dark green
+            };
+          } else if (typeof cell.value === 'string' && cell.value.includes('(Est.)')) {
+            cell.value = parseFloat(cell.value.replace(' (Est.)', ''));
+            cell.fill = {
+              type: 'pattern',
+              pattern: 'solid',
+              fgColor: { argb: 'f7cd83' } // Orange
+            };
+          } else if (typeof cell.value === 'string' && cell.value.includes('(Isd.)')) {
+            cell.value = parseFloat(cell.value.replace(' (Isd.)', ''));
+            cell.fill = {
+              type: 'pattern',
+              pattern: 'solid',
+              fgColor: { argb: 'f24b83' } // Light green
+            };
+          } else if (cell.value !== "Sold" && cell.value !== "Reserved") {
+            cell.value = parseFloat(cell.value) || 0;
+          }
         }
       });
     });
