@@ -272,7 +272,7 @@ const IssuanceData = async () => {
           </TableHeader>
           <TableBody>
             <TableRow>
-              <TableCell className="text-xs">Purchase of renewable attributes for I-REC ({data.issued} units at INR {data.netRate} per unit)</TableCell>
+              <TableCell className="text-xs">Sale of renewable attributes for I-REC ({data.issued} units at INR {data.netRate} per unit)</TableCell>
               <TableCell className="text-xs">49070000</TableCell>
               <TableCell className="text-xs">{formattedCalcValue}</TableCell>
               <TableCell className="text-xs">
