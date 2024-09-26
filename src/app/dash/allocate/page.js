@@ -205,6 +205,7 @@ const FormComponent = () => {
             onChange={(e) => {
               if (e.target.value === 'others') {
                 setShowOrgTextBox(true);
+                _setOrganisation('');
               } else {
                 _setOrganisation(e.target.value);
                 setShowOrgTextBox(false);
@@ -223,7 +224,10 @@ const FormComponent = () => {
               <input
                 type="text"
                 value={newOrg}
-                onChange={(e) => setNewOrg(e.target.value)}
+                onChange={(e) => {
+                  setNewOrg(e.target.value);
+                  _setOrganisation(e.target.value);
+                }}
                 className="p-2 block w-full mt-1 border-sky-800 border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 placeholder="Enter new organisation"
               />
@@ -261,6 +265,7 @@ const FormComponent = () => {
               onChange={(e) => {
                 if (e.target.value === 'others') {
                   setShowOrgTextBox(true);
+                  _setOrganisation('');
                 } else {
                   _setOrganisation(e.target.value);
                   setShowOrgTextBox(false);
@@ -279,7 +284,10 @@ const FormComponent = () => {
                 <input
                   type="text"
                   value={newOrg}
-                  onChange={(e) => setNewOrg(e.target.value)}
+                  onChange={(e) => {
+                    setNewOrg(e.target.value);
+                    _setOrganisation(e.target.value);
+                  }}
                   className="p-2 block w-full mt-1 border-sky-800 border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                   placeholder="Enter new organisation"
                 />
@@ -313,6 +321,7 @@ const FormComponent = () => {
               onChange={(e) => {
                 if (e.target.value === 'others') {
                   setShowFinalBuyerTextBox(true);
+                  _setFinalBuyer('');
                 } else {
                   _setFinalBuyer(e.target.value);
                   setShowFinalBuyerTextBox(false);
@@ -331,7 +340,10 @@ const FormComponent = () => {
                 <input
                   type="text"
                   value={newFinalBuyer}
-                  onChange={(e) => setNewFinalBuyer(e.target.value)}
+                  onChange={(e) => {
+                    setNewFinalBuyer(e.target.value);
+                    _setFinalBuyer(e.target.value);
+                  }}
                   className="p-2 block w-full mt-1 border-sky-800 border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                   placeholder="Enter new final buyer"
                 />
@@ -369,6 +381,7 @@ const FormComponent = () => {
             onChange={(e) => {
               if (e.target.value === 'others') {
                 setShowFinalBuyerTextBox(true);
+                _setFinalBuyer('');
               } else {
                 _setFinalBuyer(e.target.value);
                 setShowFinalBuyerTextBox(false);
@@ -387,7 +400,10 @@ const FormComponent = () => {
               <input
                 type="text"
                 value={newFinalBuyer}
-                onChange={(e) => setNewFinalBuyer(e.target.value)}
+                onChange={(e) => {
+                  setNewFinalBuyer(e.target.value);
+                  _setFinalBuyer(e.target.value);
+                }}
                 className="p-2 block w-full mt-1 border-sky-800 border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 placeholder="Enter new final buyer"
               />
