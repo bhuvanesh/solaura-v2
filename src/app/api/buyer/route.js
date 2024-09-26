@@ -9,9 +9,9 @@ export async function POST(request) {
 
     // Determine the organisation value based on transferType
     let organisationValue = '';
-    if (transferType === 1 || transferType === 2) {
+    if (transferType == 1 || transferType == 2) {
       organisationValue = organisation;
-    } else if (transferType === 3) {
+    } else if (transferType == 3) {
       organisationValue = ''; // Leave it empty for type 3
     }
 
