@@ -1,5 +1,11 @@
 import getPSConnection from '@/lib/planetscaledb';
 
+// Month mapping for efficient comparison
+const MONTH_MAP = {
+  january: 1, february: 2, march: 3, april: 4, may: 5, june: 6,
+  july: 7, august: 8, september: 9, october: 10, november: 11, december: 12
+};
+
 export async function POST(req) {
   const devices = await req.json();
   const connection = await getPSConnection();
@@ -9,15 +15,17 @@ export async function POST(req) {
     await connection.beginTransaction();
 
     // Insert devices into issued_process table, ignoring duplicates
+    const deviceValues = devices.map(device => {
+      const startDate = device.startDate.split('-').reverse().join('-');
+      const endDate = device.endDate.split('-').reverse().join('-');
+      return [device.device.split('-')[0].trim(), startDate, endDate, parseFloat(device.periodProduction)];
+    });
+
     const insertQuery = `
       INSERT IGNORE INTO issued_process (device_id, start_date, end_date, period_production)
-      VALUES ${devices.map(device => {
-        const startDate = device.startDate.split('-').reverse().join('-');
-        const endDate = device.endDate.split('-').reverse().join('-');
-        return `('${device.device.split('-')[0].trim()}', '${startDate}', '${endDate}', ${parseFloat(device.periodProduction)})`;
-      }).join(',')}
+      VALUES ?
     `;
-    await connection.execute(insertQuery);
+    await connection.execute(insertQuery, [deviceValues]);
 
     // Query unprocessed devices with traceback
     const [unprocessedDevices] = await connection.execute(`
@@ -116,23 +124,95 @@ export async function POST(req) {
           FROM inventory2
           WHERE \`Device ID\` IN (${placeholders})
           AND Year = ?
-          AND FIELD(Month, 'january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december')
-          BETWEEN FIELD(?, 'january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december')
-          AND FIELD(?, 'january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december')
-          ORDER BY \`Device ID\`, FIELD(Month, 'january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december')
+          AND CASE 
+            WHEN Month = 'january' THEN 1
+            WHEN Month = 'february' THEN 2
+            WHEN Month = 'march' THEN 3
+            WHEN Month = 'april' THEN 4
+            WHEN Month = 'may' THEN 5
+            WHEN Month = 'june' THEN 6
+            WHEN Month = 'july' THEN 7
+            WHEN Month = 'august' THEN 8
+            WHEN Month = 'september' THEN 9
+            WHEN Month = 'october' THEN 10
+            WHEN Month = 'november' THEN 11
+            WHEN Month = 'december' THEN 12
+          END
+          BETWEEN ? AND ?
+          ORDER BY \`Device ID\`, 
+          CASE 
+            WHEN Month = 'january' THEN 1
+            WHEN Month = 'february' THEN 2
+            WHEN Month = 'march' THEN 3
+            WHEN Month = 'april' THEN 4
+            WHEN Month = 'may' THEN 5
+            WHEN Month = 'june' THEN 6
+            WHEN Month = 'july' THEN 7
+            WHEN Month = 'august' THEN 8
+            WHEN Month = 'september' THEN 9
+            WHEN Month = 'october' THEN 10
+            WHEN Month = 'november' THEN 11
+            WHEN Month = 'december' THEN 12
+          END
         `;
-        queryParams = [...deviceIds, startYear, startMonth, endMonth];
+        queryParams = [...deviceIds, startYear, MONTH_MAP[startMonth], MONTH_MAP[endMonth]];
       } else {
         query = `
           SELECT \`Device ID\`, Month, Year, Actual
           FROM inventory2
           WHERE \`Device ID\` IN (${placeholders})
-          AND ((Year = ? AND FIELD(Month, 'january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december') >= FIELD(?, 'january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'))
-          OR (Year > ? AND Year < ?)
-          OR (Year = ? AND FIELD(Month, 'january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december') <= FIELD(?, 'january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december')))
-          ORDER BY \`Device ID\`, Year, FIELD(Month, 'january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december')
+          AND (
+            (Year = ? AND 
+              CASE 
+                WHEN Month = 'january' THEN 1
+                WHEN Month = 'february' THEN 2
+                WHEN Month = 'march' THEN 3
+                WHEN Month = 'april' THEN 4
+                WHEN Month = 'may' THEN 5
+                WHEN Month = 'june' THEN 6
+                WHEN Month = 'july' THEN 7
+                WHEN Month = 'august' THEN 8
+                WHEN Month = 'september' THEN 9
+                WHEN Month = 'october' THEN 10
+                WHEN Month = 'november' THEN 11
+                WHEN Month = 'december' THEN 12
+              END >= ?
+            )
+            OR (Year > ? AND Year < ?)
+            OR (Year = ? AND 
+              CASE 
+                WHEN Month = 'january' THEN 1
+                WHEN Month = 'february' THEN 2
+                WHEN Month = 'march' THEN 3
+                WHEN Month = 'april' THEN 4
+                WHEN Month = 'may' THEN 5
+                WHEN Month = 'june' THEN 6
+                WHEN Month = 'july' THEN 7
+                WHEN Month = 'august' THEN 8
+                WHEN Month = 'september' THEN 9
+                WHEN Month = 'october' THEN 10
+                WHEN Month = 'november' THEN 11
+                WHEN Month = 'december' THEN 12
+              END <= ?
+            )
+          )
+          ORDER BY \`Device ID\`, Year, 
+          CASE 
+            WHEN Month = 'january' THEN 1
+            WHEN Month = 'february' THEN 2
+            WHEN Month = 'march' THEN 3
+            WHEN Month = 'april' THEN 4
+            WHEN Month = 'may' THEN 5
+            WHEN Month = 'june' THEN 6
+            WHEN Month = 'july' THEN 7
+            WHEN Month = 'august' THEN 8
+            WHEN Month = 'september' THEN 9
+            WHEN Month = 'october' THEN 10
+            WHEN Month = 'november' THEN 11
+            WHEN Month = 'december' THEN 12
+          END
         `;
-        queryParams = [...deviceIds, startYear, startMonth, startYear, endYear, endYear, endMonth];
+        queryParams = [...deviceIds, startYear, MONTH_MAP[startMonth], startYear, endYear, endYear, MONTH_MAP[endMonth]];
       }
 
       const [rows] = await connection.execute(query, queryParams);
@@ -144,10 +224,13 @@ export async function POST(req) {
           new Date(`${row.Year}-${row.Month}-01`) <= new Date(device.endDate)
         );
 
-        const totalActual = deviceRows.reduce((sum, row) => sum + parseFloat(row.Actual), 0);
+        const totalActual = deviceRows.reduce((sum, row) => {
+          const actual = isNaN(parseFloat(row.Actual)) ? 0 : parseFloat(row.Actual);
+          return sum + actual;
+        }, 0);
 
         return deviceRows.map(row => {
-          const actual = parseFloat(row.Actual);
+          const actual = isNaN(parseFloat(row.Actual)) ? 0 : parseFloat(row.Actual);
           const p_value = totalActual !== 0 ? actual / totalActual : 0;
           const calculatedProduction = p_value * device.periodProduction;
 
@@ -163,31 +246,57 @@ export async function POST(req) {
 
       // Batch update for P_Issued devices
       if (calculatedData.length > 0) {
-        const batchUpdateQuery = `
-          INSERT INTO inventory2 (\`Device ID\`, Month, Year, Issued, issue_process)
-          VALUES ${calculatedData.map(record =>
-            `('${record.device}', '${record.month}', ${record.year}, ${record.periodProduction}, JSON_ARRAY(${record.periodProduction}))`
-          ).join(',')}
-          ON DUPLICATE KEY UPDATE
-          Issued = COALESCE(Issued, 0) + VALUES(Issued),
-          issue_process = CASE
-          WHEN issue_process IS NULL THEN JSON_ARRAY(VALUES(Issued))
-          ELSE JSON_ARRAY_INSERT(issue_process, '$[0]', VALUES(Issued))
-          END;
-        `;
+        try {
+          await connection.beginTransaction();
+          
+          const batchUpdateQuery = `
+            INSERT INTO inventory2 (\`Device ID\`, Month, Year, Issued, issue_process)
+            VALUES (?, ?, ?, ?, JSON_ARRAY(?))
+            ON DUPLICATE KEY UPDATE
+            Issued = COALESCE(Issued, 0) + VALUES(Issued),
+            issue_process = CASE
+              WHEN issue_process IS NULL OR JSON_LENGTH(issue_process) = 0 
+              THEN JSON_ARRAY(VALUES(Issued))
+              ELSE JSON_MERGE_PRESERVE(issue_process, JSON_ARRAY(VALUES(Issued)))
+            END
+          `;
 
-        await connection.execute(batchUpdateQuery);
+          for (const record of calculatedData) {
+            await connection.execute(batchUpdateQuery, [
+              record.device,
+              record.month,
+              record.year,
+              record.periodProduction,
+              record.periodProduction
+            ]);
+          }
+
+          await connection.commit();
+        } catch (error) {
+          await connection.rollback();
+          throw error;
+        }
       }
     }
 
-    // Mark processed devices as processed
-    await connection.execute(
-      'UPDATE issued_process SET is_processed = TRUE WHERE is_processed = FALSE'
-    );
+    // Mark processed devices as processed - only for affected devices
+    const deviceIdsToUpdate = [...new Set([
+      ...issuedDevices.map(d => d.device),
+      ...pIssuedDevices.map(d => d.device)
+    ])];
+    
+    if (deviceIdsToUpdate.length > 0) {
+      const updateQuery = `
+        UPDATE issued_process 
+        SET is_processed = TRUE 
+        WHERE is_processed = FALSE 
+        AND device_id IN (${deviceIdsToUpdate.map(() => '?').join(',')})
+      `;
+      await connection.execute(updateQuery, deviceIdsToUpdate);
+    }
 
-    // Commit transaction
+    // Commit main transaction
     await connection.commit();
-
     await connection.end();
 
     return new Response(JSON.stringify({
