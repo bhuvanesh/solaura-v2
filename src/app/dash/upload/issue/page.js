@@ -5,7 +5,6 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import LoadingButton from '@/components/Loading';
 
-
 const readExcelFile = (file) => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -14,7 +13,7 @@ const readExcelFile = (file) => {
       const workbook = XLSX.read(data, { type: 'binary' });
       const sheetName = workbook.SheetNames[0];
       const worksheet = workbook.Sheets[sheetName];
-      const json = XLSX.utils.sheet_to_json(worksheet);
+      const json = XLSX.utils.sheet_to_json(worksheet, { raw: false, dateNF: 'dd-mm-yyyy' });
       resolve(json);
     };
     reader.onerror = (error) => reject(error);
@@ -23,46 +22,19 @@ const readExcelFile = (file) => {
 };
 
 const processExcelData = (data) => {
-  // Add an array of month names
-  const monthNames = [
-    'january', 'february', 'march', 'april', 'may', 'june', 'july',
-    'august', 'september', 'october', 'november', 'december'
-  ];
-
-  return data.flatMap((row) => {
-    // Convert the property names to lowercase
-    const lowerCaseRow = Object.keys(row).reduce((acc, key) => {
-      acc[key.toLowerCase()] = row[key];
-      return acc;
-    }, {});
-
-    const device = lowerCaseRow.device.split('-')[0].trim();
-
-    // Convert the numeric date values to proper date objects 
-    const startDate = XLSX.SSF.parse_date_code(lowerCaseRow['start date']);
-    const endDate = XLSX.SSF.parse_date_code(lowerCaseRow['end date']);
-
-    const startMonth = startDate.m - 1; // Get the month index
-    const endMonth = endDate.m - 1; // Get the month index
-
-    const records = [];
-
-    for (let year = startDate.y; year <= endDate.y; year++) {
-      const start = year === startDate.y ? startMonth : 0;
-      const end = year === endDate.y ? endMonth : 11;
-
-      for (let month = start; month <= end; month++) {
-        records.push({
-          device,
-          Month: monthNames[month],
-          Year: year, 
-          status: lowerCaseRow.status,
-        });
-      }
-    }
-
-    return records;
-  });
+  return data
+    .filter(row => row['Status'] === 'Issued')
+    .map((row) => {
+      const startDate = row['Start Date'];
+      const endDate = row['End Date'];
+      return {
+        device: row['Device'],
+        startDate: startDate,
+        endDate: endDate,
+        status: row['Status'],
+        periodProduction: row['Period Production']
+      };
+    });
 };
 
 const sendDataToApi = async (data) => {
@@ -80,7 +52,6 @@ const UploadPage = () => {
   const [excelData, setExcelData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
-
   const readExcel = async (file) => {
     try {
       const jsonData = await readExcelFile(file);
@@ -96,11 +67,17 @@ const UploadPage = () => {
       setIsLoading(true);
       try {
         const processedData = processExcelData(excelData);
+        if (processedData.length === 0) {
+          toast.error('No issued devices found in file');
+          setIsLoading(false);
+          return;
+        }
         const apiResponse = await sendDataToApi(processedData);
         console.log('API response:', apiResponse);
         toast.success('Data uploaded successfully', {
           onClose: () => window.location.reload()
-        });      } catch (error) {
+        });
+      } catch (error) {
         toast.error('Error uploading data');
       } finally {
         setIsLoading(false);
@@ -109,12 +86,13 @@ const UploadPage = () => {
       toast.error('Please select a file first');
     }
   };
+
   return (
     <div className="flex flex-col items-center min-h-screen">
       <ToastContainer />
       <div className="space-y-4">
         <h2 className="text-2xl font-bold">Upload Issued File Here</h2>
-        <div className="flex items-center space-x-4"> 
+        <div className="flex items-center space-x-4">
           <input
             type="file"
             className="bg-white py-2 px-4 rounded"
@@ -131,7 +109,7 @@ const UploadPage = () => {
           >
             Upload
           </LoadingButton>
-        </div> 
+        </div>
       </div>
     </div>
   );
